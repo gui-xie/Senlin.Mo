@@ -14,4 +14,3 @@ Currently still in development.
 Currently only includes the following features:
 
 1. `Senlin.Mo.Localization`: Based on JSON format, implement multi-language
-```

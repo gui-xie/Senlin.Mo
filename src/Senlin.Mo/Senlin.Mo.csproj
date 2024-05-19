@@ -14,4 +14,9 @@
         />
     </ItemGroup>
 
+    <ItemGroup>
+        <AdditionalFiles Include="L\*.json">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </AdditionalFiles>
+    </ItemGroup>
 </Project>

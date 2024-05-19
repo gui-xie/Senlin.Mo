@@ -19,14 +19,19 @@ public class LGeneratorTest
     [Fact]
     public Task TestCustomConfig()
     {
-        var driver = GeneratorDriver("[assembly: Senlin.Mo.Localization.Abstractions.LocalizationConfig(Path = \"L\", Culture = \"zh\")]");
-        
+        const string srcText = "[assembly: Senlin.Mo.Localization.Abstractions.LocalizationConfig(Path = \"L\", Culture = \"zh\")]";
+        var zhJson = CreateAdditionalText(
+            "/L/zh.json", 
+            "{\"name\":\"Name\",\"ageIs\":\"Age is {age}\"}"
+            );
+        var driver = GeneratorDriver(srcText, zhJson);
+
         var results = driver.GetRunResult();
 
         return  results.Verify();
     }
 
-    private static GeneratorDriver GeneratorDriver(string srcText)
+    private static GeneratorDriver GeneratorDriver(string srcText, params AdditionalText[] additionalTexts)
     {
         var compilation = CSharpCompilation.Create(
             "ProjectA",
@@ -41,9 +46,9 @@ public class LGeneratorTest
                 MetadataReference.CreateFromFile(typeof(LocalizationConfigAttribute).Assembly.Location)
             }
         );
-        var generator = new LGenerator();
+        ISourceGenerator[] generator = [new LGenerator().AsSourceGenerator()];
 
-        var driver = CSharpGeneratorDriver.Create(generator);
+        var driver = CSharpGeneratorDriver.Create(generator, additionalTexts);
         return driver.RunGeneratorsAndUpdateCompilation(compilation, out _, out _);
     }
 }
