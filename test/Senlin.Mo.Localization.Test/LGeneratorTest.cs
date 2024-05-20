@@ -1,30 +1,32 @@
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using Senlin.Mo.Localization.Abstractions;
 
 namespace Senlin.Mo.Localization.Test;
 
 public class LGeneratorTest
 {
     [Fact]
-    public Task TestDefaultConfig()
+    public Task GenerateWithoutDefaultJson()
     {
-        var driver = GeneratorDriver("[assembly: Senlin.Mo.Localization.Abstractions.LocalizationConfig]");
-        
+        var json = CreateAdditionalText(
+            "/L/zh.json", 
+            "{\"namespace\":\"Test\",\"name\":\"Name\",\"ageIs\":\"Age is {age}\"}"
+        );
+        var driver = GeneratorDriver(string.Empty, json);
+
         var results = driver.GetRunResult();
-        
-        return results.Verify();
+
+        return  results.Verify();
     }
     
     [Fact]
-    public Task TestCustomConfig()
+    public Task MissingConfig()
     {
-        const string srcText = "[assembly: Senlin.Mo.Localization.Abstractions.LocalizationConfig(Path = \"L\", Culture = \"zh\")]";
-        var zhJson = CreateAdditionalText(
-            "/L/zh.json", 
-            "{\"name\":\"Name\",\"ageIs\":\"Age is {age}\"}"
-            );
-        var driver = GeneratorDriver(srcText, zhJson);
+        var json = CreateAdditionalText(
+            "/L/l.json", 
+            "{\"namespace\":\"Test\",\"directory\":\"L\",\"name\":\"Name\",\"ageIs\":\"Age is {age}\"}"
+        );
+        var driver = GeneratorDriver(string.Empty, json);
 
         var results = driver.GetRunResult();
 
@@ -43,7 +45,7 @@ public class LGeneratorTest
             },
             new[]
             {
-                MetadataReference.CreateFromFile(typeof(LocalizationConfigAttribute).Assembly.Location)
+                MetadataReference.CreateFromFile(typeof(LocalizableString).Assembly.Location)
             }
         );
         ISourceGenerator[] generator = [new LGenerator().AsSourceGenerator()];

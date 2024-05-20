@@ -9,8 +9,10 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\Senlin.Mo.Localization.Abstractions\Senlin.Mo.Localization.Abstractions.csproj" />
         <ProjectReference Include="..\Senlin.Mo.Localization\Senlin.Mo.Localization.csproj" 
                           OutputItemType="Analyzer" 
+                          ReferenceOutputAssembly="false"
         />
     </ItemGroup>
 

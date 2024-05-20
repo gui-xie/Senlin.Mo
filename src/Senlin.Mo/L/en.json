@@ -1,3 +1,4 @@
 ﻿{
-  "name": "名称"
+  "name": "Name",
+  "ageIs": "The age is {age}"
 }

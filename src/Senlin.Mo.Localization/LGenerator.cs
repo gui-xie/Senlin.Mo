@@ -2,8 +2,6 @@
 using System.Text;
 using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Senlin.Mo.Localization.Abstractions;
 using System.Text.Json;
 
 namespace Senlin.Mo.Localization;
@@ -14,86 +12,56 @@ namespace Senlin.Mo.Localization;
 [Generator]
 public class LGenerator : IIncrementalGenerator
 {
-    private const string ConfigName = "Senlin.Mo.Localization.Abstractions.LocalizationConfigAttribute";
-    private const string ConfigShortName = "LocalizationConfig";
-    
     /// <summary>
     /// Initialize
     /// </summary>
     /// <param name="context"></param>
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
-        var ns = "Senlin.Mo.Localization";
-        var path = "Localization";
-        var culture = "en";
-        var configs = context.SyntaxProvider
-            .ForAttributeWithMetadataName(
-                ConfigName,
-                predicate: static (_, _) => true,
-                transform:  (ctx, _) =>
-                {
-                    ns = ctx.TargetSymbol.Name;
-                    var configAttr = ((CompilationUnitSyntax)ctx.TargetNode)
-                        .AttributeLists
-                        .SelectMany(x => x.Attributes)
-                        .First(x => x.Name.ToString().Contains(ConfigShortName));
-                    if (configAttr.ArgumentList is null) return (ns, path, culture);
-                    foreach (var argument in configAttr.ArgumentList.Arguments)
-                    {
-                        var name = argument.NameEquals?.Name.ToString();
-                        switch (name)
-                        {
-                            case "Path":
-                                path = argument.Expression.ToString().Trim('"');
-                                break;
-                            case "Culture":
-                                culture = argument.Expression.ToString().Trim('"');
-                                break;
-                        }
-                    }
-
-                    return (ns, path, culture);
-                }
-            );
-        context.RegisterSourceOutput(configs, (ctx, src) =>
-        {
-            ctx.AddSource("LConfig.g.cs",
-                $$"""
-                  namespace {{src.ns}};
-
-                  public class LConfig
-                  {
-                      public const string Culture = "{{src.culture}}";
-                      public const string Path = "{{src.path}}";
-                  }
-                  """
-            );
-        });
-
+        var localizationJsonRegex = new Regex(@"[\\/]l.json$");
         var jsonFiles = context
             .AdditionalTextsProvider
-            .Where(t=>t.Path.EndsWith(".json"));
+            .Where(t => localizationJsonRegex.IsMatch(t.Path));
         context.RegisterSourceOutput(jsonFiles, (ctx, file) =>
         {
-            var regex = new Regex($@"{path}[\\/]{culture}.json$"); 
-            if (!regex.IsMatch(file.Path)) return;
             var jsonText = file.GetText()?.ToString() ?? string.Empty;
             var dict = JsonSerializer.Deserialize<Dictionary<string, string>>(jsonText);
             if (dict is null) return; 
-            var keyTokens = GetKeyTokens(dict);
             var assemblyName = Assembly.GetExecutingAssembly().GetName();
-          
+            const string namespaceKey = "namespace";
+            const string directoryKey = "directory";
+            if (!dict.TryGetValue(namespaceKey, out var namespaceValue)
+                || !dict.TryGetValue(directoryKey, out var directoryValue))
+            {
+                DiagnosticDescriptor descriptor = new(
+                    "LGenerator",
+                    "Missing namespace or directory",
+                    "Missing config in l.json",
+                    "Localization",
+                    DiagnosticSeverity.Error,
+                    true
+                );
+                ctx.ReportDiagnostic(Diagnostic.Create(descriptor, Location.None));
+                return;
+            }
+            directoryValue = directoryValue.Replace("\\", @"\\");
+            dict.Remove(namespaceKey);
+            dict.Remove(directoryKey);
+            
+            var keyTokens = GetKeyTokens(dict);
             var sb = new StringBuilder();
             sb.AppendLine("#nullable enable");
             sb.AppendLine("using Senlin.Mo.Localization.Abstractions;");
-            sb.AppendLine($"namespace {ns}");
+            sb.AppendLine($"namespace {namespaceValue}");
             sb.AppendLine("{");
             sb.AppendLine($"    [global::System.CodeDom.Compiler.GeneratedCodeAttribute(\"{assemblyName.Name}\", \"{assemblyName.Version}\")]");
             sb.AppendLine("    public static partial class L");
             sb.AppendLine("    {");
+            sb.AppendLine($"        public const string Directory = \"{directoryValue}\";");
             foreach (var (key, tokens) in keyTokens)
             {
                 var keyProperty = JsonKeyToPascalString(key);
+                sb.AppendLine();
                 sb.AppendLine("        /// <summary>");
                 sb.AppendLine($"        /// {dict[key]}");
                 sb.AppendLine("        /// </summary>");
@@ -104,7 +72,15 @@ public class LGenerator : IIncrementalGenerator
                 }
                 sb.Append($"        public static LocalizationString {keyProperty}(");
                 sb.Append(string.Join(", ", tokens.Select(t => $"string {t}")));
-                sb.AppendLine($") => new LocalizationString(\"{key}\", new []{{ {string.Join(", ", tokens)} }});");
+                sb.AppendLine(")");
+                sb.AppendLine("        {");
+                sb.AppendLine($"            return new LocalizationString(\"{key}\", new []{{");
+                foreach (var token in tokens)
+                {
+                    sb.AppendLine($"                new KeyValuePair<string, string>(\"{token}\", {token}),");
+                }
+                sb.AppendLine("            });");
+                sb.AppendLine("        }");
             }
             sb.AppendLine("    }");
             sb.AppendLine("}");
