@@ -1,6 +1,4 @@
 ﻿{
-  "namespace": "Senlin.Mo",
-  "directory": "L/",
   "name": "名称",
   "ageIs": "年龄是{age}"
 }

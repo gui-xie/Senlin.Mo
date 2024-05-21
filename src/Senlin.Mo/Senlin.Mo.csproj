@@ -17,8 +17,14 @@
     </ItemGroup>
 
     <ItemGroup>
-        <AdditionalFiles Include="L\*.json">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        <AdditionalFiles Include="mo-l.json">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </AdditionalFiles>
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Update="L\*.json">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
     </ItemGroup>
 </Project>

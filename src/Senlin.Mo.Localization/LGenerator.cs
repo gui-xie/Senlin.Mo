@@ -1,8 +1,8 @@
 ﻿using System.Reflection;
 using System.Text;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis;
-using System.Text.Json;
 
 namespace Senlin.Mo.Localization;
 
@@ -12,55 +12,46 @@ namespace Senlin.Mo.Localization;
 [Generator]
 public class LGenerator : IIncrementalGenerator
 {
+    private static readonly AssemblyName ExecutingAssembly = Assembly.GetExecutingAssembly().GetName();
+
     /// <summary>
     /// Initialize
     /// </summary>
     /// <param name="context"></param>
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
-        var localizationJsonRegex = new Regex(@"[\\/]l.json$");
-        var jsonFiles = context
+        var jsonFiles = 
+            context
             .AdditionalTextsProvider
-            .Where(t => localizationJsonRegex.IsMatch(t.Path));
-        context.RegisterSourceOutput(jsonFiles, (ctx, file) =>
+            .Where(t => t.Path.EndsWith("mo-l.json"))
+            .Combine(
+                context
+                    .CompilationProvider
+                    .Select(static (c, _) => c.AssemblyName));
+        context.RegisterSourceOutput(jsonFiles, (
+            ctx, pair) =>
         {
+            var file = pair.Left;
+            var assemblyName = pair.Right;
             var jsonText = file.GetText()?.ToString() ?? string.Empty;
             var dict = JsonSerializer.Deserialize<Dictionary<string, string>>(jsonText);
             if (dict is null) return; 
-            var assemblyName = Assembly.GetExecutingAssembly().GetName();
-            const string namespaceKey = "namespace";
-            const string directoryKey = "directory";
-            if (!dict.TryGetValue(namespaceKey, out var namespaceValue)
-                || !dict.TryGetValue(directoryKey, out var directoryValue))
-            {
-                DiagnosticDescriptor descriptor = new(
-                    "LGenerator",
-                    "Missing namespace or directory",
-                    "Missing config in l.json",
-                    "Localization",
-                    DiagnosticSeverity.Error,
-                    true
-                );
-                ctx.ReportDiagnostic(Diagnostic.Create(descriptor, Location.None));
-                return;
-            }
-            directoryValue = directoryValue.Replace("\\", @"\\");
-            dict.Remove(namespaceKey);
-            dict.Remove(directoryKey);
             
             var keyTokens = GetKeyTokens(dict);
             var sb = new StringBuilder();
             sb.AppendLine("#nullable enable");
             sb.AppendLine("using Senlin.Mo.Localization.Abstractions;");
-            sb.AppendLine($"namespace {namespaceValue}");
+            sb.AppendLine($"namespace {assemblyName}");
             sb.AppendLine("{");
-            sb.AppendLine($"    [global::System.CodeDom.Compiler.GeneratedCodeAttribute(\"{assemblyName.Name}\", \"{assemblyName.Version}\")]");
+            sb.AppendLine($"    [global::System.CodeDom.Compiler.GeneratedCodeAttribute(\"{ExecutingAssembly.Name}\", \"{ExecutingAssembly.Version}\")]");
             sb.AppendLine("    public static partial class L");
             sb.AppendLine("    {");
-            sb.AppendLine($"        public const string Directory = \"{directoryValue}\";");
-            foreach (var (key, tokens) in keyTokens)
+            foreach (var (key, keyProperty, _) in keyTokens)
             {
-                var keyProperty = JsonKeyToPascalString(key);
+                sb.AppendLine($"        public static string {keyProperty}Key = \"{key}\";");
+            }
+            foreach (var (key, keyProperty, tokens) in keyTokens)
+            {
                 sb.AppendLine();
                 sb.AppendLine("        /// <summary>");
                 sb.AppendLine($"        /// {dict[key]}");
@@ -97,9 +88,9 @@ public class LGenerator : IIncrementalGenerator
         return char.ToUpper(str[0]) + str.Substring(1);
     }
     
-    private static List<(string key, List<string> tokens)> GetKeyTokens(Dictionary<string, string> dict)
+    private static List<(string key, string keyProperty, List<string> tokens)> GetKeyTokens(Dictionary<string, string> dict)
     {
-        var result = new List<(string, List<string>)>();
+        var result = new List<(string, string, List<string>)>();
         foreach (var keyValue in dict)
         {
             var key = keyValue.Key;
@@ -107,6 +98,8 @@ public class LGenerator : IIncrementalGenerator
             
             if(key is null || value is null) continue;
             
+            var keyProperty = JsonKeyToPascalString(key);
+
             var tokens = new List<string>();
             const string pattern = "(?<={)[^{}]+(?=})";
             foreach (Match match in Regex.Matches(value, pattern))
@@ -114,7 +107,7 @@ public class LGenerator : IIncrementalGenerator
                 if(tokens.Contains(match.Value)) continue;
                 tokens.Add(match.Value);
             }
-            result.Add((key, tokens));
+            result.Add((key, keyProperty, tokens));
         }
 
         return result;

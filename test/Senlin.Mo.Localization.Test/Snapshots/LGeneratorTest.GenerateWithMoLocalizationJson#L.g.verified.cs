@@ -1,12 +1,13 @@
 ﻿//HintName: L.g.cs
 #nullable enable
 using Senlin.Mo.Localization.Abstractions;
-namespace Test
+namespace ProjectA
 {
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Senlin.Mo.Localization", "1.0.0.0")]
     public static partial class L
     {
-        public const string Directory = "L";
+        public static string NameKey = "name";
+        public static string AgeIsKey = "ageIs";
 
         /// <summary>
         /// Name

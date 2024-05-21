@@ -7,7 +7,12 @@
 /// <param name="args">the args of json value</param>
 public struct LocalizationString(string key, params KeyValuePair<string, string>[] args)
 {
-    private bool _isResolved;
+    private string? _value = null;
+
+    /// <summary>
+    /// The key of LocalizationString
+    /// </summary>
+    public readonly string Key = key;
 
     /// <summary>
     /// Get the final string by resolve function
@@ -16,18 +21,17 @@ public struct LocalizationString(string key, params KeyValuePair<string, string>
     /// <returns></returns>
     public string Resolve(Func<string, string> resolve)
     {
-        if (_isResolved)
+        if (_value!=null)
         {
-            return key;
+            return _value;
         }
 
-        _isResolved = true;
-        var s = resolve(key);
+        var s = resolve(Key);
         foreach (var arg in args)
         {
             var argKey = arg.Key;
             s = s.Replace($"{{{argKey}}}", arg.Value);
         }
-        return key = s;
+        return _value = s;
     }
 }
