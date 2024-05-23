@@ -23,16 +23,23 @@ public class LGenerator : IIncrementalGenerator
         var jsonFiles = 
             context
             .AdditionalTextsProvider
-            .Where(t => t.Path.EndsWith("mo-l.json"))
             .Combine(
                 context
                     .CompilationProvider
-                    .Select(static (c, _) => c.AssemblyName));
+                    .Select(static (c, _) => c.AssemblyName))
+            .Combine(context.AnalyzerConfigOptionsProvider.Select(
+                static (p, _) =>
+                {
+                    p.GlobalOptions.TryGetValue("build_property.MoLocalizationFile", out var file);
+                    return file ?? "l.json";
+                }));
         context.RegisterSourceOutput(jsonFiles, (
             ctx, pair) =>
         {
-            var file = pair.Left;
-            var assemblyName = pair.Right;
+            var file = pair.Left.Left;
+            var assemblyName = pair.Left.Right;
+            var lFileName = pair.Right;
+            if (!file.Path.EndsWith(lFileName)) return;
             var jsonText = file.GetText()?.ToString() ?? string.Empty;
             var dict = JsonSerializer.Deserialize<Dictionary<string, string>>(jsonText);
             if (dict is null) return; 
