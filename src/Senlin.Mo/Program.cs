@@ -6,7 +6,7 @@ var zhResolver = new LStringResolver(() => "zh", GetJsonResource);
 var hello = L.SayHelloTo("世界").Resolve(zhResolver.Resolve);
 Console.WriteLine(hello);
 return;
-
+  
 static Dictionary<string, string> GetJsonResource(string culture)
 {
     var json = File.ReadAllText(
@@ -15,14 +15,4 @@ static Dictionary<string, string> GetJsonResource(string culture)
             "L",
             $"{culture}.json"));
     return JsonSerializer.Deserialize<Dictionary<string, string>>(json)!;
-}
-
-[LString]
-public enum Score
-{
-    Excellent,
-    Good,
-    Normal,
-    Bad,
-    Terrible
 }

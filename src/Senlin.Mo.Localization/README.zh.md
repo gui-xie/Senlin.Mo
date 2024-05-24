@@ -37,9 +37,10 @@ dotnet add package Senlin.Mo.Localization
 using Senlin.Mo.Localization.Abstractions;
 namespace Senlin.Mo
 {
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Senlin.Mo.Localization", "0.0.1.0")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Senlin.Mo.Localization", "1.0.1.0")]
     public static partial class L
     {
+        // this can be used as default resource
         public static readonly Dictionary<string, string> LStringSource = new Dictionary<string, string>
         {
             {"hello", "Hello"},
@@ -66,7 +67,6 @@ namespace Senlin.Mo
 ```
 * 直接在代码中添加多语言支持
 ```csharp
-// Directly use
 var resources = new Dictionary<string, Dictionary<string, string>>
 {
     {
@@ -89,7 +89,8 @@ var resources = new Dictionary<string, Dictionary<string, string>>
 GetCultureResource getCultureResource = culture => resources[culture];
 var zhResolver = new LStringResolver(() => "zh", getCultureResource);
 var hello = L.Hello.Resolve(zhResolver.Resolve);
-Console.WriteLine(hello);
+Console.WriteLine(hello); // 你好
+
 
 // Dependency injection
 var services = new ServiceCollection();
@@ -99,8 +100,8 @@ services.AddScoped<LStringResolver>();
 using var sp = services.BuildServiceProvider();
 using var s = sp.CreateScope();
 var enResolver = sp.GetRequiredService<LStringResolver>();
-var helloWorld = L.SayHelloTo("World");
-Console.WriteLine(helloWorld);
+var helloWorld = L.SayHelloTo("World").Resolve(enResolver.Resolve);
+Console.WriteLine(helloWorld); // Hello World!
 ```
 * 使用JSON配置多语言
   * 创建文件夹L
@@ -121,13 +122,9 @@ Console.WriteLine(helloWorld);
   ```
   * 使用代码
   ```csharp
-  using System.Text.Json;
-  using Senlin.Mo;
-  using Senlin.Mo.Localization.Abstractions;
-  
   var zhResolver = new LStringResolver(() => "zh", GetJsonResource);
   var hello = L.SayHelloTo("世界").Resolve(zhResolver.Resolve);
-  Console.WriteLine(hello);
+  Console.WriteLine(hello); // 你好，世界！
   return;
   
   static Dictionary<string, string> GetJsonResource(string culture)
