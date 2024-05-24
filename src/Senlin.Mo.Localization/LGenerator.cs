@@ -44,35 +44,43 @@ public class LGenerator : IIncrementalGenerator
             var dict = JsonSerializer.Deserialize<Dictionary<string, string>>(jsonText);
             if (dict is null) return; 
             
-            var keyTokens = GetKeyTokens(dict);
+            var infos = GetLStringInfos(dict);
             var sb = new StringBuilder();
             sb.AppendLine("#nullable enable");
             sb.AppendLine("using Senlin.Mo.Localization.Abstractions;");
             sb.AppendLine($"namespace {assemblyName}");
             sb.AppendLine("{");
-            sb.AppendLine($"    [global::System.CodeDom.Compiler.GeneratedCodeAttribute(\"{ExecutingAssembly.Name}\", \"{ExecutingAssembly.Version}\")]");
+            sb.AppendLine($"    [System.CodeDom.Compiler.GeneratedCodeAttribute(\"{ExecutingAssembly.Name}\", \"{ExecutingAssembly.Version}\")]");
             sb.AppendLine("    public static partial class L");
             sb.AppendLine("    {");
-            foreach (var (key, keyProperty, _) in keyTokens)
+            sb.AppendLine("        // this can be used as default resource");
+
+            sb.AppendLine($"        public static readonly Dictionary<string, string> LStringSource = new Dictionary<string, string>");
+            sb.AppendLine("        {");
+            foreach (var info in infos)
             {
-                sb.AppendLine($"        public static string {keyProperty}Key = \"{key}\";");
+                sb.AppendLine($"            {{\"{info.Key}\", \"{info.DefaultValue}\"}},");
             }
-            foreach (var (key, keyProperty, tokens) in keyTokens)
+            sb.AppendLine("        };");
+            foreach (var info in infos)
             {
+                var tokens = info.Tokens;
+                var keyProperty = info.KeyProperty;
+                var key = info.Key;
                 sb.AppendLine();
                 sb.AppendLine("        /// <summary>");
                 sb.AppendLine($"        /// {dict[key]}");
                 sb.AppendLine("        /// </summary>");
                 if (tokens.Count == 0)
                 {
-                    sb.AppendLine($"        public static LocalizationString {keyProperty} = new LocalizationString(\"{key}\");");
+                    sb.AppendLine($"        public static LString {keyProperty} = new LString(\"{key}\");");
                     continue;
                 }
-                sb.Append($"        public static LocalizationString {keyProperty}(");
+                sb.Append($"        public static LString {keyProperty}(");
                 sb.Append(string.Join(", ", tokens.Select(t => $"string {t}")));
                 sb.AppendLine(")");
                 sb.AppendLine("        {");
-                sb.AppendLine($"            return new LocalizationString(\"{key}\", new []{{");
+                sb.AppendLine($"            return new LString(\"{key}\", new []{{");
                 foreach (var token in tokens)
                 {
                     sb.AppendLine($"                new KeyValuePair<string, string>(\"{token}\", {token}),");
@@ -84,7 +92,7 @@ public class LGenerator : IIncrementalGenerator
             sb.AppendLine("}");
             sb.Append("#nullable restore");
             
-            ctx.AddSource("L.g.cs", sb.ToString());        
+            ctx.AddSource("L.g.cs", sb.ToString());      
         });
         
     }
@@ -94,10 +102,11 @@ public class LGenerator : IIncrementalGenerator
         if (string.IsNullOrEmpty(str)) return str;
         return char.ToUpper(str[0]) + str.Substring(1);
     }
-    
-    private static List<(string key, string keyProperty, List<string> tokens)> GetKeyTokens(Dictionary<string, string> dict)
+
+
+    private static List<LStringInfo> GetLStringInfos(Dictionary<string, string> dict)
     {
-        var result = new List<(string, string, List<string>)>();
+        var result = new List<LStringInfo>();
         foreach (var keyValue in dict)
         {
             var key = keyValue.Key;
@@ -114,9 +123,25 @@ public class LGenerator : IIncrementalGenerator
                 if(tokens.Contains(match.Value)) continue;
                 tokens.Add(match.Value);
             }
-            result.Add((key, keyProperty, tokens));
+            result.Add(new LStringInfo(key, value, keyProperty, tokens));
         }
 
         return result;
     }
+    
+    private class LStringInfo(
+        string key, 
+        string defaultValue, 
+        string keyProperty, 
+        List<string> tokens)
+    {
+        public string Key { get; } = key;
+
+        public string KeyProperty { get; } = keyProperty;
+
+        public string DefaultValue { get; } = defaultValue;
+
+        public List<string> Tokens { get; } = tokens;
+    }
+
 }

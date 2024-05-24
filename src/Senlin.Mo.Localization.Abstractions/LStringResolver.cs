@@ -1,16 +1,18 @@
 ﻿using System.Collections.Concurrent;
 
-namespace Senlin.Mo;
+namespace Senlin.Mo.Localization.Abstractions;
 
 /// <summary>
-/// Localization resolver
+/// Localization string resolver
 /// </summary>
-/// <param name="culture"></param>
-public class LocalizationResolver(
-    string culture,
-    Func<string, Dictionary<string, string>> getCultureResource)
+/// <param name="getCulture"></param>
+/// <param name="getCultureResource"></param>
+public class LStringResolver(
+    GetCulture getCulture,
+    GetCultureResource getCultureResource)
 {
     private static readonly ConcurrentDictionary<string, Lazy<Dictionary<string, string>>> Dictionaries = new();
+    private readonly string _culture = getCulture();
 
     /// <summary>
     /// Resolve the key
@@ -20,9 +22,9 @@ public class LocalizationResolver(
     public string Resolve(string key)
     {
         var dict = Dictionaries.GetOrAdd(
-            culture,
+            _culture,
             _ => new Lazy<Dictionary<string, string>>(()
-                => getCultureResource(culture)));
+                => getCultureResource(_culture)));
         var v = dict.Value[key];
         return v;
     }

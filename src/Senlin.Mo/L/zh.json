@@ -1,4 +1,4 @@
 ﻿{
-  "name": "名称",
-  "ageIs": "年龄是{age}"
+  "hello": "你好",
+  "sayHelloTo": "你好，{name}！"
 }

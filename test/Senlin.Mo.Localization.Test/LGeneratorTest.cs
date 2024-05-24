@@ -6,31 +6,17 @@ namespace Senlin.Mo.Localization.Test;
 public class LGeneratorTest
 {
     [Fact]
-    public Task GenerateWithoutJson()
+    public Task GenerateWithDefaultFile()
     {
         var json = CreateAdditionalText(
-            "/L/zh.json", 
+            "l.json",
             "{\"namespace\":\"Test\",\"name\":\"Name\",\"ageIs\":\"Age is {age}\"}"
         );
         var driver = GeneratorDriver(string.Empty, json);
 
         var results = driver.GetRunResult();
 
-        return  results.Verify();
-    }
-    
-    [Fact]
-    public Task GenerateWithMoLocalizationJson()
-    {
-        var json = CreateAdditionalText(
-            "mo-l.json", 
-            "{\"name\":\"Name\",\"ageIs\":\"Age is {age}\"}"
-        );
-        var driver = GeneratorDriver(string.Empty, json);
-
-        var results = driver.GetRunResult();
-
-        return  results.Verify();
+        return results.Verify();
     }
 
     private static GeneratorDriver GeneratorDriver(string srcText, params AdditionalText[] additionalTexts)
@@ -40,10 +26,13 @@ public class LGeneratorTest
             new[]
             {
                 CSharpSyntaxTree.ParseText(
-                    srcText, 
+                    srcText,
                     new CSharpParseOptions(LanguageVersion.CSharp12))
-            }
+            },
+            references: null,
+            options: null
         );
+
         ISourceGenerator[] generator = [new LGenerator().AsSourceGenerator()];
 
         var driver = CSharpGeneratorDriver.Create(generator, additionalTexts);

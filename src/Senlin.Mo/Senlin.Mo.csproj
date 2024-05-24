@@ -1,28 +1,19 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
     <PropertyGroup>
         <OutputType>Exe</OutputType>
         <TargetFramework>net8.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <LangVersion>12</LangVersion>
-        <MoLocalizationFile>mo-l.json</MoLocalizationFile>
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Senlin.Mo.Localization.Abstractions\Senlin.Mo.Localization.Abstractions.csproj"/>
-        <ProjectReference Include="..\Senlin.Mo.Localization\Senlin.Mo.Localization.csproj"
-                          OutputItemType="Analyzer"
-                          ReferenceOutputAssembly="false"
-        />
+        <ProjectReference Include="..\Senlin.Mo.Localization.Abstractions\Senlin.Mo.Localization.Abstractions.csproj" />
+        <ProjectReference Include="..\Senlin.Mo.Localization\Senlin.Mo.Localization.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
     </ItemGroup>
 
     <ItemGroup>
-        <CompilerVisibleProperty Include="MoLocalizationFile"/>
-    </ItemGroup>
-
-    <ItemGroup>
-        <AdditionalFiles Include="mo-l.json" MoLocalizationFile="l0.json">
+        <AdditionalFiles Include="l.json">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </AdditionalFiles>
     </ItemGroup>
@@ -31,5 +22,9 @@
         <None Update="L\*.json">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0" />
     </ItemGroup>
 </Project>

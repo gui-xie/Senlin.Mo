@@ -9,14 +9,13 @@
         <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
         <IncludeBuildOutput>false</IncludeBuildOutput>
         <PackageReadmeFile>README.md</PackageReadmeFile>
-
         <PublishRepositoryUrl>true</PublishRepositoryUrl>
         <PackageProjectUrl>https://github.com/gui-xie/Senlin.Mo</PackageProjectUrl>
         <PackageId>Senlin.Mo.Localization</PackageId>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageDescription>Generate Localization using json</PackageDescription>
-        <PackageTags>Mapper SourceGenerator</PackageTags>
-        <AssemblyVersion>0.0.1</AssemblyVersion>
+        <PackageTags>Localization JSON Multi-Langugae SourceGenerator</PackageTags>
+        <AssemblyVersion>1.0.1</AssemblyVersion>
     </PropertyGroup>
     <ItemGroup>
         <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4" PrivateAssets="all"/>
