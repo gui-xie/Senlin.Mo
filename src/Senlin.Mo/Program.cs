@@ -2,17 +2,46 @@
 using Senlin.Mo;
 using Senlin.Mo.Localization.Abstractions;
 
-var zhResolver = new LStringResolver(() => "zh", GetJsonResource);
-var hello = L.SayHelloTo("世界").Resolve(zhResolver.Resolve);
-Console.WriteLine(hello);
-return;
-  
-static Dictionary<string, string> GetJsonResource(string culture)
+var zh = new ZhResource();
+var ja = new JaResource();
+var resourceProvider = new LResourceProvider(zh, ja);
+
+var currentCulture = "zh";
+GetCulture getCulture = () => currentCulture;
+GetCultureResource getCultureResource = resourceProvider.GetResource;
+
+var resolver = new LStringResolver(getCulture, getCultureResource);
+var zhHello = resolver.Resolve(L.Hello);
+Console.WriteLine(zhHello);
+
+currentCulture = "ja";
+var jaHello = resolver.Resolve(L.Hello);
+Console.WriteLine(jaHello);
+
+Console.WriteLine(resolver.Resolve(L.SayHelloTo("世界")));
+currentCulture = "unknown";
+Console.WriteLine(resolver.Resolve(L.SayHelloTo("World")));
+
+public class JaResource : LResource
 {
-    var json = File.ReadAllText(
-        Path.Combine(
+    public override string Culture => "ja";
+
+    protected override string Hello => "こんにちは";
+
+    protected override string SayHelloTo => "こんにちは、{name}";
+}
+
+public class ZhResource : ILResource
+{
+    public string Culture => "zh";
+
+    public Dictionary<string, string> GetResource()
+    {
+        var jsonPath = Path.Combine(
             Directory.GetCurrentDirectory(),
             "L",
-            $"{culture}.json"));
-    return JsonSerializer.Deserialize<Dictionary<string, string>>(json)!;
+            $"{Culture}.json");
+        var json = File.ReadAllText(jsonPath);
+        return JsonSerializer.Deserialize<Dictionary<string, string>>(json)!;
+    }
 }

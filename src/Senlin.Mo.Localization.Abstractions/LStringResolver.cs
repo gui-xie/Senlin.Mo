@@ -9,23 +9,21 @@ namespace Senlin.Mo.Localization.Abstractions;
 /// <param name="getCultureResource"></param>
 public class LStringResolver(
     GetCulture getCulture,
-    GetCultureResource getCultureResource)
+    GetCultureResource getCultureResource,
+    bool isCultureWillChanged = true)
 {
     private static readonly ConcurrentDictionary<string, Lazy<Dictionary<string, string>>> Dictionaries = new();
     private readonly string _culture = getCulture();
 
-    /// <summary>
-    /// Resolve the key
-    /// </summary>
-    /// <param name="key"></param>
-    /// <returns></returns>
-    public string Resolve(string key)
+    internal string Resolve(string key)
     {
+        var culture = isCultureWillChanged ? getCulture() : _culture;
         var dict = Dictionaries.GetOrAdd(
-            _culture,
-            _ => new Lazy<Dictionary<string, string>>(()
-                => getCultureResource(_culture)));
-        var v = dict.Value[key];
-        return v;
+            culture,
+            _ => new Lazy<Dictionary<string, string>>(() 
+                => getCultureResource(culture)));
+        if (dict.Value is null) return string.Empty;
+        dict.Value.TryGetValue(key, out var v);
+        return v ?? string.Empty;
     }
 }

@@ -31,79 +31,9 @@ dotnet add package Senlin.Mo.Localization
     </AdditionalFiles>
 </ItemGroup>
 ```
-* 检查生成文件L.g.cs
-```csharp
-#nullable enable
-using Senlin.Mo.Localization.Abstractions;
-namespace Senlin.Mo
-{
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Senlin.Mo.Localization", "1.0.1.0")]
-    public static partial class L
-    {
-        // this can be used as default resource
-        public static readonly Dictionary<string, string> LStringSource = new Dictionary<string, string>
-        {
-            {"hello", "Hello"},
-            {"sayHelloTo", "Hello {name}!"},
-        };
+* 检查生成文件L.g.cs、LResource.g.cs
 
-        /// <summary>
-        /// Hello
-        /// </summary>
-        public static LString Hello = new LString("hello");
-
-        /// <summary>
-        /// Hello {name}!
-        /// </summary>
-        public static LString SayHelloTo(string name)
-        {
-            return new LString("sayHelloTo", new []{
-                new KeyValuePair<string, string>("name", name),
-            });
-        }
-    }
-}
-#nullable restore
-```
-* 直接在代码中添加多语言支持
-```csharp
-var resources = new Dictionary<string, Dictionary<string, string>>
-{
-    {
-        "en",
-        new Dictionary<string, string>
-        {
-            { "hello", "Hello" },
-            { "sayHelloTo", "Hello {name}!" },
-        }
-    },
-    {
-        "zh",
-        new Dictionary<string, string>
-        {
-            { "hello", "你好" },
-            { "sayHelloTo", "你好 {name}!" },
-        }
-    }
-};
-GetCultureResource getCultureResource = culture => resources[culture];
-var zhResolver = new LStringResolver(() => "zh", getCultureResource);
-var hello = L.Hello.Resolve(zhResolver.Resolve);
-Console.WriteLine(hello); // 你好
-
-
-// Dependency injection
-var services = new ServiceCollection();
-services.AddScoped<GetCulture>(_ => () => "en");
-services.AddSingleton(getCultureResource);
-services.AddScoped<LStringResolver>();
-using var sp = services.BuildServiceProvider();
-using var s = sp.CreateScope();
-var enResolver = sp.GetRequiredService<LStringResolver>();
-var helloWorld = L.SayHelloTo("World").Resolve(enResolver.Resolve);
-Console.WriteLine(helloWorld); // Hello World!
-```
-* 使用JSON配置多语言
+* 演示
   * 创建文件夹L
   * 添加zh.json
   ```json
@@ -120,21 +50,50 @@ Console.WriteLine(helloWorld); // Hello World!
         </None>
     </ItemGroup>
   ```
-  * 使用代码
+  * 使用生成文件（继承LResource或者使用JSON文件）
   ```csharp
-  var zhResolver = new LStringResolver(() => "zh", GetJsonResource);
-  var hello = L.SayHelloTo("世界").Resolve(zhResolver.Resolve);
-  Console.WriteLine(hello); // 你好，世界！
-  return;
+  var zh = new ZhResource();
+  var ja = new JaResource();
+  var resourceProvider = new LResourceProvider(zh, ja);
   
-  static Dictionary<string, string> GetJsonResource(string culture)
+  var currentCulture = "zh";
+  GetCulture getCulture = () => currentCulture;
+  GetCultureResource getCultureResource = resourceProvider.GetResource;
+  
+  var resolver = new LStringResolver(getCulture, getCultureResource);
+  var zhHello = resolver.Resolve(L.Hello);
+  Console.WriteLine(zhHello);
+  
+  currentCulture = "ja";
+  var jaHello = resolver.Resolve(L.Hello);
+  Console.WriteLine(jaHello);
+  
+  Console.WriteLine(resolver.Resolve(L.SayHelloTo("世界")));
+  currentCulture = "unknown";
+  Console.WriteLine(resolver.Resolve(L.SayHelloTo("World")));
+  
+  public class JaResource : LResource
   {
-      var json = File.ReadAllText(
-          Path.Combine(
+      public override string Culture => "ja";
+  
+      protected override string Hello => "こんにちは";
+  
+      protected override string SayHelloTo => "こんにちは、{name}";
+  }
+  
+  public class ZhResource : ILResource
+  {
+      public string Culture => "zh";
+  
+      public Dictionary<string, string> GetResource()
+      {
+          var jsonPath = Path.Combine(
               Directory.GetCurrentDirectory(),
               "L",
-              $"{culture}.json"));
-      return JsonSerializer.Deserialize<Dictionary<string, string>>(json)!;
+              $"{Culture}.json");
+          var json = File.ReadAllText(jsonPath);
+          return JsonSerializer.Deserialize<Dictionary<string, string>>(json)!;
+      }
   }
   ```
 * 默认使用l.json文件，如果需要修改，请按以下配置

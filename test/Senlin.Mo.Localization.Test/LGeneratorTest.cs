@@ -10,7 +10,7 @@ public class LGeneratorTest
     {
         var json = CreateAdditionalText(
             "l.json",
-            "{\"namespace\":\"Test\",\"name\":\"Name\",\"ageIs\":\"Age is {age}\"}"
+            "{\"name\":\"Name\",\"ageIs\":\"Age is {age}\"}"
         );
         var driver = GeneratorDriver(string.Empty, json);
 

@@ -6,7 +6,7 @@
 * reading in other languages: [English](README.md), [中文](README.zh.md).
 
 ## Introduction
-Provide multi-language support similar to resx
+Provide multi-language support, use source generator to create
 
 ## Quick Start
 
@@ -32,122 +32,224 @@ dotnet add package Senlin.Mo.Localization
     </AdditionalFiles>
 </ItemGroup>
 ```
-* Check the generated file L.g.cs
-```csharp
-#nullable enable
-using Senlin.Mo.Localization.Abstractions;
-namespace Senlin.Mo
-{
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Senlin.Mo.Localization", "1.0.1.0")]
-    public static partial class L
-    {
-        // this can be used as default resource
-        public static readonly Dictionary<string, string> LStringSource = new Dictionary<string, string>
-        {
-            {"hello", "Hello"},
-            {"sayHelloTo", "Hello {name}!"},
-        };
 
-        /// <summary>
-        /// Hello
-        /// </summary>
-        public static LString Hello = new LString("hello");
+[//]: # (* 检查生成文件L.g.cs、LResource.g.cs)
 
-        /// <summary>
-        /// Hello {name}!
-        /// </summary>
-        public static LString SayHelloTo(string name)
-        {
-            return new LString("sayHelloTo", new []{
-                new KeyValuePair<string, string>("name", name),
-            });
-        }
-    }
-}
-#nullable restore
-```
-* Directly add multi-language support in the code
-```csharp
-var resources = new Dictionary<string, Dictionary<string, string>>
-{
-    {
-        "en",
-        new Dictionary<string, string>
-        {
-            { "hello", "Hello" },
-            { "sayHelloTo", "Hello {name}!" },
-        }
-    },
-    {
-        "zh",
-        new Dictionary<string, string>
-        {
-            { "hello", "你好" },
-            { "sayHelloTo", "你好 {name}!" },
-        }
-    }
-};
-GetCultureResource getCultureResource = culture => resources[culture];
-var zhResolver = new LStringResolver(() => "zh", getCultureResource);
-var hello = L.Hello.Resolve(zhResolver.Resolve);
-Console.WriteLine(hello); // 你好
+[//]: # ()
+[//]: # (* 演示)
 
-// Dependency injection
-var services = new ServiceCollection();
-services.AddScoped<GetCulture>(_ => () => "en");
-services.AddSingleton(getCultureResource);
-services.AddScoped<LStringResolver>();
-using var sp = services.BuildServiceProvider();
-using var s = sp.CreateScope();
-var enResolver = sp.GetRequiredService<LStringResolver>();
-var helloWorld = L.SayHelloTo("World").Resolve(enResolver.Resolve);
-Console.WriteLine(helloWorld); // Hello World!
-```
-* Use JSON configuration multi-language
+[//]: # (  * 创建文件夹L)
+
+[//]: # (  * 添加zh.json)
+
+[//]: # (  ```json)
+
+[//]: # (  {)
+
+[//]: # (    "hello": "你好",)
+
+[//]: # (    "sayHelloTo": "你好，{name}！")
+
+[//]: # (  })
+
+[//]: # (  ```)
+
+[//]: # (  * 配置项目)
+
+[//]: # (  ```xml)
+
+[//]: # (  <ItemGroup>)
+
+[//]: # (        <None Update="L\*.json">)
+
+[//]: # (            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>)
+
+[//]: # (        </None>)
+
+[//]: # (    </ItemGroup>)
+
+[//]: # (  ```)
+
+[//]: # (  * 使用生成文件（继承LResource或者使用JSON文件）)
+
+[//]: # (  ```csharp)
+
+[//]: # (  var zh = new ZhResource&#40;&#41;;)
+
+[//]: # (  var ja = new JaResource&#40;&#41;;)
+
+[//]: # (  var resourceProvider = new LResourceProvider&#40;zh, ja&#41;;)
+
+[//]: # (  )
+[//]: # (  var currentCulture = "zh";)
+
+[//]: # (  GetCulture getCulture = &#40;&#41; => currentCulture;)
+
+[//]: # (  GetCultureResource getCultureResource = resourceProvider.GetResource;)
+
+[//]: # (  )
+[//]: # (  var resolver = new LStringResolver&#40;getCulture, getCultureResource&#41;;)
+
+[//]: # (  var zhHello = resolver.Resolve&#40;L.Hello&#41;;)
+
+[//]: # (  Console.WriteLine&#40;zhHello&#41;;)
+
+[//]: # (  )
+[//]: # (  currentCulture = "ja";)
+
+[//]: # (  var jaHello = resolver.Resolve&#40;L.Hello&#41;;)
+
+[//]: # (  Console.WriteLine&#40;jaHello&#41;;)
+
+[//]: # (  )
+[//]: # (  Console.WriteLine&#40;resolver.Resolve&#40;L.SayHelloTo&#40;"世界"&#41;&#41;&#41;;)
+
+[//]: # (  currentCulture = "unknown";)
+
+[//]: # (  Console.WriteLine&#40;resolver.Resolve&#40;L.SayHelloTo&#40;"World"&#41;&#41;&#41;;)
+
+[//]: # (  )
+[//]: # (  public class JaResource : LResource)
+
+[//]: # (  {)
+
+[//]: # (      public override string Culture => "ja";)
+
+[//]: # (  )
+[//]: # (      protected override string Hello => "こんにちは";)
+
+[//]: # (  )
+[//]: # (      protected override string SayHelloTo => "こんにちは、{name}";)
+
+[//]: # (  })
+
+[//]: # (  )
+[//]: # (  public class ZhResource : ILResource)
+
+[//]: # (  {)
+
+[//]: # (      public string Culture => "zh";)
+
+[//]: # (  )
+[//]: # (      public Dictionary<string, string> GetResource&#40;&#41;)
+
+[//]: # (      {)
+
+[//]: # (          var jsonPath = Path.Combine&#40;)
+
+[//]: # (              Directory.GetCurrentDirectory&#40;&#41;,)
+
+[//]: # (              "L",)
+
+[//]: # (              $"{Culture}.json"&#41;;)
+
+[//]: # (          var json = File.ReadAllText&#40;jsonPath&#41;;)
+
+[//]: # (          return JsonSerializer.Deserialize<Dictionary<string, string>>&#40;json&#41;!;)
+
+[//]: # (      })
+
+[//]: # (  })
+
+[//]: # (  ```)
+
+[//]: # (* 默认使用l.json文件，如果需要修改，请按以下配置)
+
+[//]: # (  配置项目的MoLocalizationFile)
+
+[//]: # (```xml)
+
+[//]: # (<Project>)
+
+[//]: # (  <PropertyGroup>)
+
+[//]: # (    <MoLocalizationFile>l-customize.config</MoLocalizationFile>)
+
+[//]: # (  </PropertyGroup>)
+
+[//]: # (  <ItemGroup>)
+
+[//]: # (    <CompilerVisibleProperty Include="MoLocalizationFile" />)
+
+[//]: # (  </ItemGroup>)
+
+[//]: # (</Project>)
+
+[//]: # (```)
+
+* Check the generated files L.g.cs, LResource.g.cs
+
+* Example
   * Create folder L
   * Add zh.json
-   ```json
+  ```json
   {
     "hello": "你好",
     "sayHelloTo": "你好，{name}！"
   }
   ```
-  * Configure the project
-  ```xml
-  <ItemGroup>
+    * Modify the project configuration
+    ```xml
+    <ItemGroup>
         <None Update="L\*.json">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
     </ItemGroup>
-  ```
-  * Use in code
-  ```csharp
-  var zhResolver = new LStringResolver(() => "zh", GetJsonResource);
-  var hello = L.SayHelloTo("世界").Resolve(zhResolver.Resolve);
-  Console.WriteLine(hello); // 你好，世界！
-  return;
+    ```
+  * Use the generated file (inherit LResource or use JSON file)
+   ```csharp
+  var zh = new ZhResource();
+  var ja = new JaResource();
+  var resourceProvider = new LResourceProvider(zh, ja);
   
-  static Dictionary<string, string> GetJsonResource(string culture)
+  var currentCulture = "zh";
+  GetCulture getCulture = () => currentCulture;
+  GetCultureResource getCultureResource = resourceProvider.GetResource;
+  
+  var resolver = new LStringResolver(getCulture, getCultureResource);
+  var zhHello = resolver.Resolve(L.Hello);
+  Console.WriteLine(zhHello);
+  
+  currentCulture = "ja";
+  var jaHello = resolver.Resolve(L.Hello);
+  Console.WriteLine(jaHello);
+  
+  Console.WriteLine(resolver.Resolve(L.SayHelloTo("世界")));
+  currentCulture = "unknown";
+  Console.WriteLine(resolver.Resolve(L.SayHelloTo("World")));
+  
+  public class JaResource : LResource
   {
-      var json = File.ReadAllText(
-          Path.Combine(
-              Directory.GetCurrentDirectory(),
-              "L",
-              $"{culture}.json"));
-      return JsonSerializer.Deserialize<Dictionary<string, string>>(json)!;
+    public override string Culture => "ja";
+  
+    protected override string Hello => "こんにちは";
+  
+    protected override string SayHelloTo => "こんにちは、{name}";
+  }
+  
+  public class ZhResource : ILResource
+  {
+    public string Culture => "zh";
+  
+    public Dictionary<string, string> GetResource()
+    {
+        var jsonPath = Path.Combine(
+            Directory.GetCurrentDirectory(),
+            "L",
+            $"{Culture}.json");
+        var json = File.ReadAllText(jsonPath);
+        return JsonSerializer.Deserialize<Dictionary<string, string>>(json)!;
+    }
   }
   ```
-
-[//]: # (* 默认使用l.json，如果需要修改，请按以下配置)
-# Default use l.json file, if you need to modify, please follow the configuration
-Configuration project MoLocalizationFile
-```xml
-<Project>
-  <PropertyGroup>
-      <MoLocalizationFile>l-customize.config</MoLocalizationFile>
-  </PropertyGroup>
-  <ItemGroup>
-      <CompilerVisibleProperty Include="MoLocalizationFile" />
-  </ItemGroup>
-</Project>
-```
+  * Default use l.json file, if you need to modify, please configure the project's MoLocalizationFile
+  ```xml
+  <Project>
+    <PropertyGroup>
+        <MoLocalizationFile>l-customize.config</MoLocalizationFile>
+    </PropertyGroup>
+    <ItemGroup>
+        <CompilerVisibleProperty Include="MoLocalizationFile" />
+    </ItemGroup>
+  </Project>
+  ```
