@@ -1,0 +1,21 @@
+﻿services:
+  mysql:
+    image: 'mysql:8.0.32'
+    environment:
+      MYSQL_ROOT_PASSWORD: 123456
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysqldata:/var/lib/mysql
+  garnet:
+    image: 'ghcr.io/microsoft/garnet'
+    ulimits:
+      memlock: -1
+    ports:
+      - "6379:6379"
+    volumes:
+      - garnetdata:/data
+volumes:
+  garnetdata:
+  mysqldata:
+  

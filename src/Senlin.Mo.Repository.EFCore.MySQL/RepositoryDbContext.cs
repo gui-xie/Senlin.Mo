@@ -1,0 +1,101 @@
+﻿using System.Reflection;
+using Microsoft.EntityFrameworkCore;
+using Senlin.Mo.Domain;
+using Senlin.Mo.Repository.Abstractions;
+using static Senlin.Mo.Repository.EFCore.EntityShadowPropertyNames;
+
+namespace Senlin.Mo.Repository.EFCore.MySQL;
+
+/// <summary>
+/// Repository DbContext
+/// </summary>
+/// <param name="connectionString"></param>
+/// <param name="helper"></param>
+/// <typeparam name="T"></typeparam>
+public abstract class RepositoryDbContext<T>(
+    ConnectionString<T> connectionString,
+    IRepositoryHelper helper) 
+    : DbContext, IRepositoryContext
+    where T : RepositoryDbContext<T>
+{
+    /// <summary>
+    /// Configure
+    /// </summary>
+    /// <param name="optionsBuilder"></param>
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+        optionsBuilder.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString));
+        optionsBuilder.EnableSensitiveDataLogging();
+        optionsBuilder.UseSnakeCaseNamingConvention();
+    }
+
+    /// <summary>
+    /// Configure conventions
+    /// </summary>
+    /// <param name="configurationBuilder"></param>
+    protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
+    {
+        configurationBuilder.Properties<EntityId>().HaveConversion<EntityIdConverter>();
+        configurationBuilder.Properties<EntityDateTime>().HaveConversion<EntityDateTimeConverter>();
+    }
+
+    /// <summary>
+    /// Get domain assembly
+    /// </summary>
+    /// <returns></returns>
+    protected abstract Assembly GetDomainAssembly();
+
+    /// <summary>
+    /// Configure model
+    /// </summary>
+    /// <param name="modelBuilder"></param>
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        modelBuilder.UseCollation("utf8mb4_zh_0900_as_cs").HasCharSet("utf8mb4");
+
+        var changeDataCaptureBuilder = modelBuilder.Entity<ChangeDataCapture>();
+        changeDataCaptureBuilder.HasKey(Id, "Month");
+        changeDataCaptureBuilder.Property<EntityId>(Id);
+        changeDataCaptureBuilder.Property<string>("Month");
+
+        var assembly = typeof(T).Assembly;
+        modelBuilder.ApplyConfigurationsFromAssembly(assembly);
+        var entityTypes = from type in GetDomainAssembly().ExportedTypes
+            where type.IsClass && !type.IsAbstract && type.IsAssignableTo(typeof(IEntity))
+            select type;
+        foreach (var entityType in entityTypes)
+        {
+            typeof(T).BaseType!
+                .GetMethod(
+                    nameof(ApplyEntityModel),
+                    BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.InvokeMethod)!
+                .MakeGenericMethod(entityType)
+                .Invoke(this, [modelBuilder]);
+        }
+    }
+
+    private void ApplyEntityModel<TEntity>(ModelBuilder modelBuilder) where TEntity : class, IEntity
+    {
+        var builder = modelBuilder.Entity<TEntity>();
+
+        builder.Property<EntityId>(Id)
+            .ValueGeneratedNever();
+
+        builder.Property<string>(Tenant);
+
+        builder.Property<byte[]>(ConcurrencyToken).IsConcurrencyToken();
+
+        builder.HasQueryFilter(e => helper.IsFilterTenant() ||
+                                    helper.GetTenant() == EF.Property<string>(e, Tenant));
+
+        builder.Property<string>(CreateUser);
+        builder.Property<string>(UpdateUser);
+        builder.Property<string>(DeleteUser);
+        builder.Property<EntityDateTime>(CreateTime);
+        builder.Property<EntityDateTime>(UpdateTime);
+        builder.Property<EntityDateTime>(DeleteTime);
+        builder.Property<bool>(IsDelete);
+
+        builder.HasKey(Id);
+    }
+}

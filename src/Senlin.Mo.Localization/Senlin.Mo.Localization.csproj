@@ -13,9 +13,13 @@
         <PackageProjectUrl>https://github.com/gui-xie/Senlin.Mo</PackageProjectUrl>
         <PackageId>Senlin.Mo.Localization</PackageId>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
-        <PackageDescription>Generate Localization using json</PackageDescription>
+        <PackageDescription>Provide multi-language support, use source generator and json configuration file to generate resource files.</PackageDescription>
         <PackageTags>Localization JSON Multi-Langugae SourceGenerator</PackageTags>
-        <AssemblyVersion>1.0.1</AssemblyVersion>
+        <Version>1.0.1</Version>
+        <Authors>Senlin</Authors>
+        <Title>Senlin.Mo.Localization</Title>
+        <Description>Provide multi-language support, use source generator and json configuration file to generate resource files.</Description>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     </PropertyGroup>
     <ItemGroup>
         <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4" PrivateAssets="all"/>

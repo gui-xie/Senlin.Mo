@@ -5,8 +5,9 @@ namespace Senlin.Mo.Localization.Abstractions;
 /// <summary>
 /// Localization string resolver
 /// </summary>
-/// <param name="getCulture"></param>
-/// <param name="getCultureResource"></param>
+/// <param name="getCulture">Get current culture</param>
+/// <param name="getCultureResource">get culture resource</param>
+/// <param name="isCultureWillChanged">to indicate is the culture will change</param>
 public class LStringResolver(
     GetCulture getCulture,
     GetCultureResource getCultureResource,
