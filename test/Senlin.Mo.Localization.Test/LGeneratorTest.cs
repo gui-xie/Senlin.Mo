@@ -1,5 +1,6 @@
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Senlin.Mo.Localization.Abstractions;
 
 namespace Senlin.Mo.Localization.Test;
 
@@ -12,7 +13,20 @@ public class LGeneratorTest
             "l.json",
             "{\"name\":\"Name\",\"ageIs\":\"Age is {age}\"}"
         );
-        var driver = GeneratorDriver(string.Empty, json);
+        const string srcText = @"
+using Senlin.Mo.Localization.Abstractions;
+namespace ProjectA {
+    [LString]
+    public enum Grade
+    {
+        Excellent,
+        Good,
+        Pass,
+        Fail
+    }
+}
+";
+        var driver = GeneratorDriver(srcText, json);
 
         var results = driver.GetRunResult();
 
@@ -25,11 +39,12 @@ public class LGeneratorTest
             "ProjectA",
             new[]
             {
-                CSharpSyntaxTree.ParseText(
-                    srcText,
-                    new CSharpParseOptions(LanguageVersion.CSharp12))
+                CSharpSyntaxTree.ParseText(srcText)
             },
-            references: null,
+            references: new[]
+            {
+                MetadataReference.CreateFromFile(typeof(LStringAttribute).Assembly.Location),
+            },
             options: null
         );
 

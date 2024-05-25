@@ -11,6 +11,11 @@ public readonly struct LString(
     params KeyValuePair<string, string>[] args)
 {
     /// <summary>
+    /// Empty LString
+    /// </summary>
+    public static LString Empty = new(string.Empty, string.Empty);
+    
+    /// <summary>
     /// Get the final string by resolve function
     /// </summary>
     /// <param name="resolve"></param>

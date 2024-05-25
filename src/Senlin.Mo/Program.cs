@@ -22,6 +22,13 @@ Console.WriteLine(resolver.Resolve(L.SayHelloTo("世界")));
 currentCulture = "unknown";
 Console.WriteLine(resolver.Resolve(L.SayHelloTo("World")));
 
+[LString]
+public enum Grade
+{
+    [LStringKey("Hello")]
+    Excellent
+}
+
 public class JaResource : LResource
 {
     public override string Culture => "ja";
