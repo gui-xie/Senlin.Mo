@@ -7,7 +7,6 @@
         <LangVersion>12</LangVersion>
         <RootNamespace>Senlin.Mo.Repository.Abstractions</RootNamespace>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>  
-        <LangVersion>12</LangVersion>
         <PublishRepositoryUrl>true</PublishRepositoryUrl>
         <PackageProjectUrl>https://github.com/gui-xie/Senlin.Mo</PackageProjectUrl>
         <PackageId>Senlin.Mo.Repository.Abstractions</PackageId>
