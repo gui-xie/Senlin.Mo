@@ -1,36 +1,47 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
-        <OutputType>Exe</OutputType>
         <TargetFramework>net8.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <LangVersion>12</LangVersion>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <PublishRepositoryUrl>true</PublishRepositoryUrl>
+        <PackageProjectUrl>https://github.com/gui-xie/Senlin.Mo</PackageProjectUrl>
+        <PackageId>Senlin.Mo</PackageId>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <PackageDescription>Modular monolith</PackageDescription>
+        <PackageTags>Mo Modular monolith</PackageTags>
+        <Version>1.0.2</Version>
+        <Authors>Senlin</Authors>
+        <Title>Senlin.Mo</Title>
+        <Description>(experiment)Modular monolith</Description>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Senlin.Mo.Localization.Abstractions\Senlin.Mo.Localization.Abstractions.csproj" />
-        <ProjectReference Include="..\Senlin.Mo.Localization\Senlin.Mo.Localization.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
-        <ProjectReference Include="..\Senlin.Mo.Repository.EFCore.MySQL\Senlin.Mo.Repository.EFCore.MySQL.csproj" />
+        <ProjectReference Include="..\Senlin.Mo.Localization.Abstractions\Senlin.Mo.Localization.Abstractions.csproj"/>
+        <ProjectReference Include="..\Senlin.Mo.Module\Senlin.Mo.Module.csproj"/>
+        <ProjectReference Include="..\Senlin.Mo.Repository.EFCore\Senlin.Mo.Repository.EFCore.csproj"/>
     </ItemGroup>
 
     <ItemGroup>
-        <AdditionalFiles Include="l.json">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </AdditionalFiles>
+        <PackageReference Include="IdGen" Version="3.0.5"/>
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0"/>
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.1"/>
+        <PackageReference Include="Serilog.Extensions.Hosting" Version="8.0.0"/>
+        <PackageReference Include="Serilog.Sinks.Async" Version="1.5.0"/>
+        <PackageReference Include="Serilog.Sinks.Console" Version="5.0.1"/>
+        <PackageReference Include="Serilog.Sinks.File" Version="5.0.0"/>
+        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2"/>
+        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.2"/>
     </ItemGroup>
 
     <ItemGroup>
-        <None Update="L\*.json">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        <None Remove="Properties\launchSettings.json"/>
+        <None Update="README.md">
+          <Pack>true</Pack>
+          <PackagePath>\</PackagePath>
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
-    </ItemGroup>
-
-    <ItemGroup>
-      <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <Folder Include="Domains\" />
-      <Folder Include="Repositories\" />
     </ItemGroup>
 </Project>

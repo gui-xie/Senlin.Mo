@@ -14,8 +14,8 @@ namespace Senlin.Mo.Repository.EFCore.MySQL;
 /// <typeparam name="T"></typeparam>
 public abstract class RepositoryDbContext<T>(
     ConnectionString<T> connectionString,
-    IRepositoryHelper helper) 
-    : DbContext, IRepositoryContext
+    IRepositoryHelper helper)
+    : DbContext, IRepositoryDbContext
     where T : RepositoryDbContext<T>
 {
     /// <summary>
@@ -53,15 +53,20 @@ public abstract class RepositoryDbContext<T>(
     {
         modelBuilder.UseCollation("utf8mb4_zh_0900_as_cs").HasCharSet("utf8mb4");
 
-        var changeDataCaptureBuilder = modelBuilder.Entity<ChangeDataCapture>();
-        changeDataCaptureBuilder.HasKey(Id, "Month");
-        changeDataCaptureBuilder.Property<EntityId>(Id);
-        changeDataCaptureBuilder.Property<string>("Month");
+        if (helper.IsContainsChangeDataCapture())
+        {
+            var changeDataCaptureBuilder = modelBuilder.Entity<ChangeDataCapture>();
+            changeDataCaptureBuilder.Property<EntityId>(Id);
+            changeDataCaptureBuilder.Property<string>(ChangeDataCaptureExtensions.MonthName);
+            changeDataCaptureBuilder.Property(nameof(ChangeDataCapture.ChangeData))
+                .HasColumnType("json");
+            changeDataCaptureBuilder.HasKey(Id, ChangeDataCaptureExtensions.MonthName);
+        }
 
         var assembly = typeof(T).Assembly;
         modelBuilder.ApplyConfigurationsFromAssembly(assembly);
         var entityTypes = from type in GetDomainAssembly().ExportedTypes
-            where type.IsClass && !type.IsAbstract && type.IsAssignableTo(typeof(IEntity))
+            where type.IsClass && !type.IsAbstract && type.IsAssignableTo(typeof(Entity))
             select type;
         foreach (var entityType in entityTypes)
         {
@@ -74,20 +79,19 @@ public abstract class RepositoryDbContext<T>(
         }
     }
 
-    private void ApplyEntityModel<TEntity>(ModelBuilder modelBuilder) where TEntity : class, IEntity
+    private void ApplyEntityModel<TEntity>(ModelBuilder modelBuilder) where TEntity : Entity
     {
         var builder = modelBuilder.Entity<TEntity>();
 
-        builder.Property<EntityId>(Id)
-            .ValueGeneratedNever();
-
+        
+        builder.HasQueryFilter(e =>
+            !EF.Property<bool>(e, IsDelete) &&
+            (helper.IsSystemTenant() ||    
+             helper.GetTenant() == EF.Property<string>(e, Tenant)));
+        
+        builder.Property<EntityId>(Id).ValueGeneratedNever();
         builder.Property<string>(Tenant);
-
         builder.Property<byte[]>(ConcurrencyToken).IsConcurrencyToken();
-
-        builder.HasQueryFilter(e => helper.IsFilterTenant() ||
-                                    helper.GetTenant() == EF.Property<string>(e, Tenant));
-
         builder.Property<string>(CreateUser);
         builder.Property<string>(UpdateUser);
         builder.Property<string>(DeleteUser);
@@ -97,5 +101,17 @@ public abstract class RepositoryDbContext<T>(
         builder.Property<bool>(IsDelete);
 
         builder.HasKey(Id);
+    }
+
+    /// <summary>
+    /// Get domain events
+    /// </summary>
+    /// <param name="dbContext"></param>
+    /// <returns></returns>
+    public List<IDomainEvent> GetDomainEvents(DbContext dbContext)
+    {
+        var entries = dbContext.ChangeTracker.Entries<Entity>();
+        var domainEvents = entries.SelectMany(e => e.Entity.GetDomainEvents());
+        return domainEvents.ToList();
     }
 }

@@ -27,4 +27,10 @@ public class LStringResolver(
         dict.Value.TryGetValue(key, out var v);
         return v ?? string.Empty;
     }
+
+    /// <summary>
+    /// Resolve localization string
+    /// </summary>
+    /// <param name="lString"></param>
+    public string this[LString lString] => this.Resolve(lString);
 }

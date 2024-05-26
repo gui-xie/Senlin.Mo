@@ -54,5 +54,10 @@ public static class EntityShadowPropertyNames
     /// is deleted
     /// </summary>
     public const string IsDelete = "IsDelete";
+    
+    /// <summary>
+    /// unique token
+    /// </summary>
+    public const string UniqueToken  = "UniqueToken";
 }
 

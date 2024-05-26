@@ -5,7 +5,7 @@
 /// </summary>
 /// <param name="value"></param>
 /// <typeparam name="T"></typeparam>
-public class ConnectionString<T>(string value) where T : class, IRepositoryContext
+public class ConnectionString<T>(string value) where T : class, IRepositoryDbContext
 {
     private readonly string _value = value;
 

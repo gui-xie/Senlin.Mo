@@ -6,10 +6,30 @@
         <Nullable>enable</Nullable>
         <LangVersion>12</LangVersion>
         <RootNamespace>Senlin.Mo.Repository.Abstractions</RootNamespace>
-        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>  
+        <LangVersion>12</LangVersion>
+        <PublishRepositoryUrl>true</PublishRepositoryUrl>
+        <PackageProjectUrl>https://github.com/gui-xie/Senlin.Mo</PackageProjectUrl>
+        <PackageId>Senlin.Mo.Repository.Abstractions</PackageId>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <PackageDescription>Modular monolith repository abstractions</PackageDescription>
+        <PackageTags>Modular monolith repository abstractions</PackageTags>
+        <Version>1.0.2</Version>
+        <Authors>Senlin</Authors>
+        <Title>Senlin.Mo.Repository.Abstractions</Title>
+        <Description>(experiment)Modular monolith repository abstractions</Description>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     </PropertyGroup>
 
     <ItemGroup>
       <ProjectReference Include="..\Senlin.Mo.Application.Abstractions\Senlin.Mo.Application.Abstractions.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Update="README.md">
+        <Pack>true</Pack>
+        <PackagePath>\</PackagePath>
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
     </ItemGroup>
 </Project>

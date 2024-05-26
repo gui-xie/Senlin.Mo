@@ -7,9 +7,30 @@
         <LangVersion>12</LangVersion>
         <RootNamespace>Senlin.Mo.Application.Abstractions</RootNamespace>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        <LangVersion>12</LangVersion>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <PublishRepositoryUrl>true</PublishRepositoryUrl>
+        <PackageProjectUrl>https://github.com/gui-xie/Senlin.Mo</PackageProjectUrl>
+        <PackageId>Senlin.Mo.Application.Abstractions</PackageId>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <PackageDescription>Modular monolith application abstraction</PackageDescription>
+        <PackageTags>Mo Modular monolith application abstraction</PackageTags>
+        <Version>1.0.2</Version>
+        <Authors>Senlin</Authors>
+        <Title>Senlin.Mo.Application.Abstractions</Title>
+        <Description>(experiment)Modular monolith application abstraction</Description>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     </PropertyGroup>
 
     <ItemGroup>
       <ProjectReference Include="..\Senlin.Mo.Domain\Senlin.Mo.Domain.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Update="README.md">
+        <Pack>true</Pack>
+        <PackagePath>\</PackagePath>
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
     </ItemGroup>
 </Project>

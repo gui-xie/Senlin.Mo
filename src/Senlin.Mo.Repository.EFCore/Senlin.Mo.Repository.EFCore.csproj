@@ -5,8 +5,20 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <LangVersion>12</LangVersion>
-        <RootNamespace>Senlin.Mo.Repository.EFCore</RootNamespace>
+        <RootNamespace>Senlin.Mo.Repository.EFCore</RootNamespace>       
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        <LangVersion>12</LangVersion>
+        <PublishRepositoryUrl>true</PublishRepositoryUrl>
+        <PackageProjectUrl>https://github.com/gui-xie/Senlin.Mo</PackageProjectUrl>
+        <PackageId>Senlin.Mo.Repository.EFCore</PackageId>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <PackageDescription>Modular monolith repository EFCore</PackageDescription>
+        <PackageTags>Modular monolith repository EFCore EntityFrameworkCore</PackageTags>
+        <Version>1.0.2</Version>
+        <Authors>Senlin</Authors>
+        <Title>Senlin.Mo.Repository.EFCore</Title>
+        <Description>(experiment)Modular monolith repository EFCore</Description>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     </PropertyGroup>
 
     <ItemGroup>
@@ -17,6 +29,14 @@
         <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="8.0.5"/>
         <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="8.0.2" />
         <PackageReference Include="Pomelo.EntityFrameworkCore.MySql.Json.Microsoft" Version="8.0.2" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Update="README.md">
+        <Pack>true</Pack>
+        <PackagePath>\</PackagePath>
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
     </ItemGroup>
 
 </Project>

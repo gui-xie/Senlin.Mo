@@ -47,6 +47,33 @@ public class LGenerator : IIncrementalGenerator
         });
     }
 
+    private static string GetNamespace(BaseTypeDeclarationSyntax syntax)
+    {
+        var nameSpace = string.Empty;
+        var syntaxParent = syntax.Parent;
+        while (syntaxParent != null &&
+               syntaxParent is not NamespaceDeclarationSyntax
+               && syntaxParent is not FileScopedNamespaceDeclarationSyntax)
+        {
+            syntaxParent = syntaxParent.Parent;
+        }
+
+        if (syntaxParent is not BaseNamespaceDeclarationSyntax namespaceParent) return nameSpace;
+        nameSpace = namespaceParent.Name.ToString();
+        while (true)
+        {
+            if (namespaceParent.Parent is not NamespaceDeclarationSyntax parent)
+            {
+                break;
+            }
+
+            nameSpace = $"{namespaceParent.Name}.{nameSpace}";
+            namespaceParent = parent;
+        }
+
+        return nameSpace;
+    }
+    
     private static void AddEnumAttributeSource(IncrementalGeneratorInitializationContext context)
     {
         var attributeProviders = context
@@ -62,15 +89,28 @@ public class LGenerator : IIncrementalGenerator
             var enumFields = enumDeclaration.Members;
             if (enumFields.Count == 0) return;
             var assemblyName = a.SemanticModel.Compilation.AssemblyName;
+            var enumNamespace = GetNamespace(enumDeclaration);
             var enumParameterName = enumName[0].ToString().ToLower() + enumName.Substring(1);
             var className = $"{enumName}Extensions";
             var source = new StringBuilder();
             source.AppendLine("#nullable enable");
             source.AppendLine("using Senlin.Mo.Localization.Abstractions;");
+            if (!string.IsNullOrWhiteSpace(enumNamespace) && enumName != assemblyName)
+            {
+                source.AppendLine($"using {enumNamespace};");
+            }
+            source.AppendLine();
             source.AppendLine($"namespace {assemblyName}");
             source.AppendLine("{");
+            source.AppendLine("    /// <summary>");
+            source.AppendLine($"    /// {enumName} localization string extensions");
+            source.AppendLine("    /// </summary>");
+            source.AppendLine($"    [System.CodeDom.Compiler.GeneratedCodeAttribute(\"{ExecutingAssembly.Name}\", \"{ExecutingAssembly.Version}\")]");
             source.AppendLine($"    public static partial class {className}");
             source.AppendLine("    {");
+            source.AppendLine("        /// <summary>");
+            source.AppendLine($"        /// Convert {enumName} to localization string");
+            source.AppendLine("        /// </summary>");
             source.AppendLine($"        public static LString ToLString(this {enumName} {enumParameterName})");
             source.AppendLine("        {");
             source.AppendLine($"            return {enumParameterName} switch");
@@ -92,7 +132,6 @@ public class LGenerator : IIncrementalGenerator
                         }
                     }
                 }
-                    
                 source.AppendLine(
                     $"                {enumName}.{enumField.Identifier.Text} => L.{lKeyProperty},");
             }
@@ -130,33 +169,47 @@ public class LGenerator : IIncrementalGenerator
         string assemblyName,
         List<LStringInfo> infos)
     {
-        var lrSource = new StringBuilder();
-        lrSource.AppendLine("#nullable enable");
-        lrSource.AppendLine("using Senlin.Mo.Localization.Abstractions;");
-        lrSource.AppendLine($"namespace {assemblyName}");
-        lrSource.AppendLine("{");
-        lrSource.AppendLine("    public abstract class LResource: ILResource");
-        lrSource.AppendLine("    {");
-        lrSource.AppendLine("        public abstract string Culture { get; }");
+        var source = new StringBuilder();
+        source.AppendLine("#nullable enable");
+        source.AppendLine("using Senlin.Mo.Localization.Abstractions;");
+        source.AppendLine($"namespace {assemblyName}");
+        source.AppendLine("{");
+        source.AppendLine("    /// <summary>");
+        source.AppendLine("    /// Localization resource base class");
+        source.AppendLine("    /// </summary>");
+        source.AppendLine("    public abstract class LResource: ILResource");
+        source.AppendLine("    {");
+        source.AppendLine();
+        source.AppendLine("        /// <summary>");
+        source.AppendLine("        /// Culture");
+        source.AppendLine("        /// </summary>");
+        source.AppendLine("        public abstract string Culture { get; }");
         foreach (var info in infos)
         {
-            lrSource.AppendLine();
-            lrSource.AppendLine($"        protected abstract string {info.KeyProperty} {{ get; }}");
+            source.AppendLine();
+            source.AppendLine("        /// <summary>");
+            source.AppendLine($"        /// {info.DefaultValue}");
+            source.AppendLine("        /// </summary>");
+            source.AppendLine($"        protected abstract string {info.KeyProperty} {{ get; }}");
         }
 
-        lrSource.AppendLine();
-        lrSource.AppendLine("        public Dictionary<string, string> GetResource() => new()");
-        lrSource.AppendLine("        {");
+        source.AppendLine();
+        source.AppendLine();
+        source.AppendLine("        /// <summary>");
+        source.AppendLine("        /// Get localization resource");
+        source.AppendLine("        /// </summary>");
+        source.AppendLine("        public Dictionary<string, string> GetResource() => new()");
+        source.AppendLine("        {");
         foreach (var info in infos)
         {
-            lrSource.AppendLine($"            {{ \"{info.Key}\", {info.KeyProperty} }},");
+            source.AppendLine($"            {{ \"{info.Key}\", {info.KeyProperty} }},");
         }
 
-        lrSource.AppendLine("        };");
-        lrSource.AppendLine("    }");
-        lrSource.AppendLine("}");
-        lrSource.Append("#nullable restore");
-        ctx.AddSource("LResource.g.cs", lrSource.ToString());
+        source.AppendLine("        };");
+        source.AppendLine("    }");
+        source.AppendLine("}");
+        source.Append("#nullable restore");
+        ctx.AddSource("LResource.g.cs", source.ToString());
     }
 
     private static void CreateLSource(
@@ -169,6 +222,9 @@ public class LGenerator : IIncrementalGenerator
         lResource.AppendLine("using Senlin.Mo.Localization.Abstractions;");
         lResource.AppendLine($"namespace {assemblyName}");
         lResource.AppendLine("{");
+        lResource.AppendLine("    /// <summary>");
+        lResource.AppendLine("    /// Auto generated localization string");
+        lResource.AppendLine("    /// </summary>");
         lResource.AppendLine(
             $"    [System.CodeDom.Compiler.GeneratedCodeAttribute(\"{ExecutingAssembly.Name}\", \"{ExecutingAssembly.Version}\")]");
         lResource.AppendLine("    public static partial class L");

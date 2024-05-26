@@ -13,7 +13,7 @@ public class Result
     /// <summary>
     /// Result Type
     /// </summary>
-    public ResultType Type { get; private set; }
+    public ResultStatus Status { get; private set; }
 
     /// <summary>
     /// Error Message
@@ -33,7 +33,7 @@ public class Result
     public static Result Success(object? data = null) =>
         new()
         {
-            Type = ResultType.Success,
+            Status = ResultStatus.Success,
             Data = data
         };
     
@@ -45,7 +45,7 @@ public class Result
     public static Result Fail(string message) =>
         new()
         {
-            Type = ResultType.Fail,
+            Status = ResultStatus.Fail,
             Message = message
         };
 
@@ -54,7 +54,7 @@ public class Result
     /// </summary>
     /// <param name="result"></param>
     /// <returns></returns>
-    public static implicit operator bool(Result result) => result.Type == ResultType.Success;
+    public static implicit operator bool(Result result) => result.Status == ResultStatus.Success;
 
     /// <summary>
     /// Convert to Task

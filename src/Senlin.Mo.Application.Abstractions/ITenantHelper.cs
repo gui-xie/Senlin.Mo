@@ -13,5 +13,5 @@ public interface ITenantHelper
     /// <summary>
     /// Is filter tenant
     /// </summary>
-    bool IsFilterTenant();
+    bool IsSystemTenant();
 }

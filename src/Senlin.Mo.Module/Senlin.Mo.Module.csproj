@@ -1,10 +1,35 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <OutputType>Exe</OutputType>
         <TargetFramework>net8.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        <LangVersion>12</LangVersion>
+        <PublishRepositoryUrl>true</PublishRepositoryUrl>
+        <PackageProjectUrl>https://github.com/gui-xie/Senlin.Mo</PackageProjectUrl>
+        <PackageId>Senlin.Mo.Module</PackageId>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <PackageDescription>Modular monolith module</PackageDescription>
+        <PackageTags>Mo Modular monolith module</PackageTags>
+        <Version>1.0.2</Version>
+        <Authors>Senlin</Authors>
+        <Title>Senlin.Mo.Moduleo</Title>
+        <Description>(experiment)Modular monolith module</Description>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Senlin.Mo.Application.Abstractions\Senlin.Mo.Application.Abstractions.csproj" />
+      <ProjectReference Include="..\Senlin.Mo.Repository.EFCore\Senlin.Mo.Repository.EFCore.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Update="README.md">
+        <Pack>true</Pack>
+        <PackagePath>\</PackagePath>
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+    </ItemGroup>
 
 </Project>

@@ -6,6 +6,5 @@
         <Nullable>enable</Nullable>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
         <LangVersion>12</LangVersion>
-        <AssemblyVersion>1.0.1</AssemblyVersion>
     </PropertyGroup>
 </Project>

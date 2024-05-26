@@ -32,12 +32,15 @@ public class ChangeDataCapture
     /// </summary>
     public EntityDateTime ChangeTime { get; private set; }
 
+    /// <summary>
+    /// Change Type
+    /// </summary>
     public ChangeDataCaptureType Type { get; private set; }
     
     /// <summary>
-    /// Change Content(json)
+    /// Change Data
     /// </summary>
-    public string ChangeContent { get; private set; } = string.Empty;
+    public string ChangeData { get; private set; } = string.Empty;
 
     /// <summary>
     /// Create Change Data Capture
@@ -63,6 +66,6 @@ public class ChangeDataCapture
         ChangeUser = changeUser,
         ChangeTime = changeTime,
         Type = type,
-        ChangeContent = changeContent
+        ChangeData = changeContent
     };
 }
