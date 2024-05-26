@@ -33,13 +33,51 @@ public abstract class Repository<T>(
             cancellationToken);
 
     /// <summary>
-    /// Is entity exists
+    /// Delete entity
     /// </summary>
     /// <param name="entity"></param>
     /// <param name="cancellationToken"></param>
-    /// <returns></returns>
-    private Task<bool> IsExistsAsync(IUnique<T> entity, CancellationToken cancellationToken = default) =>
-        EntitySet.AnyAsync(entity.IsRepeatExpression, cancellationToken);
+    protected void DeleteEntity(
+        T entity,
+        CancellationToken cancellationToken = default)
+    {
+        var entry = EntitySet.Entry(entity);
+        var user = helper.GetUserId();
+        var now = helper.GetNow();
+        entry.Property(DeleteUser).CurrentValue = user;
+        entry.Property(DeleteTime).CurrentValue = now;
+        entry.Property(IsDelete).CurrentValue = true;
+        entry.Property(ConcurrencyToken).CurrentValue = helper.NewConcurrencyToken();
+        dbContext.Update(entity);
+
+        if (!helper.IsContainsChangeDataCapture()) return;
+        
+        var cdc = CreateCdc(entry.Property<EntityId>(Id).CurrentValue, user, now, ChangeDataCaptureType.Delete, entity);
+        dbContext.Add(cdc);
+    }
+    
+    /// <summary>
+    /// Update entity
+    /// </summary>
+    /// <param name="entity"></param>
+    /// <param name="cancellationToken"></param>
+    protected void UpdateEntity(
+        T entity,
+        CancellationToken cancellationToken = default)
+    {
+        var entry = EntitySet.Entry(entity);
+        var user = helper.GetUserId();
+        var now = helper.GetNow();
+        entry.Property(UpdateUser).CurrentValue = user;
+        entry.Property(UpdateTime).CurrentValue = now;
+        entry.Property(ConcurrencyToken).CurrentValue = helper.NewConcurrencyToken();
+        dbContext.Update(entity);
+
+        if (!helper.IsContainsChangeDataCapture()) return;
+        
+        var cdc = CreateCdc(entry.Property<EntityId>(Id).CurrentValue, user, now, ChangeDataCaptureType.Update, entity);
+        dbContext.Add(cdc);
+    }
 
     /// <summary>
     /// Add entity
@@ -51,6 +89,7 @@ public abstract class Repository<T>(
         CancellationToken cancellationToken = default)
     {
         var entry = EntitySet.Entry(entity);
+        // ReSharper disable once SuspiciousTypeConversion.Global, will be used in other project
         if (entity is IUnique<T> uniqueEntity 
             && await EntitySet.AnyAsync(
                 uniqueEntity.IsRepeatExpression,
@@ -76,24 +115,27 @@ public abstract class Repository<T>(
         if (!helper.IsContainsChangeDataCapture()) return Ok();
         
         var cdc = CreateCdc(id, user, now, ChangeDataCaptureType.Add, entity);
-        var cdcEntry = dbContext.Entry(cdc);
-        cdcEntry.Property(ChangeDataCaptureExtensions.MonthName).CurrentValue = ((DateTime)now).ToString("yyMM");
         dbContext.Add(cdc);
         return Ok();
     }
 
-    private static ChangeDataCapture CreateCdc<TEntity>(
+    private ChangeDataCapture CreateCdc<TEntity>(
         EntityId entityId,
         string user,
         EntityDateTime now,
         ChangeDataCaptureType type,
         TEntity entity
-    ) =>
-        ChangeDataCapture.Create(
+    )
+    {
+        var cdc = ChangeDataCapture.Create(
             entityId,
             typeof(T).Name,
             user,
             now,
             type,
             JsonSerializer.Serialize(entity, ChangeDataCaptureExtensions.SerializerOptions));
+        var cdcEntry = dbContext.Entry(cdc);
+        cdcEntry.Property(ChangeDataCaptureExtensions.MonthName).CurrentValue = ((DateTime)now).ToString("yyMM");
+        return cdc;
+    }
 }

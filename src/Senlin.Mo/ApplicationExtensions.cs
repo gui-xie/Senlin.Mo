@@ -15,30 +15,6 @@ using Senlin.Mo.Repository.Abstractions;
 
 namespace Senlin.Mo;
 
-public class ApplicationConfigureOptions
-{
-    /// <summary>
-    /// GetTenant function
-    /// </summary>
-    public Func<IServiceProvider, GetTenant>? GetTenant { get; set; }
-
-    /// <summary>
-    /// GetUserId function
-    /// </summary>
-    public Func<IServiceProvider, GetUserId>? GetUserId { get; set; }
-
-
-    /// <summary>
-    /// Get culture function
-    /// </summary>
-    public Func<IServiceProvider, GetCulture>? GetCulture { get; set; }
-
-    /// <summary>
-    /// Modules
-    /// </summary>
-    public IModule[]? Modules { get; set; }
-}
-
 /// <summary>
 /// Mo Application Extensions
 /// </summary>

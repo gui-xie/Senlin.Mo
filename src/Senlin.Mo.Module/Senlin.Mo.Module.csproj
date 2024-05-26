@@ -19,6 +19,11 @@
         <Description>(experiment)Modular monolith module</Description>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <PackageReadmeFile>README.md</PackageReadmeFile>
+        <PackageReleaseNotes>(experiment) Modular monolith library</PackageReleaseNotes>
+        <Copyright>Copyright (c) Senlin 2024</Copyright>
+        <RepositoryUrl>https://github.com/gui-xie/Senlin.Mo</RepositoryUrl>
+        <RepositoryType>git</RepositoryType>
+        <PackageLicenseUrl>https://github.com/gui-xie/Senlin.Mo/blob/master/license.txt</PackageLicenseUrl>
     </PropertyGroup>
 
     <ItemGroup>
