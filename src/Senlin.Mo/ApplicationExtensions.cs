@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Senlin.Mo.Application.Abstractions;
 using Senlin.Mo.Domain;
@@ -51,7 +52,6 @@ public static class ApplicationExtensions
     /// <param name="services"></param>
     /// <param name="configureOptions"></param>
     /// <param name="configuration"></param>
-    /// <param name="modules"></param>
     /// <returns></returns>
     public static IServiceCollection ConfigureMo(
         this IServiceCollection services,
@@ -62,10 +62,8 @@ public static class ApplicationExtensions
         configureOptions(builder);
         var modules = builder.Modules ?? [];
         services
-#if DEBUG
             .AddSwaggerGen()
             .AddEndpointsApiExplorer()
-#endif
             .AddLocalization()
             .AddSingleton<GetNow>(() => (EntityDateTime)DateTime.UtcNow)
             .AddScoped<GetTenant>(sp =>
@@ -220,10 +218,11 @@ public static class ApplicationExtensions
         this WebApplication app,
         Action<IApplicationBuilder>? exceptionHandlerBuilder = null)
     {
-#if DEBUG
-        app.UseSwagger();
-        app.UseSwaggerUI();
-#endif
+        if (app.Environment.IsDevelopment())
+        {
+            app.UseSwagger();
+            app.UseSwaggerUI();
+        }
 
         app.UseExceptionHandler(exceptionHandlerBuilder ?? ConfigureExceptionHandler);
     }

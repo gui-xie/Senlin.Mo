@@ -15,6 +15,7 @@
         <PackageDescription>Modular monolith repository EFCore</PackageDescription>
         <PackageTags>Modular monolith repository EFCore EntityFrameworkCore</PackageTags>
         <Version>1.0.2</Version>
+        <AssemblyVersion>1.0.2</AssemblyVersion>
         <Authors>Senlin</Authors>
         <Title>Senlin.Mo.Repository.EFCore</Title>
         <Description>(experiment)Modular monolith repository EFCore</Description>

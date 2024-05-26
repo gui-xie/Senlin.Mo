@@ -12,6 +12,7 @@
         <PackageDescription>Modular monolith</PackageDescription>
         <PackageTags>Mo Modular monolith</PackageTags>
         <Version>1.0.2</Version>
+        <AssemblyVersion>1.0.2</AssemblyVersion>
         <Authors>Senlin</Authors>
         <Title>Senlin.Mo</Title>
         <Description>(experiment)Modular monolith</Description>

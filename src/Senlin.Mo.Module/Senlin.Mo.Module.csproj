@@ -13,10 +13,12 @@
         <PackageDescription>Modular monolith module</PackageDescription>
         <PackageTags>Mo Modular monolith module</PackageTags>
         <Version>1.0.2</Version>
+        <AssemblyVersion>1.0.2</AssemblyVersion>
         <Authors>Senlin</Authors>
-        <Title>Senlin.Mo.Moduleo</Title>
+        <Title>Senlin.Mo.Module</Title>
         <Description>(experiment)Modular monolith module</Description>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
     </PropertyGroup>
 
     <ItemGroup>

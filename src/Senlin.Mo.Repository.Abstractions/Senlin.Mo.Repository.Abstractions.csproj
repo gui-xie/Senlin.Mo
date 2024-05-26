@@ -15,6 +15,7 @@
         <PackageDescription>Modular monolith repository abstractions</PackageDescription>
         <PackageTags>Modular monolith repository abstractions</PackageTags>
         <Version>1.0.2</Version>
+        <AssemblyVersion>1.0.2</AssemblyVersion>
         <Authors>Senlin</Authors>
         <Title>Senlin.Mo.Repository.Abstractions</Title>
         <Description>(experiment)Modular monolith repository abstractions</Description>
