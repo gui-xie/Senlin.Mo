@@ -1,21 +1,17 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Senlin.Mo.Application.Abstractions;
-
-namespace Senlin.Mo.Module;
+﻿namespace Senlin.Mo.Application.Abstractions;
 
 /// <summary>
 /// Unit Of Work
 /// </summary>
 /// <param name="service"></param>
-/// <param name="dbContext"></param>
+/// <param name="unifOfWorkHandler"></param>
 /// <typeparam name="TRequest"></typeparam>
 /// <typeparam name="TResponse"></typeparam>
 /// <typeparam name="TDbContext"></typeparam>
-public class UnitOfWorkService<TRequest, TResponse, TDbContext>(
+public class UnitOfWorkDecorator<TRequest, TResponse, TDbContext>(
     IService<TRequest, TResponse> service,
-    TDbContext dbContext)
+    IUnitOfWorkHandler unifOfWorkHandler)
     : IService<TRequest, TResponse>
-    where TDbContext : DbContext
 {
     /// <summary>
     /// Service ExecuteAsync
@@ -26,7 +22,12 @@ public class UnitOfWorkService<TRequest, TResponse, TDbContext>(
     public async Task<TResponse> ExecuteAsync(TRequest request, CancellationToken cancellationToken)
     {
         var response = await service.ExecuteAsync(request, cancellationToken);
-        await dbContext.SaveChangesAsync(cancellationToken);
+        await unifOfWorkHandler.SaveChangesAsync(cancellationToken);
         return response;
     }
+}
+
+public interface IUnitOfWorkHandler
+{
+    Task SaveChangesAsync(CancellationToken cancellationToken);
 }

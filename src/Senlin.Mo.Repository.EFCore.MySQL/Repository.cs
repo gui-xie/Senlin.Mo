@@ -90,12 +90,13 @@ public abstract class Repository<T>(
     {
         var entry = EntitySet.Entry(entity);
         // ReSharper disable once SuspiciousTypeConversion.Global, will be used in other project
-        if (entity is IUnique<T> uniqueEntity 
-            && await EntitySet.AnyAsync(
-                uniqueEntity.IsRepeatExpression,
-                cancellationToken))
+        if (entity is IUnique<T> uniqueEntity)
         {
-            return Repeat();
+            var expression = uniqueEntity.GetIsRepeat();
+            if (await EntitySet.AnyAsync(expression, cancellationToken))
+            {
+                return Repeat();
+            }
         }
         var id = helper.NewId();
         var user = helper.GetUserId();

@@ -40,5 +40,5 @@ public interface IUnique<T> where T: class
      /// <summary>
      ///  used for unique judgment
      /// </summary>
-     Expression<Func<T, bool>> IsRepeatExpression { get; }
+     Func<Expression<Func<T, bool>>> GetIsRepeat { get; }
 }

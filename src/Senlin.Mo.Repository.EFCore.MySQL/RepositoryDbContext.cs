@@ -1,5 +1,6 @@
 ﻿using System.Reflection;
 using Microsoft.EntityFrameworkCore;
+using Senlin.Mo.Application.Abstractions;
 using Senlin.Mo.Domain;
 using Senlin.Mo.Repository.Abstractions;
 using static Senlin.Mo.Repository.EFCore.EntityShadowPropertyNames;
@@ -16,7 +17,7 @@ public abstract class RepositoryDbContext<T>(
     ConnectionString<T> connectionString,
     IRepositoryHelper helper)
     : DbContext, IRepositoryDbContext
-    where T : RepositoryDbContext<T>
+    where T : RepositoryDbContext<T>, IUnitOfWorkHandler
 {
     /// <summary>
     /// Configure

@@ -1,8 +1,7 @@
 ﻿using System.Diagnostics;
 using Microsoft.Extensions.Logging;
-using Senlin.Mo.Application.Abstractions;
 
-namespace Senlin.Mo.Module;
+namespace Senlin.Mo.Application.Abstractions;
 
 /// <summary>
 /// Log Service
@@ -12,9 +11,9 @@ namespace Senlin.Mo.Module;
 /// <param name="getUserId"></param>
 /// <typeparam name="TRequest"></typeparam>
 /// <typeparam name="TResponse"></typeparam>
-public class LogService<TRequest, TResponse>(
+public class LogDecorator<TRequest, TResponse>(
     IService<TRequest, TResponse> service,
-    ILogger<TRequest> logger,
+    ILogger logger,
     GetUserId getUserId): IService<TRequest, TResponse>
 {
     /// <summary>

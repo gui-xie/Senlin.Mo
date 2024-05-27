@@ -111,7 +111,7 @@ public static class ApplicationExtensions
                 foreach (var decorator in serviceRegistration.Decorators)
                 {
                     Type decoratorType;
-                    if (decorator == typeof(UnitOfWorkService<,,>))
+                    if (decorator == typeof(UnitOfWorkDecorator<,,>))
                     {
                         var unitOfWorkGenericTypeArguments = serviceGenericType
                             .Concat([module.DbContextType])
@@ -127,7 +127,7 @@ public static class ApplicationExtensions
                     if (decorator.GetGenericArguments().Length != 2) continue;
                     decoratorType = decorator.MakeGenericType(serviceGenericType);
                     var args = new List<object> { s };
-                    if (decorator == typeof(LogService<,>))
+                    if (decorator == typeof(LogDecorator<,>))
                     {
                         args.Add(sp.GetRequiredService(typeof(ILogger<>).MakeGenericType(serviceGenericType[0])));
                         args.Add(sp.GetRequiredService<GetUserId>());
