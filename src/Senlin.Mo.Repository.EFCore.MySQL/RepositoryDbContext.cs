@@ -16,7 +16,7 @@ namespace Senlin.Mo.Repository.EFCore.MySQL;
 public abstract class RepositoryDbContext<T>(
     ConnectionString<T> connectionString,
     IRepositoryHelper helper)
-    : DbContext, IRepositoryDbContext
+    : DbContext, IRepositoryDbContext, IUnitOfWorkHandler
     where T : RepositoryDbContext<T>, IUnitOfWorkHandler
 {
     /// <summary>
@@ -115,4 +115,7 @@ public abstract class RepositoryDbContext<T>(
         var domainEvents = entries.SelectMany(e => e.Entity.GetDomainEvents());
         return domainEvents.ToList();
     }
+
+    public new Task SaveChangesAsync(CancellationToken cancellationToken) 
+        => base.SaveChangesAsync(cancellationToken);
 }

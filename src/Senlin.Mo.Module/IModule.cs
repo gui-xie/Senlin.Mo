@@ -28,9 +28,4 @@ public interface IModule
     /// Get DbContext Type
     /// </summary>
     Type DbContextType { get; }
-
-    /// <summary>
-    /// Get Localization Resource Resolver Types
-    /// </summary>
-    Type LStringResolverType { get; }
 }

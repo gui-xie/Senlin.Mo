@@ -72,12 +72,20 @@ public static class ApplicationExtensions
         return services;
     }
 
+    private class LStringResolver<T>(
+        GetCulture getCulture,
+        GetCultureResource getCultureResource,
+        bool isCultureWillChanged = true) 
+        : LStringResolver(getCulture, getCultureResource, isCultureWillChanged)
+    {
+        
+    }
+        
     private static void AddModule(
         this IServiceCollection services,
         IModule module,
         IConfiguration? configuration)
     {
-        var lResourceType = module.LStringResolverType;
         var moduleConfigNamePrefix = $"Mo:Modules:{module.Name}:";
         var localizationPathConfigName = $"{moduleConfigNamePrefix}LocalizationPath";
         var connectionStringConfigName = $"{moduleConfigNamePrefix}ConnectionString";
@@ -89,10 +97,13 @@ public static class ApplicationExtensions
         }
         
         var getResource = GetJsonFileResourcesFn(localizationDirectory);
-        services.AddScoped(lResourceType, sp =>
+        services.AddScoped(typeof(LStringResolver<>).MakeGenericType(module.DbContextType), sp =>
         {
             var getCulture = sp.GetRequiredService<GetCulture>();
-            return Activator.CreateInstance(lResourceType, getCulture, getResource)!;
+            return Activator.CreateInstance(
+                typeof(LStringResolver), 
+                getCulture,
+                getResource)!;
         });
 
         var dbContextType = module.DbContextType;
@@ -106,7 +117,7 @@ public static class ApplicationExtensions
             services.AddTransient(serviceRegistration.ServiceType, sp =>
             {
                 var type = serviceRegistration.Implementation;
-                var s = sp.CreateInstance(type);
+                var s = sp.CreateModuleInstance(type, module);
                 var serviceGenericType = serviceRegistration.ServiceType.GetGenericArguments();
                 foreach (var decorator in serviceRegistration.Decorators)
                 {
@@ -148,13 +159,20 @@ public static class ApplicationExtensions
         }
     }
 
-    private static object CreateInstance(this IServiceProvider sp, Type type)
+    private static object CreateModuleInstance(
+        this IServiceProvider sp,
+        Type type, 
+        IModule module)
     {
         var constructor = type.GetConstructors().First();
         var parameters = constructor.GetParameters();
         var args = parameters.Select(p =>
         {
             var argType = p.ParameterType;
+            if (argType == typeof(LStringResolver))
+            {
+                return sp.GetRequiredService(typeof(LStringResolver<>).MakeGenericType(module.DbContextType));
+            }
             sp.GetRequiredService(argType);
             return sp.GetRequiredService(argType);
         }).ToArray();
