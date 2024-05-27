@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 using Serilog.Events;
 
@@ -7,16 +6,11 @@ namespace Senlin.Mo;
 
 internal static class LogExtensions
 {
-    private const string LogPrefix = "Mo:Log:";
-
     public static IServiceCollection ConfigureLog(
         this IServiceCollection services,
-        IConfiguration configuration)
+        LogConfig config)
     {
-        var countLimit = configuration.GetValue<int>($"{LogPrefix}CountLimit");
-        var path = configuration.GetValue<string>($"{LogPrefix}Path")!;
-        var level = configuration.GetValue<string>($"{LogPrefix}Level");
-        if (!Enum.TryParse<LogEventLevel>(level, out var logLevel))
+        if (!Enum.TryParse<LogEventLevel>(config.Level, out var logLevel))
         {
             logLevel = LogEventLevel.Debug;
         }
@@ -29,8 +23,8 @@ internal static class LogExtensions
             .Enrich.FromLogContext()
             .WriteTo.Async(c =>
                 c.File(
-                    path,
-                    retainedFileCountLimit: countLimit,
+                    config.Path,
+                    retainedFileCountLimit: config.CountLimit,
                     rollingInterval: RollingInterval.Day,
                     restrictedToMinimumLevel: LogEventLevel.Information
                 )

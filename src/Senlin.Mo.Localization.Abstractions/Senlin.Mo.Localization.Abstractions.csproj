@@ -13,8 +13,8 @@
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageDescription>Provide multi-language support, use source generator and json configuration file to generate resource files.</PackageDescription>
         <PackageTags>Localization JSON Multi-Langugae SourceGenerator</PackageTags>
-        <Version>1.0.2</Version>
-        <AssemblyVersion>1.0.2</AssemblyVersion>
+        <Version>1.0.2-alpha</Version>
+        <AssemblyVersion>1.0.2.1</AssemblyVersion>
         <Authors>Senlin</Authors>
         <Title>Senlin.Mo.Localization.Abstractions</Title>
         <Description>(experiment)Provide multi-language support, use source generator and json configuration file to generate resource files.</Description>

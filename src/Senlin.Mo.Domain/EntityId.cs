@@ -28,14 +28,14 @@ public readonly struct EntityId : IEquatable<EntityId>
     {
         _id = id;
     }
-    
+
     /// <summary>
     /// Convert to string Implicitly
     /// </summary>
     /// <param name="id"></param>
     /// <returns></returns>
     public static implicit operator long(EntityId id) => id._id == EmptyEntityId ? 0 : id._id;
-    
+
     /// <summary>
     /// Convert to EntityId Implicitly
     /// </summary>
@@ -56,7 +56,7 @@ public readonly struct EntityId : IEquatable<EntityId>
     /// <param name="id"></param>
     /// <returns></returns>
     public static explicit operator EntityId(string? id) => new(id);
-    
+
     /// <summary>
     /// Is equal compare to another EntityId 
     /// </summary>
@@ -92,4 +92,10 @@ public readonly struct EntityId : IEquatable<EntityId>
     /// </summary>
     /// <returns></returns>
     public override int GetHashCode() => _id.GetHashCode();
+
+    /// <summary>
+    /// To string
+    /// </summary>
+    /// <returns></returns>
+    public override string ToString() => _id == 0 ? string.Empty : _id.ToString();
 }

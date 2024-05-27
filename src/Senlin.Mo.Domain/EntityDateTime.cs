@@ -1,4 +1,5 @@
-﻿
+﻿using System.Globalization;
+
 namespace Senlin.Mo.Domain;
 
 /// <summary>
@@ -23,11 +24,26 @@ public readonly struct EntityDateTime(DateTime? utcTime)
     /// <param name="d"></param>
     /// <returns></returns>
     public static implicit operator DateTime(EntityDateTime d) => d._time;
-    
+
     /// <summary>
     /// Convert to EntityDateTime Implicitly
     /// </summary>
     /// <param name="d"></param>
     /// <returns></returns>
     public static explicit operator EntityDateTime(DateTime d) => new(d);
+
+    /// <summary>
+    /// Convert to string Implicitly
+    /// </summary>
+    /// <returns></returns>
+    public override string ToString() =>
+        Time == EmptyDateTime
+            ? string.Empty
+            : Time.ToString(CultureInfo.InvariantCulture);
+
+    /// <summary>
+    /// Get 
+    /// </summary>
+    /// <returns></returns>
+    public override int GetHashCode() => Time.GetHashCode();
 }

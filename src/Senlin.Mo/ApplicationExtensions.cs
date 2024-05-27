@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Senlin.Mo.Application.Abstractions;
@@ -27,41 +28,44 @@ public static class ApplicationExtensions
     /// </summary>
     /// <param name="services"></param>
     /// <param name="configureOptions"></param>
-    /// <param name="configuration"></param>
     /// <returns></returns>
     public static IServiceCollection ConfigureMo(
         this IServiceCollection services,
-        Action<ApplicationConfigureOptions> configureOptions,
-        IConfiguration configuration)
+        Action<ApplicationConfigureOptions> configureOptions)
     {
         var builder = new ApplicationConfigureOptions();
         configureOptions(builder);
+        var configuration = builder.Configuration;
+        const string logPrefix = "Mo:Log:";
+        var countLimit = configuration?.GetValue<int>($"{logPrefix}CountLimit") ?? 14;
+        var path = configuration?.GetValue<string>($"{logPrefix}Path") ?? "logs";
+        var level = configuration?.GetValue<string>($"{logPrefix}Level") ?? "Debug";
+        var logConfig = new LogConfig(path, countLimit, level);
+        
         var modules = builder.Modules ?? [];
+        services.TryAddSingleton<GetNow>(() => (EntityDateTime)DateTime.UtcNow);
+        services.TryAddScoped<GetTenant>(sp => () => RepositoryHelper.SystemTenant);
+        services.TryAddScoped<GetUserId>(sp => () => RepositoryHelper.AdminUser);
+        services.TryAddScoped<GetCulture>(sp =>
+        {
+            var culture = LocalizationExtensions.GetCulture(sp.GetRequiredService<IHttpContextAccessor>());
+            return () => culture;
+        });
+        
         services
             .AddSwaggerGen()
             .AddEndpointsApiExplorer()
             .AddLocalization()
-            .AddSingleton<GetNow>(() => (EntityDateTime)DateTime.UtcNow)
-            .AddScoped<GetTenant>(sp =>
-                builder.GetTenant is not null ? builder.GetTenant(sp) : () => RepositoryHelper.SystemTenant)
-            .AddScoped<GetUserId>(sp =>
-                builder.GetUserId is not null ? builder.GetUserId(sp) : () => RepositoryHelper.AdminUser)
-            .AddScoped<GetCulture>(sp =>
-            {
-                if (builder.GetCulture != null) return builder.GetCulture(sp);
-                var culture = LocalizationExtensions.GetCulture(sp.GetRequiredService<IHttpContextAccessor>());
-                return () => culture;
-            })
             .AddSingleton<NewConcurrencyToken>(() => Guid.NewGuid().ToByteArray())
             .AddSingleton<IdGenerator>()
             .AddScoped<IRepositoryHelper, RepositoryHelper>()
-            .ConfigureLog(configuration)
+            .ConfigureLog(logConfig)
             .ConfigureLocalization()
             .AddHttpContextAccessor();
 
         foreach (var module in modules)
         {
-            services.AddModule(module, configuration);
+            services.AddModule(module, builder.Configuration);
         }
 
         _modules ??= modules;
@@ -71,14 +75,20 @@ public static class ApplicationExtensions
     private static void AddModule(
         this IServiceCollection services,
         IModule module,
-        IConfiguration configuration)
+        IConfiguration? configuration)
     {
         var lResourceType = module.LStringResolverType;
-
         var moduleConfigNamePrefix = $"Mo:Modules:{module.Name}:";
         var localizationPathConfigName = $"{moduleConfigNamePrefix}LocalizationPath";
         var connectionStringConfigName = $"{moduleConfigNamePrefix}ConnectionString";
-        var getResource = GetJsonFileResourcesFn(configuration[localizationPathConfigName]!);
+        var localizationDirectory = configuration?.GetValue<string>(localizationPathConfigName) ?? $"L/{module.Name}";
+        var connectionStringValue = configuration?[connectionStringConfigName];
+        if(connectionStringValue is null)
+        {
+            throw new ArgumentNullException($"Connection string for module {module.Name} is not found.");
+        }
+        
+        var getResource = GetJsonFileResourcesFn(localizationDirectory);
         services.AddScoped(lResourceType, sp =>
         {
             var getCulture = sp.GetRequiredService<GetCulture>();
@@ -87,9 +97,7 @@ public static class ApplicationExtensions
 
         var dbContextType = module.DbContextType;
         var connectionStringType = typeof(ConnectionString<>).MakeGenericType(dbContextType);
-        var connectionString = Activator.CreateInstance(
-            connectionStringType,
-            configuration[connectionStringConfigName])!;
+        var connectionString = Activator.CreateInstance(connectionStringType, connectionStringValue)!;
         services.AddSingleton(connectionStringType, connectionString);
         services.AddDbContext(module.DbContextType);
 

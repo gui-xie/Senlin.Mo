@@ -1,4 +1,6 @@
-﻿namespace Senlin.Mo.Application.Abstractions;
+﻿using Senlin.Mo.Domain;
+
+namespace Senlin.Mo.Application.Abstractions;
 
 /// <summary>
 /// Service interface
