@@ -92,7 +92,7 @@ public abstract class Repository<T>(
         // ReSharper disable once SuspiciousTypeConversion.Global, will be used in other project
         if (entity is IUnique<T> uniqueEntity)
         {
-            var expression = uniqueEntity.GetIsRepeat();
+            var expression = uniqueEntity.GetIsRepeatExpression();
             if (await EntitySet.AnyAsync(expression, cancellationToken))
             {
                 return Repeat();

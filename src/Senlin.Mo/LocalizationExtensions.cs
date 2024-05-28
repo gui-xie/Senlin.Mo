@@ -25,7 +25,6 @@ internal static class LocalizationExtensions
         return services;
     }
 
-    
     private static Task<ProviderCultureResult?> CustomProvider(HttpContext httpContext)
     {
         var request = httpContext.Request;

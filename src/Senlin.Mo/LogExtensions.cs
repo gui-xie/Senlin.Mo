@@ -8,9 +8,9 @@ internal static class LogExtensions
 {
     public static IServiceCollection ConfigureLog(
         this IServiceCollection services,
-        LogConfig config)
+        ApplicationLoggerOptions options)
     {
-        if (!Enum.TryParse<LogEventLevel>(config.Level, out var logLevel))
+        if (!Enum.TryParse<LogEventLevel>(options.Level, out var logLevel))
         {
             logLevel = LogEventLevel.Debug;
         }
@@ -23,8 +23,8 @@ internal static class LogExtensions
             .Enrich.FromLogContext()
             .WriteTo.Async(c =>
                 c.File(
-                    config.Path,
-                    retainedFileCountLimit: config.CountLimit,
+                    options.Path,
+                    retainedFileCountLimit: options.CountLimit,
                     rollingInterval: RollingInterval.Day,
                     restrictedToMinimumLevel: LogEventLevel.Information
                 )

@@ -11,8 +11,8 @@
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageDescription>Modular monolith</PackageDescription>
         <PackageTags>Mo Modular monolith</PackageTags>
-        <Version>1.0.4-alpha</Version>
-        <AssemblyVersion>1.0.4.0</AssemblyVersion>
+        <Version>1.0.5-alpha</Version>
+        <AssemblyVersion>1.0.5.0</AssemblyVersion>
         <Authors>Senlin</Authors>
         <Title>Senlin.Mo</Title>
         <Description>(experiment)Modular monolith</Description>
@@ -31,13 +31,11 @@
 
     <ItemGroup>
         <PackageReference Include="IdGen" Version="3.0.5"/>
-        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0"/>
         <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.1"/>
         <PackageReference Include="Serilog.Extensions.Hosting" Version="8.0.0"/>
         <PackageReference Include="Serilog.Sinks.Async" Version="1.5.0"/>
         <PackageReference Include="Serilog.Sinks.Console" Version="5.0.1"/>
         <PackageReference Include="Serilog.Sinks.File" Version="5.0.0"/>
-        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2"/>
         <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.2"/>
     </ItemGroup>
 

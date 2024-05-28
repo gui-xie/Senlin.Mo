@@ -35,10 +35,10 @@ public abstract class Entity
 ///  used for unique judgment
 /// </summary>
 /// <typeparam name="T"></typeparam>
-public interface IUnique<T> where T: class 
+public interface IUnique<T> where T: class
 {
-     /// <summary>
-     ///  used for unique judgment
-     /// </summary>
-     Func<Expression<Func<T, bool>>> GetIsRepeat { get; }
+    /// <summary>
+    ///  used for unique judgment
+    /// </summary>
+    Expression<Func<T, bool>> GetIsRepeatExpression();
 }

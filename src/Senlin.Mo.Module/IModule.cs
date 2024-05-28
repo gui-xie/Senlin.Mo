@@ -1,4 +1,5 @@
 ﻿using Senlin.Mo.Application.Abstractions;
+using Senlin.Mo.Localization.Abstractions;
 
 namespace Senlin.Mo.Module;
 
@@ -27,5 +28,5 @@ public interface IModule
     /// <summary>
     /// Get DbContext Type
     /// </summary>
-    Type DbContextType { get; }
+    Type? DbContextType { get; }
 }
