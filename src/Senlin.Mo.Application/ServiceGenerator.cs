@@ -11,6 +11,17 @@ namespace Senlin.Mo.Application
     [Generator]
     public class ServiceGenerator : IIncrementalGenerator
     {
+        private static bool FilterServices(SyntaxNode s, CancellationToken _) =>
+            s is ClassDeclarationSyntax z
+            && z.BaseList?.Types.Any(t =>
+                t.Type is GenericNameSyntax
+                {
+                    Identifier.Text: "IService"
+                } or GenericNameSyntax
+                {
+                    Identifier.Text: "ICommandService"
+                }) == true;
+        
         /// <summary>
         /// Generate Service Registration and Handler Delegate
         /// </summary>
@@ -20,16 +31,7 @@ namespace Senlin.Mo.Application
             var provider = context
                 .SyntaxProvider
                 .CreateSyntaxProvider(
-                    (s, _) =>
-                        s is ClassDeclarationSyntax z
-                        && z.BaseList?.Types.Any(t =>
-                            t.Type is GenericNameSyntax
-                            {
-                                Identifier.Text: "IService"
-                            } or GenericNameSyntax
-                            {
-                                Identifier.Text: "ICommandService"
-                            }) == true,
+                    FilterServices,
                     (ctx, c) => ctx);
             context.RegisterSourceOutput(provider, (ctx, syntaxContext) =>
             {

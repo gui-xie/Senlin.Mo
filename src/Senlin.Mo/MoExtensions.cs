@@ -12,7 +12,7 @@ namespace Senlin.Mo;
 /// <summary>
 /// Mo Application Extensions
 /// </summary>
-public static class ApplicationExtensions
+public static class MoExtensions
 {
     private static IModule[]? _modules;
 
@@ -24,29 +24,30 @@ public static class ApplicationExtensions
     /// <returns></returns>
     public static IServiceCollection ConfigureMo(
         this IServiceCollection services,
-        Action<ApplicationConfigureOptions> configureOptions)
+        Action<MoConfigureOptions> configureOptions)
     {
-        var builder = new ApplicationConfigureOptions();
-        configureOptions(builder);
+        var options = new MoConfigureOptions();
+        configureOptions(options);
         
-        var modules = builder.Modules ?? [];
+        var modules = options.Modules ?? [];
         services.TryAddSingleton<GetNow>(() => (EntityDateTime)DateTime.UtcNow);
-        services.TryAddScoped<GetTenant>(_ => () => RepositoryHelper.SystemTenant);
-        services.TryAddScoped<GetUserId>(_ => () => RepositoryHelper.AdminUser);
-        services.TryAddScoped<GetCulture>(sp => sp.GetCulture(builder.LocalizationOptions.DefaultCulture));
+        services.TryAddScoped<GetTenant>(_ => () => options.SystemTenant);
+        services.TryAddScoped<GetUserId>(_ => () => string.Empty);
+        services.TryAddScoped<GetCulture>(sp => sp.GetCulture(options.LocalizationOptions.DefaultCulture));
         services.TryAddSingleton<NewConcurrencyToken>(() => Guid.NewGuid().ToByteArray());
+        services.TryAddSingleton<GetSystemTenant>(() => options.SystemTenant);
         services.TryAddScoped<IRepositoryHelper, RepositoryHelper>();
 
         services
             .AddHttpContextAccessor()
             .AddLocalization()
             .AddSingleton<IdGenerator>()
-            .ConfigureLog(builder.Logger)
-            .ConfigureLocalization(builder.LocalizationOptions);
+            .ConfigureLog(options.Logger)
+            .ConfigureLocalization(options.LocalizationOptions);
 
         foreach (var module in modules)
         {
-            services.AddModule(module, builder.ModuleOptions);
+            services.AddModule(module, options.ModuleOptions);
         }
 
         _modules ??= modules;
@@ -61,7 +62,6 @@ public static class ApplicationExtensions
         services.AddModuleLStringResolver(module, options.GetLocalizationPath(module.Name));
         services.AddDbContext(module, options.GetModuleConnectionString(module.Name));
         services.AddAppServices(module);
-        services.AddRepositories(module);
     }
 
     /// <summary>

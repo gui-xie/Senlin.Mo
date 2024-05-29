@@ -1,18 +1,9 @@
 ﻿using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Senlin.Mo.Application.Abstractions;
 using Senlin.Mo.Localization.Abstractions;
 
 namespace Senlin.Mo;
-
-internal static class LoggerExtensions
-{
-    public static Type GetLoggerType(this IModule module)
-    {
-        return typeof(ILogger<>).MakeGenericType(module.GetType());
-    }
-}
 
 internal static class LStringResolverExtensions
 {

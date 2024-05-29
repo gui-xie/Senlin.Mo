@@ -8,12 +8,11 @@ internal class RepositoryHelper(
     GetUserId getUserId,
     GetTenant getTenant,
     IdGenerator idGenerator,
-    NewConcurrencyToken newConcurrencyToken
+    NewConcurrencyToken newConcurrencyToken,
+    GetSystemTenant getSystemTenant
 ) : IRepositoryHelper
 {
-    public const string SystemTenant = "__";
-
-    public const string AdminUser = "admin";
+    private readonly string _systemTenant = getSystemTenant();
     
     public GetNow GetNow => getNow;
 
@@ -21,7 +20,7 @@ internal class RepositoryHelper(
 
     public GetTenant GetTenant => getTenant;
 
-    public bool IsSystemTenant() => getTenant() == SystemTenant;
+    public bool IsSystemTenant() => getTenant() == _systemTenant;
 
     public NewId NewId => idGenerator.New;
 

@@ -2,7 +2,7 @@
 
 namespace Senlin.Mo;
 
-public class ApplicationConfigureOptions
+public class MoConfigureOptions
 {
     /// <summary>
     /// Modules
@@ -23,11 +23,9 @@ public class ApplicationConfigureOptions
     /// Localization options
     /// </summary>
     public LocalizationOptions LocalizationOptions { get; set; } = new();
-}
-
-public class ModuleOptions
-{
-    public GetModuleLocalizationPath GetLocalizationPath { get; set; } = moduleName => $"L/{moduleName}";
-
-    public GetModuleConnectionString GetModuleConnectionString { get; set; } = moduleName => string.Empty;
+    
+    /// <summary>
+    /// System tenant
+    /// </summary>
+    public string SystemTenant { get; set; } = "__";
 }

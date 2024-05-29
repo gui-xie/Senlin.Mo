@@ -15,13 +15,7 @@ public interface IModule
     /// </summary>
     /// <returns></returns>
     IEnumerable<ServiceRegistration> GetServices();
-
-    /// <summary>
-    /// Get Repositories registration
-    /// </summary>
-    /// <returns></returns>
-    IEnumerable<(Type Abstraction, Type Implementation)> GetRepositories();
-
+    
     /// <summary>
     /// Get DbContext Type
     /// </summary>

@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Senlin.Mo.Application.Abstractions;
 using Senlin.Mo.Localization.Abstractions;
@@ -7,15 +8,7 @@ namespace Senlin.Mo;
 
 internal static class ServiceExtensions
 {
-    public static void AddRepositories(this IServiceCollection services, IModule module)
-    {
-        foreach (var (abstraction, implementation) in module.GetRepositories())
-        {
-            services.AddTransient(abstraction, implementation);
-        }
-    }
-    
-      public static void AddAppServices(this IServiceCollection services, IModule module)
+    public static void AddAppServices(this IServiceCollection services, IModule module)
     {
         foreach (var serviceRegistration in module.GetServices())
         {
@@ -29,10 +22,11 @@ internal static class ServiceExtensions
                     Type decoratorType;
                     if (decorator == typeof(UnitOfWorkDecorator<,,>))
                     {
-                        if(module.DbContextType is null)
+                        if (module.DbContextType is null)
                         {
                             continue;
                         }
+
                         var unitOfWorkGenericTypeArguments = serviceGenericType
                             .Concat([module.DbContextType])
                             .ToArray();
@@ -50,7 +44,7 @@ internal static class ServiceExtensions
                     if (decorator == typeof(LogDecorator<,>))
                     {
                         args.Add(sp.GetRequiredService(typeof(ILogger<>).MakeGenericType(serviceGenericType[0])));
-                        args.Add((object)sp.GetRequiredService<GetUserId>());
+                        args.Add(sp.GetRequiredService<GetUserId>());
                     }
                     s = Activator.CreateInstance(
                         decoratorType,
@@ -60,30 +54,33 @@ internal static class ServiceExtensions
                 return s;
             });
         }
-
     }
+
+    private static object GetModuleRequiredService(this IServiceProvider sp, IModule module, Type type)
+    {
+        if (type == typeof(LStringResolver))
+        {
+            type = module.GetLStringResolverType();
+        }
+        else if (type == typeof(ILogger))
+        {
+            type = module.GetLoggerType();
+        }
+        return sp.GetRequiredService(type);
+    }
+
     private static object CreateModuleInstance(
         this IServiceProvider sp,
-        Type type, 
+        Type type,
         IModule module)
     {
-        var constructor = type.GetConstructors().First();
-        var parameters = constructor.GetParameters();
-        var args = parameters.Select(p =>
-        {
-            var argType = p.ParameterType;
-            if (argType == typeof(LStringResolver))
-            {
-                return module.GetLStringResolverType();
-            }
-            if (argType == typeof(ILogger))
-            {
-                return module.GetLoggerType();
-            }
-            return sp.GetRequiredService(argType);
-        }).ToArray();
-        return Activator.CreateInstance(type, args)!;
+        var args =  type
+            .GetConstructors()
+            .First().GetParameters()
+            .Select(p => sp.GetModuleRequiredService(module, p.ParameterType))
+            .ToArray();
+        return Activator.CreateInstance(
+            type, 
+            args)!;
     }
-
-
 }

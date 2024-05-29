@@ -2,9 +2,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Senlin.Mo.Application.Abstractions;
 
-
 namespace Senlin.Mo.Application.Test;
-
 
 public class ServiceGeneratorTest
 {

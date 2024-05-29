@@ -1,4 +1,5 @@
-﻿using Senlin.Mo.Domain;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Senlin.Mo.Domain;
 
 namespace Senlin.Mo.Application.Abstractions;
 
