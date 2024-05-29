@@ -24,10 +24,10 @@ public static class MoExtensions
     /// <returns></returns>
     public static IServiceCollection ConfigureMo(
         this IServiceCollection services,
-        Action<MoConfigureOptions> configureOptions)
+        Action<MoConfigureOptions>? configureOptions = null)
     {
         var options = new MoConfigureOptions();
-        configureOptions(options);
+        configureOptions?.Invoke(options);
         
         var modules = options.Modules ?? [];
         services.TryAddSingleton<GetNow>(() => (EntityDateTime)DateTime.UtcNow);

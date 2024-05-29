@@ -28,9 +28,7 @@ public abstract class Repository<T>(
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     protected Task<T?> GetAsync(EntityId id, CancellationToken cancellationToken = default) =>
-        EntitySet.FirstOrDefaultAsync(e =>
-                EF.Property<EntityId>(e, Id) == id, 
-            cancellationToken);
+        EntitySet.FirstOrDefaultAsync(e => e.Id == id, cancellationToken);
 
     /// <summary>
     /// Delete entity
@@ -52,7 +50,7 @@ public abstract class Repository<T>(
 
         if (!helper.IsContainsChangeDataCapture()) return;
         
-        var cdc = CreateCdc(entry.Property<EntityId>(Id).CurrentValue, user, now, ChangeDataCaptureType.Delete, entity);
+        var cdc = CreateCdc(entity.Id, user, now, ChangeDataCaptureType.Delete, entity);
         dbContext.Add(cdc);
     }
     
@@ -75,7 +73,7 @@ public abstract class Repository<T>(
 
         if (!helper.IsContainsChangeDataCapture()) return;
         
-        var cdc = CreateCdc(entry.Property<EntityId>(Id).CurrentValue, user, now, ChangeDataCaptureType.Update, entity);
+        var cdc = CreateCdc(entity.Id, user, now, ChangeDataCaptureType.Update, entity);
         dbContext.Add(cdc);
     }
 
@@ -101,7 +99,7 @@ public abstract class Repository<T>(
         var id = helper.NewId();
         var user = helper.GetUserId();
         var now = helper.GetNow();
-        entry.Property(Id).CurrentValue = id;
+        entry.Property<EntityId>(nameof(Entity.Id)).CurrentValue = id;
         entry.Property(CreateUser).CurrentValue = user;
         entry.Property(CreateTime).CurrentValue = now;
         entry.Property(UpdateUser).CurrentValue = string.Empty;

@@ -13,6 +13,11 @@ public class ChangeDataCapture
     }
     
     /// <summary>
+    /// Id
+    /// </summary>
+    public EntityId Id { get; private set; }
+    
+    /// <summary>
     /// EntityId
     /// </summary>
     public EntityId EntityId { get; private set; }

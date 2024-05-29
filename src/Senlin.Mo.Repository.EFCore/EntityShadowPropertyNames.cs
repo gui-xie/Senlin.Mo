@@ -6,11 +6,6 @@
 public static class EntityShadowPropertyNames
 {
     /// <summary>
-    /// id
-    /// </summary>
-    public const string Id = "Id";
-
-    /// <summary>
     /// tenant
     /// </summary>
     public const string Tenant = "Tenant";

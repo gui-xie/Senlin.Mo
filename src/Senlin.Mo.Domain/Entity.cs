@@ -7,6 +7,11 @@ namespace Senlin.Mo.Domain;
 /// </summary>
 public abstract class Entity
 {
+    /// <summary>
+    /// Id
+    /// </summary>
+    public EntityId Id { get; private set; }
+    
     private List<IDomainEvent>? _domainEvents;
 
     /// <summary>

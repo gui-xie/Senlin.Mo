@@ -103,13 +103,15 @@ namespace Senlin.Mo.Application
                 var source = new StringBuilder();
                 source.AppendLine("using Senlin.Mo.Application.Abstractions;");
                 source.AppendLine("using Senlin.Mo.Domain;");
+                source.AppendLine("using Microsoft.Extensions.DependencyInjection;");
+                
                 source.AppendLine($"namespace {ns}");
                 source.AppendLine("{");
                 source.AppendLine($"    public static class {className}Extensions");
                 source.AppendLine("    {");
                 if (!string.IsNullOrWhiteSpace(routeName))
                 {
-                    source.AppendLine($"        public const string RouteName = \"{routeName}\";");
+                    source.AppendLine($"        private const string RouteName = \"{routeName}\";");
                     source.AppendLine();
                     if (methods.Count == 0)
                     {
@@ -117,7 +119,7 @@ namespace Senlin.Mo.Application
                     }
 
                     source.AppendLine(
-                        $"        public static string[] Methods = new []{{\"{string.Join("\",\"", methods)}\"}};");
+                        $"        private static string[] Methods = new []{{\"{string.Join("\",\"", methods)}\"}};");
                     source.AppendLine();
                 }
 
@@ -197,7 +199,14 @@ namespace Senlin.Mo.Application
                 }
 
                 source.AppendLine("                typeof(LogDecorator<,>)");
-                source.AppendLine("            ]");
+                source.AppendLine("            ],");
+                
+                source.Append($"            ServiceLifetime.Transient");
+                if (!string.IsNullOrWhiteSpace(routeName))
+                {
+                    source.AppendLine(",");
+                    source.AppendLine($"            new ServiceRouteData(RouteName, Handler, Methods)");
+                }
                 source.AppendLine("        );");
                 source.AppendLine("    }");
                 source.AppendLine("}");

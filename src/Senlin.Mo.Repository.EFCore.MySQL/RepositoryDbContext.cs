@@ -57,11 +57,9 @@ public abstract class RepositoryDbContext<T>(
         if (helper.IsContainsChangeDataCapture())
         {
             var changeDataCaptureBuilder = modelBuilder.Entity<ChangeDataCapture>();
-            changeDataCaptureBuilder.Property<EntityId>(Id);
             changeDataCaptureBuilder.Property<string>(ChangeDataCaptureExtensions.MonthName);
-            changeDataCaptureBuilder.Property(nameof(ChangeDataCapture.ChangeData))
-                .HasColumnType("json");
-            changeDataCaptureBuilder.HasKey(Id, ChangeDataCaptureExtensions.MonthName);
+            changeDataCaptureBuilder.Property(e=>e.ChangeData).HasColumnType("json");
+            changeDataCaptureBuilder.HasKey(e => new { e.Id, ChangeDataCaptureExtensions.MonthName });
         }
 
         var assembly = typeof(T).Assembly;
@@ -90,7 +88,7 @@ public abstract class RepositoryDbContext<T>(
             (helper.IsSystemTenant() ||    
              helper.GetTenant() == EF.Property<string>(e, Tenant)));
         
-        builder.Property<EntityId>(Id).ValueGeneratedNever();
+        builder.Property(e=>e.Id).ValueGeneratedNever();
         builder.Property<string>(Tenant);
         builder.Property<byte[]>(ConcurrencyToken).IsConcurrencyToken();
         builder.Property<string>(CreateUser);
@@ -101,7 +99,7 @@ public abstract class RepositoryDbContext<T>(
         builder.Property<EntityDateTime>(DeleteTime);
         builder.Property<bool>(IsDelete);
 
-        builder.HasKey(Id);
+        builder.HasKey(e=>e.Id);
     }
 
     /// <summary>

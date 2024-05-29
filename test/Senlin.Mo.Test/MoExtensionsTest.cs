@@ -1,4 +1,7 @@
+using FluentAssertions;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using Moq;
 using Senlin.Mo.Localization.Abstractions;
 
 namespace Senlin.Mo.Test;
@@ -9,14 +12,14 @@ public class MoExtensionsTest
     public void CultureTest()
     {
         var service = new ServiceCollection();
-        service.ConfigureMo(options =>
-        {
-            options.LocalizationOptions.DefaultCulture = "en";
-        });
+        service.AddScoped<GetCulture>(sp => ()=> "zh");
+        service.ConfigureMo();
         var provider = service.BuildServiceProvider();
         using var s = provider.CreateScope();
-        var culture = s.ServiceProvider.GetRequiredService<GetCulture>();
+        var getCulture = s.ServiceProvider.GetRequiredService<GetCulture>();
+
+        var currentCulture = getCulture();
         
-        Assert.Equal("en", culture());
+        currentCulture.Should().Be("zh");
     }
 }
