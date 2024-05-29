@@ -8,7 +8,7 @@ internal static class LogExtensions
 {
     public static IServiceCollection ConfigureLog(
         this IServiceCollection services,
-        ApplicationLoggerOptions options)
+        LoggerOptions options)
     {
         if (!Enum.TryParse<LogEventLevel>(options.Level, out var logLevel))
         {

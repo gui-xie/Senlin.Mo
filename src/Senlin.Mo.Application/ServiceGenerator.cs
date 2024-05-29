@@ -145,19 +145,19 @@ namespace Senlin.Mo.Application
                 {
                     if (requestTypeSymbol.IsRecord)
                     {
-                        source.AppendLine($"                new {requestTypeName}(");
+                        source.Append($"                new {requestTypeName}(");
                         var flag = false;
                         foreach (var (_, propertyName) in properties)
                         {
                             if (flag)
                             {
-                                source.Append(",");
-                                source.AppendLine();
+                                source.Append(", ");
                             }
 
                             flag = true;
-                            source.Append($"                  {FirstCharToLower(propertyName)}");
+                            source.Append($"{FirstCharToLower(propertyName)}");
                         }
+                        source.AppendLine("),");
                     }
                     else
                     {
@@ -175,10 +175,11 @@ namespace Senlin.Mo.Application
                             flag = true;
                             source.Append($"                  {propertyName} = {FirstCharToLower(propertyName)}");
                         }
+                        source.AppendLine();
+                        source.AppendLine("                },");
+
                     }
 
-                    source.AppendLine();
-                    source.AppendLine("                },");
                 }
 
                 source.AppendLine("                cancellationToken);");

@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.Configuration;
-using Senlin.Mo.Module;
+﻿using Senlin.Mo.Application.Abstractions;
 
 namespace Senlin.Mo;
 
@@ -11,22 +10,24 @@ public class ApplicationConfigureOptions
     public IModule[]? Modules { get; set; }
 
     /// <summary>
-    /// Configuration
+    /// Module options
     /// </summary>
-    public IConfiguration? Configuration { get; set; }
+    public ModuleOptions ModuleOptions { get; set; } = new();
 
     /// <summary>
     /// Logger options
     /// </summary>
-    public ApplicationLoggerOptions Logger { get; set; } = new();
+    public LoggerOptions Logger { get; set; } = new();
 
     /// <summary>
     /// Localization options
     /// </summary>
-    public ApplicationLocalizationOptions Localization { get; set; } = new();
+    public LocalizationOptions LocalizationOptions { get; set; } = new();
+}
 
-    /// <summary>
-    /// DbContext connection string
-    /// </summary>
-    public string DbContextConnectionString { get; set; } = string.Empty;
+public class ModuleOptions
+{
+    public GetModuleLocalizationPath GetLocalizationPath { get; set; } = moduleName => $"L/{moduleName}";
+
+    public GetModuleConnectionString GetModuleConnectionString { get; set; } = moduleName => string.Empty;
 }

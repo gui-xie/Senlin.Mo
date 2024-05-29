@@ -1,7 +1,4 @@
-﻿using Senlin.Mo.Application.Abstractions;
-using Senlin.Mo.Localization.Abstractions;
-
-namespace Senlin.Mo.Module;
+﻿namespace Senlin.Mo.Application.Abstractions;
 
 /// <summary>
 /// Module Interface
@@ -30,3 +27,4 @@ public interface IModule
     /// </summary>
     Type? DbContextType { get; }
 }
+

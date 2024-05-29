@@ -1,7 +1,8 @@
-﻿using System.Reflection;
+﻿
+using System.Reflection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Senlin.Mo.Module;
+using Senlin.Mo.Application.Abstractions;
 using Senlin.Mo.Repository.Abstractions;
 
 namespace Senlin.Mo;
@@ -14,7 +15,7 @@ internal static class DbContextExtensions
         string connectionStringValue)
     {
         var dbContextType = module.DbContextType;
-        if(dbContextType is null) return;
+        if (dbContextType is null) return;
         var connectionStringType = typeof(ConnectionString<>).MakeGenericType(dbContextType);
         var connectionString = Activator.CreateInstance(connectionStringType, connectionStringValue)!;
         services.AddSingleton(connectionStringType, connectionString);

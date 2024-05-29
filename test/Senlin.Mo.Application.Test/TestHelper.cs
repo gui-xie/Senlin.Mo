@@ -11,7 +11,7 @@ public static class TestHelper
     [ModuleInitializer]
     public static void Init()
     {
-        VerifySourceGenerators.Initialize();
+        // VerifySourceGenerators.Initialize();
     }
 
     public static SettingsTask Verify(this GeneratorDriverRunResult results) =>

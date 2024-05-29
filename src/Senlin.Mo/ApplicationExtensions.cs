@@ -5,7 +5,6 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Senlin.Mo.Application.Abstractions;
 using Senlin.Mo.Domain;
 using Senlin.Mo.Localization.Abstractions;
-using Senlin.Mo.Module;
 using Senlin.Mo.Repository.Abstractions;
 
 namespace Senlin.Mo;
@@ -34,27 +33,20 @@ public static class ApplicationExtensions
         services.TryAddSingleton<GetNow>(() => (EntityDateTime)DateTime.UtcNow);
         services.TryAddScoped<GetTenant>(_ => () => RepositoryHelper.SystemTenant);
         services.TryAddScoped<GetUserId>(_ => () => RepositoryHelper.AdminUser);
-        services.TryAddScoped<GetCulture>(sp =>
-        {
-            var culture = LocalizationExtensions.GetCulture(sp.GetRequiredService<IHttpContextAccessor>());
-            return () => culture;
-        });
-        
+        services.TryAddScoped<GetCulture>(sp => sp.GetCulture(builder.LocalizationOptions.DefaultCulture));
+        services.TryAddSingleton<NewConcurrencyToken>(() => Guid.NewGuid().ToByteArray());
+        services.TryAddScoped<IRepositoryHelper, RepositoryHelper>();
+
         services
+            .AddHttpContextAccessor()
             .AddLocalization()
-            .AddSingleton<NewConcurrencyToken>(() => Guid.NewGuid().ToByteArray())
             .AddSingleton<IdGenerator>()
-            .AddScoped<IRepositoryHelper, RepositoryHelper>()
             .ConfigureLog(builder.Logger)
-            .ConfigureLocalization()
-            .AddHttpContextAccessor();
+            .ConfigureLocalization(builder.LocalizationOptions);
 
         foreach (var module in modules)
         {
-            services.AddModule(
-                module,
-                builder.Localization, 
-                builder.DbContextConnectionString);
+            services.AddModule(module, builder.ModuleOptions);
         }
 
         _modules ??= modules;
@@ -64,11 +56,10 @@ public static class ApplicationExtensions
     private static void AddModule(
         this IServiceCollection services,
         IModule module,
-        ApplicationLocalizationOptions localizationOptions,
-        string dbContextConnectionString)
+        ModuleOptions options)
     {
-        services.AddModuleLStringResolver(module, localizationOptions.GetModuleLocalizationPath(module));
-        services.AddDbContext(module, dbContextConnectionString);
+        services.AddModuleLStringResolver(module, options.GetLocalizationPath(module.Name));
+        services.AddDbContext(module, options.GetModuleConnectionString(module.Name));
         services.AddAppServices(module);
         services.AddRepositories(module);
     }

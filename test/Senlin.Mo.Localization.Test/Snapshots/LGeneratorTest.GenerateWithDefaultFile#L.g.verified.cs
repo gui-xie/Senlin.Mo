@@ -3,7 +3,10 @@
 using Senlin.Mo.Localization.Abstractions;
 namespace ProjectA
 {
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Senlin.Mo.Localization", "1.0.1.0")]
+    /// <summary>
+    /// Auto generated localization string
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Senlin.Mo.Localization", "1.0.5.0")]
     public static partial class L
     {
         /// <summary>

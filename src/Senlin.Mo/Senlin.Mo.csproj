@@ -25,7 +25,6 @@
 
     <ItemGroup>
         <ProjectReference Include="..\Senlin.Mo.Localization.Abstractions\Senlin.Mo.Localization.Abstractions.csproj"/>
-        <ProjectReference Include="..\Senlin.Mo.Module\Senlin.Mo.Module.csproj"/>
         <ProjectReference Include="..\Senlin.Mo.Repository.EFCore\Senlin.Mo.Repository.EFCore.csproj"/>
     </ItemGroup>
 

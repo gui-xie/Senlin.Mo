@@ -1,6 +1,6 @@
 ﻿namespace Senlin.Mo;
 
-public class ApplicationLoggerOptions
+public class LoggerOptions
 {
     public int CountLimit { get; set; } = 14;
     

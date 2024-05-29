@@ -2,7 +2,6 @@
 using Microsoft.Extensions.Logging;
 using Senlin.Mo.Application.Abstractions;
 using Senlin.Mo.Localization.Abstractions;
-using Senlin.Mo.Module;
 
 namespace Senlin.Mo;
 

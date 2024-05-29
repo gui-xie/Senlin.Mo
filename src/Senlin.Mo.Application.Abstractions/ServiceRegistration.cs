@@ -11,7 +11,14 @@ public class ServiceRegistration
     /// <param name="serviceType"></param>
     /// <param name="implementation"></param>
     /// <param name="decorators"></param>
-    public ServiceRegistration(Type serviceType, Type implementation, Type[] decorators)
+    /// <param name="lifeCycle"></param>
+    /// <param name="routeData"></param>
+    public ServiceRegistration(
+        Type serviceType, 
+        Type implementation, 
+        Type[] decorators,
+        ServiceLifeCycle lifeCycle = ServiceLifeCycle.Transient,
+        ServiceRouteData? routeData = null)
     {
         ServiceType = serviceType;
         Implementation = implementation;
