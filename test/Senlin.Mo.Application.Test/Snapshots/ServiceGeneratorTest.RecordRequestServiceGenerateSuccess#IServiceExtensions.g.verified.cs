@@ -1,6 +1,7 @@
-﻿//HintName: ProjectA.User.GetUserNameServiceExtensions.cs
+﻿//HintName: IServiceExtensions.g.cs
 using Senlin.Mo.Application.Abstractions;
 using Senlin.Mo.Domain;
+using Microsoft.Extensions.DependencyInjection;
 namespace ProjectA.User
 {
     public static class GetUserNameServiceExtensions
@@ -10,7 +11,7 @@ namespace ProjectA.User
                 IService<GetUserNameDto, string> service,
                 CancellationToken cancellationToken) 
             => service.ExecuteAsync(
-                new GetUserNameDto(userId),
+                new ProjectA.User.GetUserNameDto(userId),
                 cancellationToken);
 
         public static ServiceRegistration Registration = new ServiceRegistration(
@@ -18,7 +19,8 @@ namespace ProjectA.User
             typeof(GetUserNameService),
             [
                 typeof(LogDecorator<,>)
-            ]
+            ],
+            ServiceLifetime.Transient
         );
     }
 }

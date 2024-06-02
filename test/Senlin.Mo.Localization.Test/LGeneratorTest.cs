@@ -7,7 +7,7 @@ namespace Senlin.Mo.Localization.Test;
 public class LGeneratorTest
 {
     [Fact]
-    public Task GenerateWithDefaultFile()
+    public Task GenerateWithJsonFile()
     {
         var json = CreateAdditionalText(
             "l.json",
@@ -35,22 +35,34 @@ namespace ProjectA {
 
     private static GeneratorDriver GeneratorDriver(string srcText, params AdditionalText[] additionalTexts)
     {
-        var compilation = CSharpCompilation.Create(
-            "ProjectA",
-            new[]
-            {
-                CSharpSyntaxTree.ParseText(srcText)
-            },
-            references: new[]
-            {
-                MetadataReference.CreateFromFile(typeof(LStringAttribute).Assembly.Location),
-            },
-            options: null
-        );
-
+        var compilation = CreateCompilation(srcText);
         ISourceGenerator[] generator = [new LGenerator().AsSourceGenerator()];
-
         var driver = CSharpGeneratorDriver.Create(generator, additionalTexts);
         return driver.RunGeneratorsAndUpdateCompilation(compilation, out _, out _);
+    }
+
+    private static CSharpCompilation CreateCompilation(string srcText)
+    {
+        SyntaxTree[] syntaxTrees =
+        [
+            CSharpSyntaxTree.ParseText(srcText)
+        ];
+        var compilation = CSharpCompilation.Create(
+            "ProjectA", 
+            syntaxTrees, 
+            options: new CSharpCompilationOptions(
+                OutputKind.DynamicallyLinkedLibrary,
+                nullableContextOptions: NullableContextOptions.Enable));
+
+        var references = AppDomain
+            .CurrentDomain.GetAssemblies()
+            .Where(x => !x.IsDynamic && !string.IsNullOrWhiteSpace(x.Location))
+            .Select(x => MetadataReference.CreateFromFile(x.Location));
+        compilation = compilation.AddReferences(references);
+        compilation = compilation.AddReferences(
+            MetadataReference.CreateFromFile(typeof(LStringAttribute).Assembly.Location)
+        );
+
+        return compilation;
     }
 }

@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Senlin.Mo.Application.Abstractions;
 using Senlin.Mo.Localization.Abstractions;
@@ -17,7 +16,8 @@ internal static class ServiceExtensions
                 var type = serviceRegistration.Implementation;
                 var s = sp.CreateModuleInstance(type, module);
                 var serviceGenericType = serviceRegistration.ServiceType.GetGenericArguments();
-                foreach (var decorator in serviceRegistration.Decorators)
+                var decorators = serviceRegistration.Decorators ?? [];
+                foreach (var decorator in decorators)
                 {
                     Type decoratorType;
                     if (decorator == typeof(UnitOfWorkDecorator<,,>))

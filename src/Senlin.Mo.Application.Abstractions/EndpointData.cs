@@ -6,7 +6,7 @@
 /// <param name="Pattern"></param>
 /// <param name="Handler"></param>
 /// <param name="Methods"></param>
-public record ServiceRouteData(string Pattern, Delegate Handler, params string[] Methods)
+public record EndpointData(string Pattern, Delegate Handler, params string[] Methods)
 {
     /// <summary>
     /// Route Pattern

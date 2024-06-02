@@ -30,7 +30,8 @@ public class LGenerator : IIncrementalGenerator
 
     private static void AddJsonLocalizationSource(IncrementalGeneratorInitializationContext context)
     {
-        context.RegisterSourceOutput(GetLocalizationFileProvider(context), (
+        context.RegisterSourceOutput(
+            GetLocalizationFileProvider(context), (
             ctx, pair) =>
         {
             var file = pair.Left.Left;
@@ -73,24 +74,38 @@ public class LGenerator : IIncrementalGenerator
 
         return nameSpace;
     }
-    
+
+    private sealed record EnumLStringInfo(INamedTypeSymbol AttributeSymbol, EnumDeclarationSyntax EnumSyntax)
+    {
+        public INamedTypeSymbol AttributeSymbol { get; } = AttributeSymbol;
+        public EnumDeclarationSyntax EnumSyntax { get; } = EnumSyntax;
+    }
+
     private static void AddEnumAttributeSource(IncrementalGeneratorInitializationContext context)
     {
+        var compilationContext = context
+            .CompilationProvider.Select(static (c, _) => c.AssemblyName);
+
         var attributeProviders = context
             .SyntaxProvider.ForAttributeWithMetadataName(
                 LStringAttributeName,
-                static (_, _) => true,
-                static (a, _) => a);
-
-        context.RegisterSourceOutput(attributeProviders, (ctx, a) =>
+                (a, b) => a is EnumDeclarationSyntax,
+                (ctx, _) => (ctx.TargetSymbol, TargetNode: (EnumDeclarationSyntax)ctx.TargetNode))
+            .Where(x => x.TargetSymbol is INamedTypeSymbol)
+            .Select((x, _) => new EnumLStringInfo((INamedTypeSymbol)x.TargetSymbol, x.TargetNode))
+            .Combine(compilationContext);
+        
+        context.RegisterSourceOutput(attributeProviders, (ctx, info) =>
         {
-            if (a.TargetNode is not EnumDeclarationSyntax enumDeclaration) return;
-            var enumName = enumDeclaration.Identifier.Text;
-            var enumFields = enumDeclaration.Members;
+            var (attributeSymbol, enumSyntax) = info.Left;
+            var assemblyName = info.Right ?? string.Empty;
+            var enumName = attributeSymbol.Name;
+            var enumFields = enumSyntax.Members;
             if (enumFields.Count == 0) return;
-            var assemblyName = a.SemanticModel.Compilation.AssemblyName;
-            var enumNamespace = GetNamespace(enumDeclaration);
+            var enumNamespace = GetNamespace(enumSyntax);
             var enumParameterName = enumName[0].ToString().ToLower() + enumName.Substring(1);
+            
+            // generate
             var className = $"{enumName}Extensions";
             var source = new StringBuilder();
             source.AppendLine("#nullable enable");
@@ -135,14 +150,14 @@ public class LGenerator : IIncrementalGenerator
                 source.AppendLine(
                     $"                {enumName}.{enumField.Identifier.Text} => L.{lKeyProperty},");
             }
-
+            
             source.AppendLine("                _ => LString.Empty");
             source.AppendLine("            };");
             source.AppendLine("        }");
             source.AppendLine("    }");
             source.AppendLine("}");
             source.Append("#nullable restore");
-
+            
             ctx.AddSource($"{className}.g.cs", source.ToString());
         });
     }

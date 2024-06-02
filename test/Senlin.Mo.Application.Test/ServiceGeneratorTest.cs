@@ -38,6 +38,7 @@ namespace ProjectA.User{
     internal class GetUserNameDto{
         public string UserId{get;set;}
     }
+    [ServiceEndpoint(""get-user-name"")]
     internal class GetUserNameService: IService<GetUserNameDto, string>
     {
         public Task<string> ExecuteAsync(GetUserNameDto request, CancellationToken cancellationToken)
@@ -63,7 +64,7 @@ namespace ProjectA.User{
     internal class AddUserDto{
         public string UserId{get;set;}
     }
-    [ServiceRoute(""add-user"")]
+    [ServiceEndpoint(""add-user"")]
     internal class AddUserService: ICommandService<AddUserDto>
     {
         public Task<Result> ExecuteAsync(AddUserDto request, CancellationToken cancellationToken)
@@ -82,22 +83,35 @@ namespace ProjectA.User{
     
     private static GeneratorDriver GeneratorDriver(string srcText)
     {
-        var compilation = CSharpCompilation.Create(
-            "ProjectA",
-            new[]
-            {
-                CSharpSyntaxTree.ParseText(srcText)
-            },
-            references: new[]
-            {
-                MetadataReference.CreateFromFile(typeof(IService<,>).Assembly.Location),
-            },
-            options: null
-        );
-
+        var compilation = CreateCompilation(srcText);
         ISourceGenerator[] generator = [new ServiceGenerator().AsSourceGenerator()];
 
         var driver = CSharpGeneratorDriver.Create(generator);
         return driver.RunGeneratorsAndUpdateCompilation(compilation, out _, out _);
+    }
+    
+    private static CSharpCompilation CreateCompilation(string srcText)
+    {
+        SyntaxTree[] syntaxTrees =
+        [
+            CSharpSyntaxTree.ParseText(srcText)
+        ];
+        var compilation = CSharpCompilation.Create(
+            "ProjectA", 
+            syntaxTrees, 
+            options: new CSharpCompilationOptions(
+                OutputKind.DynamicallyLinkedLibrary,
+                nullableContextOptions: NullableContextOptions.Enable));
+
+        var references = AppDomain
+            .CurrentDomain.GetAssemblies()
+            .Where(x => !x.IsDynamic && !string.IsNullOrWhiteSpace(x.Location))
+            .Select(x => MetadataReference.CreateFromFile(x.Location));
+        compilation = compilation.AddReferences(references);
+        compilation = compilation.AddReferences(
+            MetadataReference.CreateFromFile(typeof(IService<,>).Assembly.Location)
+        );
+
+        return compilation;
     }
 }

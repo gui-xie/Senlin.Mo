@@ -4,14 +4,14 @@
 /// Endpoint Attribute
 /// </summary>
 [AttributeUsage(AttributeTargets.Class)]
-public class ServiceRouteAttribute: Attribute
+public class ServiceEndpointAttribute: Attribute
 {
     /// <summary>
     /// Endpoint Attribute
     /// </summary>
     /// <param name="pattern"></param>
     /// <param name="methods"></param>
-    public ServiceRouteAttribute(string pattern, params string[] methods)
+    public ServiceEndpointAttribute(string pattern, params string[] methods)
     {
         Pattern = pattern;
         Methods = methods;

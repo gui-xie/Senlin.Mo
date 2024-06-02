@@ -63,16 +63,16 @@ dotnet add package Senlin.Mo.Localization
   GetCultureResource getCultureResource = resourceProvider.GetResource;
   
   var resolver = new LStringResolver(getCulture, getCultureResource);
-  var zhHello = resolver.Resolve(L.Hello);
+  var zhHello = resolver[L.Hello];
   Console.WriteLine(zhHello);
   
   currentCulture = "ja";
-  var jaHello = resolver.Resolve(L.Hello);
+  var jaHello = resolver[L.Hello];
   Console.WriteLine(jaHello);
   
-  Console.WriteLine(resolver.Resolve(L.SayHelloTo("世界")));
+  Console.WriteLine(resolver[L.SayHelloTo("世界")]);
   currentCulture = "unknown";
-  Console.WriteLine(resolver.Resolve(L.SayHelloTo("World")));
+  Console.WriteLine(resolver[L.SayHelloTo("World")]);
   
   public class JaResource : LResource
   {
