@@ -1,4 +1,4 @@
-﻿//HintName: ICommandServiceExtensions.g.cs
+﻿//HintName: AddUserServiceExtensions.g.cs
 using Senlin.Mo.Application.Abstractions;
 using Senlin.Mo.Domain;
 using Microsoft.Extensions.DependencyInjection;
@@ -26,7 +26,7 @@ namespace ProjectA.User
                 typeof(LogDecorator<,>)
             ],
             ServiceLifetime.Transient,
-            new ServiceRouteData(Endpoint, Handler, Methods)
+            new EndpointData(Endpoint, Handler, Methods)
         );
     }
 }

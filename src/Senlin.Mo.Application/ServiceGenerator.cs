@@ -31,11 +31,8 @@ namespace Senlin.Mo.Application
             context.RegisterSourceOutput(provider, (ctx, p) =>
             {
                 var s = p.Left!;
-                var serviceExtensionsFileName = $"{s.ServiceSyntax!.Identifier}Extensions.g.cs";
-             
+                var serviceExtensionsFileName = $"{s.ClassSyntax.Identifier}Extensions.g.cs";
                 ctx.AddSource(serviceExtensionsFileName, GenerateServiceExtensionsSource(s));
-              
-           
             });
         }
 
@@ -168,7 +165,7 @@ namespace Senlin.Mo.Application
             if (!string.IsNullOrWhiteSpace(s.Endpoint))
             {
                 source.AppendLine(",");
-                source.Append($"            new ServiceRouteData(Endpoint, Handler, Methods)");
+                source.Append($"            new EndpointData(Endpoint, Handler, Methods)");
             }
             source.AppendLine();
             source.AppendLine("        );");
@@ -236,7 +233,7 @@ namespace Senlin.Mo.Application
             if (!string.IsNullOrWhiteSpace(s.Endpoint))
             {
                 source.AppendLine(",");
-                source.Append($"            new ServiceRouteData(Endpoint, Handler, Methods)");
+                source.Append($"            new EndpointData(Endpoint, Handler, Methods)");
             }
 
             source.AppendLine();
