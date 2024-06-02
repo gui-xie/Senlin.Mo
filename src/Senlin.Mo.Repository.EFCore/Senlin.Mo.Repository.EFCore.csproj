@@ -14,8 +14,8 @@
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageDescription>Modular monolith repository EFCore</PackageDescription>
         <PackageTags>Modular monolith repository EFCore EntityFrameworkCore</PackageTags>
-        <Version>1.0.6-alpha</Version>
-        <AssemblyVersion>1.0.6.0</AssemblyVersion>
+        <Version>1.0.7-alpha</Version>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
         <Authors>Senlin</Authors>
         <Title>Senlin.Mo.Repository.EFCore</Title>
         <Description>(experiment)Modular monolith repository EFCore</Description>
