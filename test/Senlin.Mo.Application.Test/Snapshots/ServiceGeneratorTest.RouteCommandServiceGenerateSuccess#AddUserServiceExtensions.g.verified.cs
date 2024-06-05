@@ -15,7 +15,7 @@ namespace ProjectA.User
                 IService<AddUserDto, Result> service,
                 CancellationToken cancellationToken) 
             => service.ExecuteAsync(
-                addUser, 
+                addUser,
                 cancellationToken);
 
         public static ServiceRegistration Registration = new ServiceRegistration(

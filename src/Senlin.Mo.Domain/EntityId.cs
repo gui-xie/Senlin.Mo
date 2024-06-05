@@ -5,10 +5,15 @@
 /// </summary>
 public readonly struct EntityId : IEquatable<EntityId>
 {
-    private static readonly long EmptyEntityId = 0;
+    private const long EmptyEntityId = 0;
 
     private readonly long _id;
 
+    /// <summary>
+    /// Is Empty
+    /// </summary>
+    public bool IsEmpty => _id == EmptyEntityId;
+    
     /// <summary>
     ///  EntityId
     /// </summary>

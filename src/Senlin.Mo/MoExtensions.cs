@@ -30,7 +30,9 @@ public static class MoExtensions
         configureOptions?.Invoke(options);
         
         var modules = options.Modules ?? [];
-        services.TryAddSingleton<GetNow>(() => (EntityDateTime)DateTime.UtcNow);
+        services.TryAddSingleton<GetUtcNow>(() => (EntityDateTime)DateTime.UtcNow);
+        services.TryAddSingleton<GetNow>(()=>DateTime.Now);
+        services.TryAddSingleton<GetToday>(()=>DateTime.Today);
         services.TryAddScoped<GetTenant>(_ => () => options.SystemTenant);
         services.TryAddScoped<GetUserId>(_ => () => string.Empty);
         services.TryAddScoped<GetCulture>(sp => sp.GetCulture(options.LocalizationOptions.DefaultCulture));

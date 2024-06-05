@@ -64,10 +64,36 @@ namespace ProjectA.User{
     internal class AddUserDto{
         public string UserId{get;set;}
     }
-    [ServiceEndpoint(""add-user"")]
+    [ServiceEndpoint(""add-user"", ""POST"")]
     internal class AddUserService: ICommandService<AddUserDto>
     {
         public Task<Result> ExecuteAsync(AddUserDto request, CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
+        }
+    }
+}
+";
+        var driver = GeneratorDriver(srcText);
+
+        var results = driver.GetRunResult();
+
+        return results.Verify();
+    }
+
+    [Fact]
+    public Task RouteDeleteCommandServiceGenerateSuccess()
+    {
+        const string srcText = @"
+using Senlin.Mo.Application.Abstractions;
+namespace ProjectA.User{
+    internal class DeleteUserDto{
+        public string Id{get;set;}
+    }
+    [ServiceEndpoint(""user/{id}"", ""DELETE"")]
+    internal class DeleteUserService: ICommandService<DeleteUserDto>
+    {
+        public Task<Result> ExecuteAsync(DeleteUserDto request, CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
         }

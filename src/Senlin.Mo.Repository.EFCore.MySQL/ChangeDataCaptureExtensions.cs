@@ -1,4 +1,6 @@
 ﻿using System.Text.Json;
+using System.Text.Json.Serialization;
+using Senlin.Mo.Domain;
 
 namespace Senlin.Mo.Repository.EFCore.MySQL;
 
@@ -11,7 +13,11 @@ public static class ChangeDataCaptureExtensions
     
     internal static readonly JsonSerializerOptions SerializerOptions = new()
     {
-        IgnoreReadOnlyProperties = true,
-        IgnoreReadOnlyFields = true
+        IgnoreReadOnlyFields = true,
+        Converters =
+        {
+            new EntityIdJsonConverter(),
+            new EntityDateTimeJsonConverter()
+        }
     };
 }

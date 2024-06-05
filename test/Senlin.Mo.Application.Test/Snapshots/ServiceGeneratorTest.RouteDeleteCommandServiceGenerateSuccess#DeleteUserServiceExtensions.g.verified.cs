@@ -1,30 +1,31 @@
-﻿//HintName: GetUserNameServiceExtensions.g.cs
+﻿//HintName: DeleteUserServiceExtensions.g.cs
 using Senlin.Mo.Application.Abstractions;
 using Senlin.Mo.Domain;
 using Microsoft.Extensions.DependencyInjection;
 namespace ProjectA.User
 {
-    public static class GetUserNameServiceExtensions
+    public static class DeleteUserServiceExtensions
     {
-        private const string Endpoint = "get-user-name";
+        private const string Endpoint = "user/{id}";
 
-        private static string[] Methods = new []{"GET"};
+        private static string[] Methods = new []{"DELETE"};
 
         public static Delegate Handler = (
-                string userId,
-                IService<GetUserNameDto, string> service,
+                string id,
+                IService<DeleteUserDto, Result> service,
                 CancellationToken cancellationToken) 
             => service.ExecuteAsync(
-                new ProjectA.User.GetUserNameDto
+                new ProjectA.User.DeleteUserDto
                 {
-                    UserId = userId
+                    Id = id
                 },
                 cancellationToken);
 
         public static ServiceRegistration Registration = new ServiceRegistration(
-            typeof(IService<GetUserNameDto, string>),
-            typeof(GetUserNameService),
+            typeof(IService<DeleteUserDto, Result>),
+            typeof(DeleteUserService),
             [
+                typeof(UnitOfWorkDecorator<,,>),
                 typeof(LogDecorator<,>)
             ],
             ServiceLifetime.Transient,

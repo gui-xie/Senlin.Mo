@@ -7,7 +7,7 @@ namespace ProjectA.User
     public static class GetUserNameServiceExtensions
     {
         public static Delegate Handler = (
-                string userId, 
+                string userId,
                 IService<GetUserNameDto, string> service,
                 CancellationToken cancellationToken) 
             => service.ExecuteAsync(

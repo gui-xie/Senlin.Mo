@@ -8,5 +8,5 @@ public interface IClock
     /// <summary>
     /// Get current utc time
     /// </summary>
-    GetNow GetNow { get; }
+    GetUtcNow GetUtcNow { get; }
 }

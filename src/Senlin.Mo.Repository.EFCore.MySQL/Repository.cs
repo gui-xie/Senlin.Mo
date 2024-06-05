@@ -41,7 +41,7 @@ public abstract class Repository<T>(
     {
         var entry = EntitySet.Entry(entity);
         var user = helper.GetUserId();
-        var now = helper.GetNow();
+        var now = helper.GetUtcNow();
         entry.Property(DeleteUser).CurrentValue = user;
         entry.Property(DeleteTime).CurrentValue = now;
         entry.Property(IsDelete).CurrentValue = true;
@@ -65,7 +65,7 @@ public abstract class Repository<T>(
     {
         var entry = EntitySet.Entry(entity);
         var user = helper.GetUserId();
-        var now = helper.GetNow();
+        var now = helper.GetUtcNow();
         entry.Property(UpdateUser).CurrentValue = user;
         entry.Property(UpdateTime).CurrentValue = now;
         entry.Property(ConcurrencyToken).CurrentValue = helper.NewConcurrencyToken();
@@ -98,7 +98,7 @@ public abstract class Repository<T>(
         }
         var id = helper.NewId();
         var user = helper.GetUserId();
-        var now = helper.GetNow();
+        var now = helper.GetUtcNow();
         entry.Property<EntityId>(nameof(Entity.Id)).CurrentValue = id;
         entry.Property(CreateUser).CurrentValue = user;
         entry.Property(CreateTime).CurrentValue = now;

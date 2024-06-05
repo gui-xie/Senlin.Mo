@@ -111,48 +111,11 @@ namespace Senlin.Mo.Application
                 source.AppendLine();
             }
             source.AppendLine($"        public static Delegate Handler = (");
-            foreach (var (propertyType, propertyName) in properties)
-            {
-                source.AppendLine($"                {propertyType} {FirstCharToLower(propertyName)}, ");
-            }
+            AddQueryParameters(source, properties);
             source.AppendLine($"                {serviceName} service,");
             source.AppendLine("                CancellationToken cancellationToken) ");
             source.AppendLine("            => service.ExecuteAsync(");
-            if (serviceRequestSymbol.IsRecord)
-            {
-                source.Append($"                new {serviceRequestSymbol}(");
-                var flag = false;
-                foreach (var (_, propertyName) in properties)
-                {
-                    if (flag)
-                    {
-                        source.Append(", ");
-                    }
-
-                    flag = true;
-                    source.Append($"{FirstCharToLower(propertyName)}");
-                }
-                source.AppendLine("),");
-            }
-            else
-            {
-                source.AppendLine($"                new {serviceRequestSymbol}");
-                source.AppendLine("                {");
-                var flag = false;
-                foreach (var (_, propertyName) in properties)
-                {
-                    if (flag)
-                    {
-                        source.Append(",");
-                        source.AppendLine();
-                    }
-
-                    flag = true;
-                    source.Append($"                    {propertyName} = {FirstCharToLower(propertyName)}");
-                }
-                source.AppendLine();
-                source.AppendLine("                },");
-            }
+            AddRequestObject(source, properties, serviceRequestSymbol);
             source.AppendLine("                cancellationToken);");
             source.AppendLine();
             source.AppendLine($"        public static ServiceRegistration Registration = new ServiceRegistration(");
@@ -187,7 +150,10 @@ namespace Senlin.Mo.Application
             var serviceName = $"IService<{requestType}, {responseType}>";
             var requestTypeName = service.TypeArgumentList.Arguments[0].ToString();
             var endpointRequestName = GetRequestTypeEndpointName(requestTypeName);
-
+            var requestProperties = s.ServiceRequestSymbol != null
+                ? GetQueryProperties(s.ServiceRequestSymbol)
+                : new List<(string, string)>();
+            
             var source = new StringBuilder();
             source.AppendLine("using Senlin.Mo.Application.Abstractions;");
             source.AppendLine("using Senlin.Mo.Domain;");
@@ -211,11 +177,25 @@ namespace Senlin.Mo.Application
                 source.AppendLine();
             }
             source.AppendLine($"        public static Delegate Handler = (");
-            source.AppendLine($"                {requestTypeName} {endpointRequestName}, ");
+            if (requestProperties.Any())
+            {
+                AddQueryParameters(source, requestProperties);
+            }
+            else
+            {
+                source.AppendLine($"                {requestTypeName} {endpointRequestName}, ");
+            }
             source.AppendLine($"                {serviceName} service,");
             source.AppendLine("                CancellationToken cancellationToken) ");
             source.AppendLine("            => service.ExecuteAsync(");
-            source.AppendLine($"                {endpointRequestName}, ");
+            if (requestProperties.Any())
+            {
+                AddRequestObject(source, requestProperties, s.ServiceRequestSymbol!);
+            }
+            else
+            {
+                source.AppendLine($"                {endpointRequestName},");
+            }
             source.AppendLine("                cancellationToken);");
             source.AppendLine();
             source.AppendLine($"        public static ServiceRegistration Registration = new ServiceRegistration(");
@@ -295,7 +275,10 @@ namespace Senlin.Mo.Application
                 if (attributeSyntax.ArgumentList?.Arguments.Count == 2)
                 {
                     methods = attributeSyntax
-                        .ArgumentList?.Arguments[1].Expression.ToString().Split(',') 
+                        .ArgumentList?.Arguments[1].Expression.ToString()
+                        .Split(',')
+                        .Select(t=>t.Trim('"').ToUpper())
+                        .ToArray()
                               ?? Array.Empty<string>();
                 }
             }
@@ -307,23 +290,24 @@ namespace Senlin.Mo.Application
                 var serviceGenericType = symbol.ToDisplayString();
                 const string commandServiceTypeName = "Senlin.Mo.Application.Abstractions.ICommandService<";
                 const string serviceTypeName = "Senlin.Mo.Application.Abstractions.IService<";
-                var flag = false;
+                var queryReuqestFlag = false;
                 if(serviceGenericType.StartsWith(commandServiceTypeName))
                 {
-                    flag = true;               
                     isCommandService = true;
+                    if (methods.Contains("DELETE", StringComparer.InvariantCulture))
+                    {
+                        queryReuqestFlag = true;
+                    }
                 }
                 else if (serviceGenericType.StartsWith(serviceTypeName))
                 {
-                    flag = true;
+                    queryReuqestFlag = true;
                 }
-                if(!flag) continue;
-
                 serviceType = (GenericNameSyntax)type.Type;
+                if(!queryReuqestFlag) continue;
+
                 serviceRequestSymbol =
                     ctx.SemanticModel.GetSymbolInfo(serviceType.TypeArgumentList.Arguments[0]).Symbol as INamedTypeSymbol;
-
-                
             }
 
             return new ServiceInfo(
@@ -361,6 +345,53 @@ namespace Senlin.Mo.Application
             }
 
             return nameSpace;
+        }
+
+        private static void AddQueryParameters(StringBuilder source, List<(string Type, string Name)> properties)
+        {
+            foreach (var (t, n)  in properties)
+            {
+                source.AppendLine($"                {t} {FirstCharToLower(n)},");
+            }
+        }
+        
+        private static void AddRequestObject(StringBuilder source, List<(string Type, string Name)> properties, INamedTypeSymbol serviceRequestSymbol)
+        {
+            if (serviceRequestSymbol.IsRecord)
+            {
+                source.Append($"                new {serviceRequestSymbol}(");
+                var flag = false;
+                foreach (var (_, propertyName) in properties)
+                {
+                    if (flag)
+                    {
+                        source.Append(", ");
+                    }
+
+                    flag = true;
+                    source.Append($"{FirstCharToLower(propertyName)}");
+                }
+                source.AppendLine("),");
+            }
+            else
+            {
+                source.AppendLine($"                new {serviceRequestSymbol}");
+                source.AppendLine("                {");
+                var flag = false;
+                foreach (var (_, propertyName) in properties)
+                {
+                    if (flag)
+                    {
+                        source.Append(",");
+                        source.AppendLine();
+                    }
+
+                    flag = true;
+                    source.Append($"                    {propertyName} = {FirstCharToLower(propertyName)}");
+                }
+                source.AppendLine();
+                source.AppendLine("                },");
+            }
         }
     }
 }

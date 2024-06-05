@@ -8,5 +8,5 @@ namespace Senlin.Mo.Repository.EFCore;
 /// </summary>
 public class EntityDateTimeConverter()
     : ValueConverter<EntityDateTime, DateTime>(
-        v => v, 
-        v=> (EntityDateTime)v);
+        v => v,
+        v => (EntityDateTime)v);

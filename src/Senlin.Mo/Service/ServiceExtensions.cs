@@ -11,6 +11,13 @@ internal static class ServiceExtensions
     {
         foreach (var serviceRegistration in module.GetServices())
         {
+            if (!(serviceRegistration.ServiceType.IsGenericType && serviceRegistration.ServiceType.Name.StartsWith("IService")
+                && serviceRegistration.ServiceType.GetGenericTypeDefinition() == typeof(IService<,>)))
+            {
+                var serviceDescription = new ServiceDescriptor(serviceRegistration.ServiceType, serviceRegistration.Implementation, serviceRegistration.LifeTime);
+                services.Add(serviceDescription);
+                continue;
+            }
             services.AddTransient(serviceRegistration.ServiceType, sp =>
             {
                 var type = serviceRegistration.Implementation;

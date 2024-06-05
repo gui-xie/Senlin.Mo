@@ -15,8 +15,8 @@
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageDescription>Modular monolith domain base class lib</PackageDescription>
         <PackageTags>Modular monolith domain</PackageTags>
-        <Version>1.0.8-alpha</Version>
-        <AssemblyVersion>1.0.8.0</AssemblyVersion>
+        <Version>1.0.9-alpha</Version>
+        <AssemblyVersion>1.0.9.0</AssemblyVersion>
         <Authors>Senlin</Authors>
         <Title>Senlin.Mo.Domain</Title>
         <Description>(experiment)Modular monolith domain base class lib</Description>
@@ -31,5 +31,9 @@
         <None Include="README.md" Pack="true" PackagePath="\">
           <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Senlin.Mo.Localization.Abstractions\Senlin.Mo.Localization.Abstractions.csproj" />
     </ItemGroup>
 </Project>
