@@ -11,8 +11,8 @@
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageDescription>Modular monolith</PackageDescription>
         <PackageTags>Mo Modular monolith</PackageTags>
-        <Version>1.0.9-alpha</Version>
-        <AssemblyVersion>1.0.9.0</AssemblyVersion>
+        <Version>1.0.10-alpha</Version>
+        <AssemblyVersion>1.0.10.0</AssemblyVersion>
         <Authors>Senlin</Authors>
         <Title>Senlin.Mo</Title>
         <Description>(experiment)Modular monolith</Description>
