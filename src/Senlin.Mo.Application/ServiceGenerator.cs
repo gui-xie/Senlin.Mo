@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Senlin.Mo.Application.Abstractions;
@@ -11,6 +12,7 @@ namespace Senlin.Mo.Application
     [Generator]
     public class ServiceGenerator : IIncrementalGenerator
     {
+        private static readonly Regex PatternReg = new("{(.*)}");
         
         /// <summary>
         /// Generate Service Registration and Handler Delegate
@@ -24,7 +26,7 @@ namespace Senlin.Mo.Application
                 .SyntaxProvider
                 .CreateSyntaxProvider(
                     IsClassSyntax,
-                    (ctx, c) => ToServiceInfo(ctx))
+                    (ctx, _) => ToServiceInfo(ctx))
                 .Where(s=> s.ServiceSyntax is not null)
                 .Combine(assemblyNameProvider);
 
@@ -37,7 +39,7 @@ namespace Senlin.Mo.Application
         }
 
         private static bool IsClassSyntax(SyntaxNode s, CancellationToken _) =>
-            s is ClassDeclarationSyntax z;
+            s is ClassDeclarationSyntax;
 
         private sealed record ServiceInfo(
             ClassDeclarationSyntax ClassSyntax,
@@ -46,7 +48,10 @@ namespace Senlin.Mo.Application
             bool IsEnableUnitOfWork,
             string Endpoint,
             string[] Methods,
-            INamedTypeSymbol? ServiceRequestSymbol)
+            string RequestName,
+            List<(string PropertyType, string Name)> RequestProperties,
+                bool IsRequestRecord,
+                    string[] PatternMatchNames)
         {
             public ClassDeclarationSyntax ClassSyntax { get; } = ClassSyntax;
 
@@ -61,7 +66,13 @@ namespace Senlin.Mo.Application
 
             public string[] Methods { get; } = Methods;
             
-            public INamedTypeSymbol? ServiceRequestSymbol { get; } = ServiceRequestSymbol;
+            public string RequestName { get; } = RequestName;
+            
+            public List<(string PropertyType, string Name)> RequestProperties { get; } = RequestProperties;
+            
+            public bool IsRequestRecord { get; } = IsRequestRecord;
+            
+            public string[] PatternMatchNames { get; } = PatternMatchNames;
         }
 
         private static string GetRequestTypeEndpointName(string requestTypeName)
@@ -86,8 +97,6 @@ namespace Senlin.Mo.Application
             var className = s.ClassSyntax.Identifier.ToString();
             var ns = GetNamespace(s.ClassSyntax);
             var serviceName = service.ToString();
-            var serviceRequestSymbol = s.ServiceRequestSymbol!;
-            var properties = GetQueryProperties(serviceRequestSymbol);
             
             var source = new StringBuilder();
             source.AppendLine("using Senlin.Mo.Application.Abstractions;");
@@ -110,12 +119,14 @@ namespace Senlin.Mo.Application
                     $"        private static string[] Methods = new []{{\"{string.Join("\",\"", methods)}\"}};");
                 source.AppendLine();
             }
+
+            source.Append(CreateClassWithoutQueryParameters(s));
             source.AppendLine($"        public static Delegate Handler = (");
-            AddQueryParameters(source, properties);
+            AddParameters(source, s);
             source.AppendLine($"                {serviceName} service,");
             source.AppendLine("                CancellationToken cancellationToken) ");
             source.AppendLine("            => service.ExecuteAsync(");
-            AddRequestObject(source, properties, serviceRequestSymbol);
+            AddRequestObject(source, s);
             source.AppendLine("                cancellationToken);");
             source.AppendLine();
             source.AppendLine($"        public static ServiceRegistration Registration = new ServiceRegistration(");
@@ -148,12 +159,7 @@ namespace Senlin.Mo.Application
                 ? "Result"
                 : $"Result<{service.TypeArgumentList.Arguments[1]}>";
             var serviceName = $"IService<{requestType}, {responseType}>";
-            var requestTypeName = service.TypeArgumentList.Arguments[0].ToString();
-            var endpointRequestName = GetRequestTypeEndpointName(requestTypeName);
-            var requestProperties = s.ServiceRequestSymbol != null
-                ? GetQueryProperties(s.ServiceRequestSymbol)
-                : new List<(string, string)>();
-            
+
             var source = new StringBuilder();
             source.AppendLine("using Senlin.Mo.Application.Abstractions;");
             source.AppendLine("using Senlin.Mo.Domain;");
@@ -176,26 +182,13 @@ namespace Senlin.Mo.Application
                     $"        private static string[] Methods = new []{{\"{string.Join("\",\"", methods)}\"}};");
                 source.AppendLine();
             }
+            source.Append(CreateClassWithoutQueryParameters(s));
             source.AppendLine($"        public static Delegate Handler = (");
-            if (requestProperties.Any())
-            {
-                AddQueryParameters(source, requestProperties);
-            }
-            else
-            {
-                source.AppendLine($"                {requestTypeName} {endpointRequestName}, ");
-            }
+            AddParameters(source, s);
             source.AppendLine($"                {serviceName} service,");
             source.AppendLine("                CancellationToken cancellationToken) ");
             source.AppendLine("            => service.ExecuteAsync(");
-            if (requestProperties.Any())
-            {
-                AddRequestObject(source, requestProperties, s.ServiceRequestSymbol!);
-            }
-            else
-            {
-                source.AppendLine($"                {endpointRequestName},");
-            }
+            AddRequestObject(source, s);
             source.AppendLine("                cancellationToken);");
             source.AppendLine();
             source.AppendLine($"        public static ServiceRegistration Registration = new ServiceRegistration(");
@@ -233,7 +226,7 @@ namespace Senlin.Mo.Application
             return char.ToLower(str[0]) + str.Substring(1);
         }
 
-        private static List<(string PropertyType, string PropertyName)> GetQueryProperties(ITypeSymbol typeSymbol)
+        private static List<(string PropertyType, string Name)> GetQueryProperties(ITypeSymbol typeSymbol)
         {
             var properties = from member in typeSymbol.GetMembers()
                 where member.Kind == SymbolKind.Property
@@ -284,30 +277,34 @@ namespace Senlin.Mo.Application
             }
             var baseTypes = s.BaseList?.Types ?? Enumerable.Empty<BaseTypeSyntax>();
             INamedTypeSymbol? serviceRequestSymbol = null;
+            var patternMatchNames = Array.Empty<string>();
+            List<(string, string)> requestProperties = new();
+            var isRequestRecord = false;
+            
             foreach (var type in baseTypes)
             {
                 if(ctx.SemanticModel.GetSymbolInfo(type.Type).Symbol is not INamedTypeSymbol { IsGenericType: true } symbol) continue;
                 var serviceGenericType = symbol.ToDisplayString();
                 const string commandServiceTypeName = "Senlin.Mo.Application.Abstractions.ICommandService<";
-                const string serviceTypeName = "Senlin.Mo.Application.Abstractions.IService<";
-                var queryReuqestFlag = false;
+                var patternMatches = PatternReg.Matches(endpoint);
+                patternMatchNames = new string[patternMatches.Count];
+                for (var i = 0; i < patternMatchNames.Length; i++)
+                {
+                    patternMatchNames[i] = patternMatches[i].Groups[1].Value;
+                }
+                
                 if(serviceGenericType.StartsWith(commandServiceTypeName))
                 {
                     isCommandService = true;
-                    if (methods.Contains("DELETE", StringComparer.InvariantCulture))
-                    {
-                        queryReuqestFlag = true;
-                    }
-                }
-                else if (serviceGenericType.StartsWith(serviceTypeName))
-                {
-                    queryReuqestFlag = true;
                 }
                 serviceType = (GenericNameSyntax)type.Type;
-                if(!queryReuqestFlag) continue;
 
                 serviceRequestSymbol =
                     ctx.SemanticModel.GetSymbolInfo(serviceType.TypeArgumentList.Arguments[0]).Symbol as INamedTypeSymbol;
+                
+                if(serviceRequestSymbol is null) continue;
+                isRequestRecord = serviceRequestSymbol.IsRecord;
+                requestProperties = GetQueryProperties(serviceRequestSymbol);
             }
 
             return new ServiceInfo(
@@ -317,7 +314,10 @@ namespace Senlin.Mo.Application
                 isUnitOfWork,
                 endpoint,
                 methods,
-                serviceRequestSymbol);
+                serviceRequestSymbol?.Name ?? string.Empty,
+                requestProperties,
+                isRequestRecord,
+                patternMatchNames);
         }
 
         private static string GetNamespace(BaseTypeDeclarationSyntax syntax)
@@ -347,38 +347,125 @@ namespace Senlin.Mo.Application
             return nameSpace;
         }
 
-        private static void AddQueryParameters(StringBuilder source, List<(string Type, string Name)> properties)
+        private static bool IsContainsQuery(ServiceInfo s) => s.PatternMatchNames.Length > 0;
+
+        private static string GetBodyClassName(ServiceInfo s) => $"{s.RequestName}0";
+
+        private static IEnumerable<(string PropertyType, string Name)> GetBodyProperties(ServiceInfo s) =>
+            from p in s.RequestProperties
+            where !s.PatternMatchNames.Contains(p.Name, StringComparer.InvariantCultureIgnoreCase)
+            select (p.PropertyType, p.Name);
+
+        private static IEnumerable<(string PropertyType, string Name)> GetQueryProperties(ServiceInfo s) =>
+            from p in s.RequestProperties
+            where s.PatternMatchNames.Contains(p.Name, StringComparer.InvariantCultureIgnoreCase)
+            select (p.PropertyType, p.Name);
+
+        private static string CreateClassWithoutQueryParameters(ServiceInfo s)
         {
-            foreach (var (t, n)  in properties)
+            if (!IsContainsQuery(s)) return string.Empty;
+            var properties = GetBodyProperties(s).ToList();
+            if (properties.Count == 0) return string.Empty;
+            var sb = new StringBuilder();
+            sb.AppendLine($"       private class {GetBodyClassName(s)}");
+            sb.AppendLine("        {");
+            foreach (var (t, n) in properties)
             {
-                source.AppendLine($"                {t} {FirstCharToLower(n)},");
+                sb.AppendLine($"            public {t} {n} {{ get; set; }}");
+            }
+            sb.AppendLine("        }");
+            sb.AppendLine();
+            return sb.ToString();
+            
+        }
+        private static void AddParameters(StringBuilder source, ServiceInfo s)
+        {
+            var isContainsQuery = IsContainsQuery(s);
+            if (s.IsCommandService && !isContainsQuery)
+            {
+                source.AppendLine($"                {s.RequestName} {GetRequestTypeEndpointName(s.RequestName)},");
+                return;
+            }
+
+            if (isContainsQuery)
+            {
+                var queryProperties = GetQueryProperties(s).ToList();
+                foreach (var p in queryProperties)
+                {
+                    source.AppendLine($"                {p.PropertyType} {FirstCharToLower(p.Name)},");
+                }
+                if(queryProperties.Count == s.RequestProperties.Count) return;
+                var className = GetBodyClassName(s);
+                source.AppendLine($"                {className} {FirstCharToLower(className)},");
+                return;
+            }
+
+            foreach (var p in s.RequestProperties)
+            {
+                source.AppendLine($"                {p.PropertyType} {FirstCharToLower(p.Name)},");
             }
         }
-        
-        private static void AddRequestObject(StringBuilder source, List<(string Type, string Name)> properties, INamedTypeSymbol serviceRequestSymbol)
+
+        private static void AddRequestObject(StringBuilder source, ServiceInfo s)
         {
-            if (serviceRequestSymbol.IsRecord)
+            var isContainsQuery = IsContainsQuery(s);
+            if (s.IsCommandService && !isContainsQuery)
             {
-                source.Append($"                new {serviceRequestSymbol}(");
+                source.AppendLine($"                {GetRequestTypeEndpointName(s.RequestName)},");
+                return;
+            }
+            var parameters = s.RequestProperties.Select(p => new
+            {
+                IsQuery = true,
+                p.PropertyType,
+                p.Name
+            }).ToArray();
+            if (isContainsQuery)
+            {
+                var queryProperties = GetQueryProperties(s)
+                    .Select(p => new
+                    {
+                        IsQuery = true,
+                        p.PropertyType,
+                        p.Name
+                    });
+                var bodyProperties = GetBodyProperties(s)
+                    .Select(p => new
+                    {
+                        IsQuery = false,
+                        p.PropertyType,
+                        p.Name
+                    });
+                parameters = queryProperties.Concat(bodyProperties).ToArray();
+            }
+
+            var className = FirstCharToLower(GetBodyClassName(s));
+            if (s.IsRequestRecord)
+            {
+                source.Append($"                new {s.RequestName}(");
                 var flag = false;
-                foreach (var (_, propertyName) in properties)
+                foreach (var p in parameters)
                 {
                     if (flag)
                     {
-                        source.Append(", ");
+                        source.Append(",");
                     }
 
                     flag = true;
-                    source.Append($"{FirstCharToLower(propertyName)}");
+                    var propertyNameParameter = p.IsQuery
+                        ? FirstCharToLower(p.Name)
+                        : $"{className}.{p.Name}";
+                    source.Append(propertyNameParameter);
                 }
+
                 source.AppendLine("),");
             }
             else
             {
-                source.AppendLine($"                new {serviceRequestSymbol}");
+                source.AppendLine($"                new {s.RequestName}");
                 source.AppendLine("                {");
                 var flag = false;
-                foreach (var (_, propertyName) in properties)
+                foreach (var p in parameters)
                 {
                     if (flag)
                     {
@@ -387,8 +474,12 @@ namespace Senlin.Mo.Application
                     }
 
                     flag = true;
-                    source.Append($"                    {propertyName} = {FirstCharToLower(propertyName)}");
+                    var propertyNameParameter = p.IsQuery
+                        ? FirstCharToLower(p.Name)
+                        : $"{className}.{p.Name}";
+                    source.Append($"                    {p.Name} = {FirstCharToLower(propertyNameParameter)}");
                 }
+
                 source.AppendLine();
                 source.AppendLine("                },");
             }

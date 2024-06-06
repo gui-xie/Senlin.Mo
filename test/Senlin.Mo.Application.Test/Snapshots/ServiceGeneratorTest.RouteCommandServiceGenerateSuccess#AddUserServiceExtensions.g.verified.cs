@@ -11,7 +11,7 @@ namespace ProjectA.User
         private static string[] Methods = new []{"POST"};
 
         public static Delegate Handler = (
-                AddUserDto addUser, 
+                AddUserDto addUser,
                 IService<AddUserDto, Result> service,
                 CancellationToken cancellationToken) 
             => service.ExecuteAsync(

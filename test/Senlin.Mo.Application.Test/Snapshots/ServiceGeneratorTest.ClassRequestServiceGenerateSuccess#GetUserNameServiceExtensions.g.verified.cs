@@ -15,7 +15,7 @@ namespace ProjectA.User
                 IService<GetUserNameDto, string> service,
                 CancellationToken cancellationToken) 
             => service.ExecuteAsync(
-                new ProjectA.User.GetUserNameDto
+                new GetUserNameDto
                 {
                     UserId = userId
                 },

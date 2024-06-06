@@ -82,6 +82,32 @@ namespace ProjectA.User{
     }
 
     [Fact]
+    public Task RoutePutCommandServiceGenerateSuccess()
+    {
+        const string srcText = @"
+using Senlin.Mo.Application.Abstractions;
+namespace projectA.User{
+    internal class UpdateUserDto{
+        public string Id{get;set;}
+        public string Name{get;set;}
+    }
+    [ServiceEndpoint(""user/{id}"", ""PUT"")]
+    internal class UpdateUserService: ICommandService<UpdateUserDto>
+    {
+        public Task<Result> ExecuteAsync(UpdateUserDto request, CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
+        }
+}
+";
+        var driver = GeneratorDriver(srcText);
+
+        var results = driver.GetRunResult();
+
+        return results.Verify();
+    }
+
+    [Fact]
     public Task RouteDeleteCommandServiceGenerateSuccess()
     {
         const string srcText = @"
