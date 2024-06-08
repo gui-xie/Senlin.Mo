@@ -11,15 +11,15 @@ namespace ProjectA.User
         private static string[] Methods = new []{"POST"};
 
         public static Delegate Handler = (
-                AddUserDto addUser,
-                IService<AddUserDto, Result> service,
+                ProjectA.User.AddUserDto addUser,
+                IService<ProjectA.User.AddUserDto, Result> service,
                 CancellationToken cancellationToken) 
             => service.ExecuteAsync(
                 addUser,
                 cancellationToken);
 
         public static ServiceRegistration Registration = new ServiceRegistration(
-            typeof(IService<AddUserDto, Result>),
+            typeof(IService<ProjectA.User.AddUserDto, Result>),
             typeof(AddUserService),
             [
                 typeof(UnitOfWorkDecorator<,,>),

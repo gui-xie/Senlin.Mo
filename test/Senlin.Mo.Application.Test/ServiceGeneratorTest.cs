@@ -34,17 +34,24 @@ namespace ProjectA.User{
     {
         const string srcText = @"
 using Senlin.Mo.Application.Abstractions;
+using ProjectA.Common;
 namespace ProjectA.User{
-    internal class GetUserNameDto{
-        public string UserId{get;set;}
-    }
+    public class GetUserNameDto{}
     [ServiceEndpoint(""get-user-name"")]
-    internal class GetUserNameService: IService<GetUserNameDto, string>
+    internal class GetUserNameService: IService<GetUserNameDto, PagedResult<UserName>>
     {
         public Task<string> ExecuteAsync(GetUserNameDto request, CancellationToken cancellationToken)
         {
             return Task.FromResult(""The name is not important."");
         }
+    }
+    public class UserName{}
+}
+
+namespace ProjectA.Common{
+    public class PagedResult<T>{
+        public int Total{get;set;}
+        public IEnumerable<T> Items{get;set;}
     }
 }
 ";
@@ -112,10 +119,8 @@ namespace projectA.User{
     {
         const string srcText = @"
 using Senlin.Mo.Application.Abstractions;
+using projectA.User.Dto;
 namespace ProjectA.User{
-    internal class DeleteUserDto{
-        public string Id{get;set;}
-    }
     [ServiceEndpoint(""user/{id}"", ""DELETE"")]
     internal class DeleteUserService: ICommandService<DeleteUserDto>
     {
@@ -125,29 +130,35 @@ namespace ProjectA.User{
         }
     }
 }
+namespace projectA.User.Dto{
+    internal class DeleteUserDto{
+        public string Id{get;set;}
+    }
+}
 ";
-        var driver = GeneratorDriver(srcText);
+        const string dtoText = @"
+
+";
+        var driver = GeneratorDriver(srcText, dtoText);
 
         var results = driver.GetRunResult();
 
         return results.Verify();
     }
     
-    private static GeneratorDriver GeneratorDriver(string srcText)
+    private static GeneratorDriver GeneratorDriver(params string[] srcTexts)
     {
-        var compilation = CreateCompilation(srcText);
+        var compilation = CreateCompilation(srcTexts);
         ISourceGenerator[] generator = [new ServiceGenerator().AsSourceGenerator()];
 
         var driver = CSharpGeneratorDriver.Create(generator);
         return driver.RunGeneratorsAndUpdateCompilation(compilation, out _, out _);
     }
     
-    private static CSharpCompilation CreateCompilation(string srcText)
+    private static CSharpCompilation CreateCompilation(params string[] srcTexts)
     {
-        SyntaxTree[] syntaxTrees =
-        [
-            CSharpSyntaxTree.ParseText(srcText)
-        ];
+        var syntaxTrees =
+            srcTexts.Select(t=> CSharpSyntaxTree.ParseText(t)).ToArray();
         var compilation = CSharpCompilation.Create(
             "ProjectA", 
             syntaxTrees, 

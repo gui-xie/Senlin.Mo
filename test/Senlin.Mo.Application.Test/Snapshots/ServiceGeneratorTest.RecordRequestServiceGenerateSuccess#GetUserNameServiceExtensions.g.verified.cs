@@ -8,14 +8,14 @@ namespace ProjectA.User
     {
         public static Delegate Handler = (
                 string userId,
-                IService<GetUserNameDto, string> service,
+                IService<ProjectA.User.GetUserNameDto, string> service,
                 CancellationToken cancellationToken) 
             => service.ExecuteAsync(
-                new GetUserNameDto(userId),
+                new ProjectA.User.GetUserNameDto(userId),
                 cancellationToken);
 
         public static ServiceRegistration Registration = new ServiceRegistration(
-            typeof(IService<GetUserNameDto, string>),
+            typeof(IService<ProjectA.User.GetUserNameDto, string>),
             typeof(GetUserNameService),
             [
                 typeof(LogDecorator<,>)

@@ -18,10 +18,10 @@ namespace projectA.User
         public static Delegate Handler = (
                 string id,
                 UpdateUserDto0 updateUserDto0,
-                IService<UpdateUserDto, Result> service,
+                IService<projectA.User.UpdateUserDto, Result> service,
                 CancellationToken cancellationToken) 
             => service.ExecuteAsync(
-                new UpdateUserDto
+                new projectA.User.UpdateUserDto
                 {
                     Id = id,
                     Name = updateUserDto0.Name
@@ -29,7 +29,7 @@ namespace projectA.User
                 cancellationToken);
 
         public static ServiceRegistration Registration = new ServiceRegistration(
-            typeof(IService<UpdateUserDto, Result>),
+            typeof(IService<projectA.User.UpdateUserDto, Result>),
             typeof(UpdateUserService),
             [
                 typeof(UnitOfWorkDecorator<,,>),

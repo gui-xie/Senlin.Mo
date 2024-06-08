@@ -11,18 +11,17 @@ namespace ProjectA.User
         private static string[] Methods = new []{"GET"};
 
         public static Delegate Handler = (
-                string userId,
-                IService<GetUserNameDto, string> service,
+                IService<ProjectA.User.GetUserNameDto, ProjectA.Common.PagedResult<ProjectA.User.UserName>> service,
                 CancellationToken cancellationToken) 
             => service.ExecuteAsync(
-                new GetUserNameDto
+                new ProjectA.User.GetUserNameDto
                 {
-                    UserId = userId
+
                 },
                 cancellationToken);
 
         public static ServiceRegistration Registration = new ServiceRegistration(
-            typeof(IService<GetUserNameDto, string>),
+            typeof(IService<ProjectA.User.GetUserNameDto, ProjectA.Common.PagedResult<ProjectA.User.UserName>>),
             typeof(GetUserNameService),
             [
                 typeof(LogDecorator<,>)
