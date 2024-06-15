@@ -15,8 +15,8 @@
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageDescription>Provide multi-language support, use source generator and json configuration file to generate resource files.</PackageDescription>
         <PackageTags>Localization JSON Multi-Langugae SourceGenerator</PackageTags>
-        <Version>1.0.11-alpha</Version>
-        <AssemblyVersion>1.0.11.0</AssemblyVersion>
+        <Version>1.0.12-alpha</Version>
+        <AssemblyVersion>1.0.12.0</AssemblyVersion>
         <Authors>Senlin</Authors>
         <Title>Senlin.Mo.Localization</Title>
         <Description>(experiment)Provide multi-language support, use source generator and json configuration file to generate resource files.</Description>
@@ -29,7 +29,7 @@
     <ItemGroup>
         <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4" PrivateAssets="all"/>
         <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.3.1" PrivateAssets="all"/>
-        <PackageReference Include="System.Text.Json" Version="8.0.3" />
+        <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     </ItemGroup>
 
     <ItemGroup>
@@ -37,7 +37,7 @@
         <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false"/>
         <None Include="$(OutputPath)\$(AssemblyName).Abstractions.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false"/>
         <None Include="$(OutputPath)\$(AssemblyName).Abstractions.dll" Pack="true" PackagePath="lib/netstandard2.0" Visible="false"/>
-        <None Include="$(NugetPackageRoot)\system.text.json\8.0.3\lib\netstandard2.0\System.Text.Json.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false"/>
+        <None Include="$(NugetPackageRoot)\newtonsoft.json\13.0.3\lib\netstandard2.0\Newtonsoft.Json.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false"/>
     </ItemGroup>
 
     <ItemGroup>

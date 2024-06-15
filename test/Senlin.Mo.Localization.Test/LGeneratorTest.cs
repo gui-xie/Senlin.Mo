@@ -11,7 +11,7 @@ public class LGeneratorTest
     {
         var json = CreateAdditionalText(
             "l.json",
-            "{\"name\":\"Name\",\"ageIs\":\"Age is {age}\"}"
+            "{\"name\":\"Name\",\"ageIs\":\"Age is {age}\", \"ageIsEscape\":\"Age is {$age}\"}"
         );
         const string srcText = @"
 using Senlin.Mo.Localization.Abstractions;

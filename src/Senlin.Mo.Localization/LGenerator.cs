@@ -1,9 +1,9 @@
 ﻿using System.Reflection;
 using System.Text;
-using System.Text.Json;
 using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Newtonsoft.Json;
 
 namespace Senlin.Mo.Localization;
 
@@ -32,20 +32,20 @@ public class LGenerator : IIncrementalGenerator
     {
         context.RegisterSourceOutput(
             GetLocalizationFileProvider(context), (
-            ctx, pair) =>
-        {
-            var file = pair.Left.Left;
-            var assemblyName = pair.Left.Right;
-            var lFileName = pair.Right;
-            if (!file.Path.EndsWith(lFileName)) return;
-            if (assemblyName is null) return;
-            var jsonText = file.GetText()?.ToString() ?? string.Empty;
-            var dict = JsonSerializer.Deserialize<Dictionary<string, string>>(jsonText);
-            if (dict is null) return;
-            var infos = GetLStringInfos(dict);
-            CreateLSource(ctx, assemblyName, infos);
-            CreateLResourceSource(ctx, assemblyName, infos);
-        });
+                ctx, pair) =>
+            {
+                var file = pair.Left.Left;
+                var assemblyName = pair.Left.Right;
+                var lFileName = pair.Right;
+                if (!file.Path.EndsWith(lFileName)) return;
+                if (assemblyName is null) return;
+                var jsonText = file.GetText()?.ToString() ?? string.Empty;
+                var dict = JsonConvert.DeserializeObject<Dictionary<string, string>>(jsonText);
+                if (dict is null) return;
+                var infos = GetLStringInfos(dict);
+                CreateLSource(ctx, assemblyName, infos);
+                CreateLResourceSource(ctx, assemblyName, infos);
+            });
     }
 
     private static string GetNamespace(BaseTypeDeclarationSyntax syntax)
@@ -94,7 +94,7 @@ public class LGenerator : IIncrementalGenerator
             .Where(x => x.TargetSymbol is INamedTypeSymbol)
             .Select((x, _) => new EnumLStringInfo((INamedTypeSymbol)x.TargetSymbol, x.TargetNode))
             .Combine(compilationContext);
-        
+
         context.RegisterSourceOutput(attributeProviders, (ctx, info) =>
         {
             var (attributeSymbol, enumSyntax) = info.Left;
@@ -104,7 +104,7 @@ public class LGenerator : IIncrementalGenerator
             if (enumFields.Count == 0) return;
             var enumNamespace = GetNamespace(enumSyntax);
             var enumParameterName = enumName[0].ToString().ToLower() + enumName.Substring(1);
-            
+
             // generate
             var className = $"{enumName}Extensions";
             var source = new StringBuilder();
@@ -114,13 +114,15 @@ public class LGenerator : IIncrementalGenerator
             {
                 source.AppendLine($"using {enumNamespace};");
             }
+
             source.AppendLine();
             source.AppendLine($"namespace {assemblyName}");
             source.AppendLine("{");
             source.AppendLine("    /// <summary>");
             source.AppendLine($"    /// {enumName} localization string extensions");
             source.AppendLine("    /// </summary>");
-            source.AppendLine($"    [System.CodeDom.Compiler.GeneratedCodeAttribute(\"{ExecutingAssembly.Name}\", \"{ExecutingAssembly.Version}\")]");
+            source.AppendLine(
+                $"    [System.CodeDom.Compiler.GeneratedCodeAttribute(\"{ExecutingAssembly.Name}\", \"{ExecutingAssembly.Version}\")]");
             source.AppendLine($"    public static partial class {className}");
             source.AppendLine("    {");
             source.AppendLine("        /// <summary>");
@@ -147,17 +149,18 @@ public class LGenerator : IIncrementalGenerator
                         }
                     }
                 }
+
                 source.AppendLine(
                     $"                {enumName}.{enumField.Identifier.Text} => L.{lKeyProperty},");
             }
-            
+
             source.AppendLine("                _ => LString.Empty");
             source.AppendLine("            };");
             source.AppendLine("        }");
             source.AppendLine("    }");
             source.AppendLine("}");
             source.Append("#nullable restore");
-            
+
             ctx.AddSource($"{className}.g.cs", source.ToString());
         });
     }
@@ -314,11 +317,21 @@ public class LGenerator : IIncrementalGenerator
 
             var tokens = new List<string>();
             const string pattern = "(?<={)[^{}]+(?=})";
+            var escapeMatches = new List<string>();
             foreach (Match match in Regex.Matches(value, pattern))
             {
+                if (match.Value.StartsWith("$"))
+                {
+                    escapeMatches.Add(match.Value);
+                    continue;
+                }
                 if (tokens.Contains(match.Value)) continue;
                 tokens.Add(match.Value);
             }
+
+            value = escapeMatches.Aggregate(value,
+                (current, escapeMatch) =>
+                    current.Replace(escapeMatch, escapeMatch.Substring(1)));
 
             result.Add(new LStringInfo(key, value, keyProperty, tokens));
         }

@@ -21,9 +21,9 @@ public readonly struct LString(
     /// </summary>
     /// <param name="resolve"></param>
     /// <returns></returns>
-    public string Resolve(Func<string, string> resolve)
+    public string Resolve(Func<string, string>? resolve = null)
     {
-        var s = resolve(key);
+        var s = resolve?.Invoke(key);
         if (string.IsNullOrWhiteSpace(s)) s = defaultValue;
         foreach (var arg in args)
         {

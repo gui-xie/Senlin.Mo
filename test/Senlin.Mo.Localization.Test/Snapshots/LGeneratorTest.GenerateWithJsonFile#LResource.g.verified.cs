@@ -24,6 +24,11 @@ namespace ProjectA
         /// </summary>
         protected abstract string AgeIs { get; }
 
+        /// <summary>
+        /// Age is {age}
+        /// </summary>
+        protected abstract string AgeIsEscape { get; }
+
 
         /// <summary>
         /// Get localization resource
@@ -32,6 +37,7 @@ namespace ProjectA
         {
             { "name", Name },
             { "ageIs", AgeIs },
+            { "ageIsEscape", AgeIsEscape },
         };
     }
 }
