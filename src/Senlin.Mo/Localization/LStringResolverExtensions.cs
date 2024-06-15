@@ -1,5 +1,6 @@
 ﻿using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Senlin.Mo.Application.Abstractions;
 using Senlin.Mo.Localization.Abstractions;
 
@@ -20,7 +21,7 @@ internal static class LStringResolverExtensions
     {
         var getResource = GetJsonFileResourcesFn(localizationDirectory);
         var lStringResolverType = module.GetLStringResolverType();
-        services.AddScoped(lStringResolverType, sp =>
+        services.TryAddScoped(lStringResolverType, sp =>
         {
             var getCulture = sp.GetRequiredService<GetCulture>();
             return Activator.CreateInstance(
@@ -29,15 +30,6 @@ internal static class LStringResolverExtensions
                 getResource,
                 true)!;
         });
-    }
-    
-    private class LStringResolver<T>(
-        GetCulture getCulture,
-        GetCultureResource getCultureResource,
-        bool isCultureWillChanged = true) 
-        : LStringResolver(getCulture, getCultureResource, isCultureWillChanged)
-    {
-        
     }
 
     private static GetCultureResource GetJsonFileResourcesFn(
