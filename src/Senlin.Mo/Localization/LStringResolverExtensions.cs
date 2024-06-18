@@ -8,27 +8,23 @@ namespace Senlin.Mo;
 
 internal static class LStringResolverExtensions
 {
-    public static Type GetLStringResolverType(this IModule module)
-    {
-        return typeof(LStringResolver<>).MakeGenericType(module.GetType());
-    }
+    public static Type GetLStringResolverType(this IModule module)=> GetLStringResolverType(module.GetType());
+    
+    private static Type GetLStringResolverType(Type type) => typeof(ILStringResolver<>).MakeGenericType(type);
     
     public static void AddModuleLStringResolver(
         this IServiceCollection services, 
         IModule module,
-        string localizationDirectory
-        )
+        string localizationDirectory)
     {
         var getResource = GetJsonFileResourcesFn(localizationDirectory);
-        var lStringResolverType = module.GetLStringResolverType();
+        var type = module.GetType();
+        var lStringResolverType = GetLStringResolverType(type);
         services.TryAddScoped(lStringResolverType, sp =>
         {
             var getCulture = sp.GetRequiredService<GetCulture>();
-            return Activator.CreateInstance(
-                typeof(LStringResolver), 
-                getCulture,
-                getResource,
-                true)!;
+            var resolver = new LStringResolver(getCulture, getResource);
+            return Activator.CreateInstance(typeof(LStringResolver<>).MakeGenericType(type), resolver)!;
         });
     }
 
@@ -44,4 +40,9 @@ internal static class LStringResolverExtensions
             var json = File.ReadAllText(jsonPath);
             return JsonSerializer.Deserialize<Dictionary<string, string>>(json)!;
         };
+    
+    private class LStringResolver<T>(ILStringResolver l): ILStringResolver<T>
+    {
+        public string this[LString lString] => l[lString];
+    }
 }

@@ -9,7 +9,7 @@ namespace Senlin.Mo.Localization.Abstractions;
 /// <param name="getCultureResource">get culture resource</param>
 public class LStringResolver(
     GetCulture getCulture,
-    GetCultureResource getCultureResource)
+    GetCultureResource getCultureResource): ILStringResolver
 {
     private static readonly ConcurrentDictionary<string, Lazy<Dictionary<string, string>>> Dictionaries = new();
 

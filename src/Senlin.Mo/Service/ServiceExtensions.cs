@@ -1,8 +1,4 @@
-﻿using System.Collections.Immutable;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Routing;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Senlin.Mo.Application.Abstractions;
 using Senlin.Mo.Localization.Abstractions;
@@ -67,41 +63,9 @@ internal static class ServiceExtensions
         }
     }
 
-    /// <summary>
-    /// Map endpoints
-    /// </summary>
-    /// <param name="group"></param>
-    /// <param name="module"></param>
-    public static void MapEndpoints(this RouteGroupBuilder group, params IModule[] module)
-    {
-        foreach (var m in module)
-        {
-            group.MapEndpoints(m);
-        }
-    }
-    
-    /// <summary>
-    /// Map endpoints
-    /// </summary>
-    /// <param name="group"></param>
-    /// <param name="module"></param>
-    /// <param name="groupName">when null: lower module name</param>
-    public static void MapEndpoints(this RouteGroupBuilder group, IModule module, string? groupName = null)
-    {
-        var gName = groupName ?? module.Name.ToLower();
-        var g = group.MapGroup(gName).WithTags(gName);
-        var mapper = from s in module.GetServices()
-            where s.EndpointData is not null
-            select g.MapMethods(
-                s.EndpointData.Pattern,
-                s.EndpointData.Methods,
-                s.EndpointData.Handler);
-        mapper.ToImmutableArray();
-    }
-
     private static object GetModuleRequiredService(this IServiceProvider sp, IModule module, Type type)
     {
-        if (type == typeof(LStringResolver))
+        if (type == typeof(ILStringResolver))
         {
             type = module.GetLStringResolverType();
         }

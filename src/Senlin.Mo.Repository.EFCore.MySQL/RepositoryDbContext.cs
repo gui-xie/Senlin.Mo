@@ -25,7 +25,10 @@ public abstract class RepositoryDbContext<T>(
     /// <param name="optionsBuilder"></param>
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-        optionsBuilder.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString));
+        optionsBuilder.UseMySql(
+            connectionString,
+            ServerVersion.AutoDetect(connectionString),
+            options => options.UseMicrosoftJson());
         optionsBuilder.EnableSensitiveDataLogging();
         optionsBuilder.UseSnakeCaseNamingConvention();
     }
