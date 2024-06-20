@@ -10,7 +10,7 @@ public abstract class Entity
     /// <summary>
     /// Id
     /// </summary>
-    public EntityId Id { get; private set; }
+    public long Id { get; private set; }
     
     private List<IDomainEvent>? _domainEvents;
 

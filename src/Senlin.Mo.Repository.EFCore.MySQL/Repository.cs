@@ -27,7 +27,7 @@ public abstract class Repository<T>(
     /// <param name="id">id</param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    protected Task<T?> GetAsync(EntityId id, CancellationToken cancellationToken = default) =>
+    protected Task<T?> GetAsync(long id, CancellationToken cancellationToken = default) =>
         EntitySet.FirstOrDefaultAsync(e => e.Id == id, cancellationToken);
 
     /// <summary>
@@ -41,7 +41,7 @@ public abstract class Repository<T>(
     {
         var entry = EntitySet.Entry(entity);
         var user = helper.GetUserId();
-        var now = helper.GetUtcNow();
+        var now = helper.GetNow();
         entry.Property(DeleteUser).CurrentValue = user;
         entry.Property(DeleteTime).CurrentValue = now;
         entry.Property(IsDelete).CurrentValue = true;
@@ -65,7 +65,7 @@ public abstract class Repository<T>(
     {
         var entry = EntitySet.Entry(entity);
         var user = helper.GetUserId();
-        var now = helper.GetUtcNow();
+        var now = helper.GetNow();
         entry.Property(UpdateUser).CurrentValue = user;
         entry.Property(UpdateTime).CurrentValue = now;
         entry.Property(ConcurrencyToken).CurrentValue = helper.NewConcurrencyToken();
@@ -98,14 +98,14 @@ public abstract class Repository<T>(
         }
         var id = helper.NewId();
         var user = helper.GetUserId();
-        var now = helper.GetUtcNow();
-        entry.Property<EntityId>(nameof(Entity.Id)).CurrentValue = id;
+        var now = helper.GetNow();
+        entry.Property<long>(nameof(Entity.Id)).CurrentValue = id;
         entry.Property(CreateUser).CurrentValue = user;
         entry.Property(CreateTime).CurrentValue = now;
         entry.Property(UpdateUser).CurrentValue = string.Empty;
-        entry.Property(UpdateTime).CurrentValue = EntityDateTime.Empty;
+        entry.Property(UpdateTime).CurrentValue = 0;
         entry.Property(DeleteUser).CurrentValue = string.Empty;
-        entry.Property(DeleteTime).CurrentValue = EntityDateTime.Empty;
+        entry.Property(DeleteTime).CurrentValue = 0;
         entry.Property(Tenant).CurrentValue = helper.GetTenant();
         entry.Property(ConcurrencyToken).CurrentValue = helper.NewConcurrencyToken();
         // entry.Property(UniqueToken).CurrentValue = entity.IsUnique()
@@ -119,9 +119,9 @@ public abstract class Repository<T>(
     }
 
     private ChangeDataCapture CreateCdc<TEntity>(
-        EntityId entityId,
+        long entityId,
         string user,
-        EntityDateTime now,
+        long now,
         ChangeDataCaptureType type,
         TEntity entity
     )
@@ -134,7 +134,7 @@ public abstract class Repository<T>(
             type,
             JsonSerializer.Serialize(entity, ChangeDataCaptureExtensions.SerializerOptions));
         var cdcEntry = dbContext.Entry(cdc);
-        cdcEntry.Property(ChangeDataCaptureExtensions.MonthName).CurrentValue = ((DateTime)now).ToString("yyMM");
+        cdcEntry.Property(ChangeDataCaptureExtensions.MonthName).CurrentValue = DateTimeOffset.FromUnixTimeSeconds(now).ToLocalTime().ToString("yyMM");
         return cdc;
     }
 }

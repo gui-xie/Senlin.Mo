@@ -1,5 +1,4 @@
 ﻿using IdGen;
-using Senlin.Mo.Domain;
 
 namespace Senlin.Mo;
 
@@ -15,5 +14,5 @@ internal class IdGenerator
         _idGenerator = new IdGen.IdGenerator(0, options);
     }
 
-    public EntityId New() => new(_idGenerator.CreateId());
+    public long New() => _idGenerator.CreateId();
 }

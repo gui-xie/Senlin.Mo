@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Senlin.Mo.Application.Abstractions;
-using Senlin.Mo.Domain;
 using Senlin.Mo.Localization.Abstractions;
 using Senlin.Mo.Repository.Abstractions;
 
@@ -30,8 +29,7 @@ public static class MoExtensions
         configureOptions?.Invoke(options);
         
         var modules = options.Modules ?? [];
-        services.TryAddSingleton<GetUtcNow>(() => (EntityDateTime)DateTime.UtcNow);
-        services.TryAddSingleton<GetNow>(()=>DateTime.Now);
+        services.TryAddSingleton<GetNow>(()=>DateTimeOffset.Now.ToUnixTimeSeconds());
         services.TryAddSingleton<GetToday>(()=>DateTime.Today);
         services.TryAddScoped<GetTenant>(_ => () => options.SystemTenant);
         services.TryAddScoped<GetUserId>(_ => () => string.Empty);

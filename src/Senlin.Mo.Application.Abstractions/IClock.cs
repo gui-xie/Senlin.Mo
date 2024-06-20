@@ -6,7 +6,7 @@
 public interface IClock
 {
     /// <summary>
-    /// Get current utc time
+    /// Get current time stamp
     /// </summary>
-    GetUtcNow GetUtcNow { get; }
+    GetNow GetNow { get; }
 }

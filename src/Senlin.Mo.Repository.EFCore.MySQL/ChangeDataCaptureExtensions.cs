@@ -13,11 +13,6 @@ public static class ChangeDataCaptureExtensions
     
     internal static readonly JsonSerializerOptions SerializerOptions = new()
     {
-        IgnoreReadOnlyFields = true,
-        Converters =
-        {
-            new EntityIdJsonConverter(),
-            new EntityDateTimeJsonConverter()
-        }
+        IgnoreReadOnlyFields = true
     };
 }

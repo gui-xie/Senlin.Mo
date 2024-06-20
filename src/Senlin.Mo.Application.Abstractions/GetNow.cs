@@ -1,6 +1,8 @@
-﻿namespace Senlin.Mo.Application.Abstractions;
+﻿using Senlin.Mo.Domain;
+
+namespace Senlin.Mo.Application.Abstractions;
 
 /// <summary>
-/// Get now
+/// Get current time stamp
 /// </summary>
-public delegate DateTime GetNow();
+public delegate long GetNow();

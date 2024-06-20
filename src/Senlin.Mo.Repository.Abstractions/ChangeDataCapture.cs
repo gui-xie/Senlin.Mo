@@ -1,6 +1,4 @@
-﻿using Senlin.Mo.Domain;
-
-namespace Senlin.Mo.Repository.Abstractions;
+﻿namespace Senlin.Mo.Repository.Abstractions;
 
 /// <summary>
 /// Change Data Capture
@@ -9,18 +7,17 @@ public class ChangeDataCapture
 {
     private ChangeDataCapture()
     {
-        
     }
-    
+
     /// <summary>
     /// Id
     /// </summary>
-    public EntityId Id { get; private set; }
-    
+    public long Id { get; private set; }
+
     /// <summary>
     /// EntityId
     /// </summary>
-    public EntityId EntityId { get; private set; }
+    public long EntityId { get; private set; }
 
     /// <summary>
     /// Entity Type
@@ -31,17 +28,17 @@ public class ChangeDataCapture
     /// Change User
     /// </summary>
     public string ChangeUser { get; private set; } = string.Empty;
-    
+
     /// <summary>
     /// Change Time
     /// </summary>
-    public EntityDateTime ChangeTime { get; private set; }
+    public long ChangeTime { get; private set; }
 
     /// <summary>
     /// Change Type
     /// </summary>
     public ChangeDataCaptureType Type { get; private set; }
-    
+
     /// <summary>
     /// Change Data
     /// </summary>
@@ -58,10 +55,10 @@ public class ChangeDataCapture
     /// <param name="changeContent">change content</param>
     /// <returns></returns>
     public static ChangeDataCapture Create(
-        EntityId entityId,
+        long entityId,
         string entityType,
         string changeUser,
-        EntityDateTime changeTime,
+        long changeTime,
         ChangeDataCaptureType type,
         string changeContent
     ) => new()

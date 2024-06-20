@@ -4,7 +4,7 @@ using Senlin.Mo.Repository.Abstractions;
 namespace Senlin.Mo;
 
 internal class RepositoryHelper(
-    GetUtcNow getUtcNow,
+    GetNow getNow,
     GetUserId getUserId,
     GetTenant getTenant,
     IdGenerator idGenerator,
@@ -13,8 +13,8 @@ internal class RepositoryHelper(
 ) : IRepositoryHelper
 {
     private readonly string _systemTenant = getSystemTenant();
-    
-    public GetUtcNow GetUtcNow => getUtcNow;
+
+    public GetNow GetNow => getNow;
 
     public GetUserId GetUserId => getUserId;
 

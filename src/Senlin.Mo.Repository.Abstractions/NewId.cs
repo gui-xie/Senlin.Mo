@@ -5,4 +5,4 @@ namespace Senlin.Mo.Repository.Abstractions;
 /// <summary>
 /// generate a new id
 /// </summary>
-public delegate EntityId NewId();
+public delegate long NewId();

@@ -39,8 +39,6 @@ public abstract class RepositoryDbContext<T>(
     /// <param name="configurationBuilder"></param>
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
     {
-        configurationBuilder.Properties<EntityId>().HaveConversion<EntityIdConverter>();
-        configurationBuilder.Properties<EntityDateTime>().HaveConversion<EntityDateTimeConverter>();
     }
 
     /// <summary>
@@ -97,9 +95,9 @@ public abstract class RepositoryDbContext<T>(
         builder.Property<string>(CreateUser);
         builder.Property<string>(UpdateUser);
         builder.Property<string>(DeleteUser);
-        builder.Property<EntityDateTime>(CreateTime);
-        builder.Property<EntityDateTime>(UpdateTime);
-        builder.Property<EntityDateTime>(DeleteTime);
+        builder.Property<long>(CreateTime);
+        builder.Property<long>(UpdateTime);
+        builder.Property<long>(DeleteTime);
         builder.Property<bool>(IsDelete);
 
         builder.HasKey(e=>e.Id);
