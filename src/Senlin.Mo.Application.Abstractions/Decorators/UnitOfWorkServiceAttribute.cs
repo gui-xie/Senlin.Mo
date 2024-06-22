@@ -1,18 +1,22 @@
-﻿namespace Senlin.Mo.Application.Abstractions;
+﻿namespace Senlin.Mo.Application.Abstractions.Decorators;
 
 /// <summary>
-/// Unit Of Work
+/// Unit Of Work Service Attribute
 /// </summary>
 /// <param name="service"></param>
 /// <param name="unitOfWorkHandler"></param>
 /// <typeparam name="TRequest"></typeparam>
 /// <typeparam name="TResponse"></typeparam>
-/// <typeparam name="TDbContext"></typeparam>
-public class UnitOfWorkDecorator<TRequest, TResponse, TDbContext>(
+public class UnitOfWorkServiceAttribute<TRequest, TResponse>(
     IService<TRequest, TResponse> service,
     IUnitOfWorkHandler unitOfWorkHandler)
-    : IService<TRequest, TResponse>
+    : Attribute, IService<TRequest, TResponse>
 {
+    /// <summary>
+    /// Is enable
+    /// </summary>
+    public bool IsEnable { get; set; } = true;
+
     /// <summary>
     /// Service ExecuteAsync
     /// </summary>
@@ -22,7 +26,11 @@ public class UnitOfWorkDecorator<TRequest, TResponse, TDbContext>(
     public async Task<TResponse> ExecuteAsync(TRequest request, CancellationToken cancellationToken)
     {
         var response = await service.ExecuteAsync(request, cancellationToken);
-        await unitOfWorkHandler.SaveChangesAsync(cancellationToken);
+        if (IsEnable)
+        {
+            await unitOfWorkHandler.SaveChangesAsync(cancellationToken);
+        }
+
         return response;
     }
 }

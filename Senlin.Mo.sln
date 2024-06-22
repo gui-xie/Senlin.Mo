@@ -39,6 +39,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Senlin.Mo.Test", "test\Senl
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Senlin.Mo.Domain.Test", "test\Senlin.Mo.Domain.Test\Senlin.Mo.Domain.Test.csproj", "{AD8624CD-E2C3-468E-B306-31C30D98AA60}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Senlin.Mo.Application.Abstractions.Test", "test\Senlin.Mo.Application.Abstractions.Test\Senlin.Mo.Application.Abstractions.Test.csproj", "{DF5A36AD-D893-4DAC-A62C-4B967E513711}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -97,6 +99,10 @@ Global
 		{AD8624CD-E2C3-468E-B306-31C30D98AA60}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AD8624CD-E2C3-468E-B306-31C30D98AA60}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AD8624CD-E2C3-468E-B306-31C30D98AA60}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DF5A36AD-D893-4DAC-A62C-4B967E513711}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DF5A36AD-D893-4DAC-A62C-4B967E513711}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DF5A36AD-D893-4DAC-A62C-4B967E513711}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DF5A36AD-D893-4DAC-A62C-4B967E513711}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{361DB9DD-6ADC-47FA-BB21-E2767F8822DB} = {C9FA60DF-E387-4C31-80DC-C63D9E8FC0B9}
@@ -112,5 +118,6 @@ Global
 		{3F19845F-D5F0-487F-9A12-6DD203287DD3} = {F1B2D622-5A2D-4867-B1A2-02A71023EDBE}
 		{86F3B174-DF2C-434A-A603-8B890792AA66} = {F1B2D622-5A2D-4867-B1A2-02A71023EDBE}
 		{AD8624CD-E2C3-468E-B306-31C30D98AA60} = {F1B2D622-5A2D-4867-B1A2-02A71023EDBE}
+		{DF5A36AD-D893-4DAC-A62C-4B967E513711} = {F1B2D622-5A2D-4867-B1A2-02A71023EDBE}
 	EndGlobalSection
 EndGlobal
