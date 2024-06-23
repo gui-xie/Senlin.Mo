@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using System.Runtime.CompilerServices;
+using Microsoft.Extensions.DependencyInjection;
 using Senlin.Mo.Application.Abstractions;
 using Senlin.Mo.Application.Abstractions.Decorators;
 using Senlin.Mo.Localization.Abstractions;
@@ -31,7 +32,7 @@ internal static class ServiceExtensions
                 var decorators = serviceRegistration.Decorators ?? [];
                 return decorators.Aggregate(s, (current, decorator) 
                     => sp.DecorateService(
-                        GetDecoratorServiceType(decorator.GetType()),
+                        decorator,
                         serviceRegistration.ServiceType,
                         current,
                         module));
@@ -70,14 +71,15 @@ internal static class ServiceExtensions
 
     private static IService DecorateService(
         this IServiceProvider sp,
-        Type decoratorGenericType,
+        object decorator,
         Type serviceType,
         object service,
         IModule module)
     {
         var serviceGenericArguments = serviceType.GetGenericArguments();
-        var decoratorType = decoratorGenericType.MakeGenericType(serviceGenericArguments);
-        var args =  decoratorType
+        var decoratorGenericServiceType = GetDecoratorServiceType(decorator.GetType());
+        var decoratorServiceType = decoratorGenericServiceType.MakeGenericType(serviceGenericArguments);
+        var args =  decoratorServiceType
             .GetConstructors()
             .First()
             .GetParameters()
@@ -86,9 +88,13 @@ internal static class ServiceExtensions
                     ? service 
                     : sp.GetModuleRequiredService(module, p.ParameterType))
             .ToArray();
-        return (Activator.CreateInstance(
-            decoratorType, 
-            args) as IService)!;   
+        var decoratedService = Activator.CreateInstance(
+            decoratorServiceType,
+            args)!;
+        // property inject
+        decoratorServiceType.GetProperty("AttributeData")!
+            .SetValue(decoratedService, decorator); 
+        return (IService)decoratedService;
     }
     
     private static object CreateModuleInstance(
