@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Senlin.Mo.Application.Abstractions;
+using Senlin.Mo.Application.Abstractions.Decorators;
 using Senlin.Mo.Localization.Abstractions;
 
 namespace Senlin.Mo;
@@ -45,9 +46,11 @@ internal static class ServiceExtensions
         {
             return serviceType;
         }
+
+        var decoratorServiceType = typeof(IDecoratorService<>).MakeGenericType(decoratorType);
         var types = 
             from t in decoratorType.Assembly.GetTypes()
-            where t.IsAssignableTo(decoratorType)
+            where t.IsAssignableTo(decoratorServiceType)
             select t;
         return DecoratorServices[decoratorType] = types.First();
     }
