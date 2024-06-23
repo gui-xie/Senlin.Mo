@@ -82,7 +82,6 @@ public abstract class RepositoryDbContext<T>(
     private void ApplyEntityModel<TEntity>(ModelBuilder modelBuilder) where TEntity : Entity
     {
         var builder = modelBuilder.Entity<TEntity>();
-
         
         builder.HasQueryFilter(e =>
             !EF.Property<bool>(e, IsDelete) &&

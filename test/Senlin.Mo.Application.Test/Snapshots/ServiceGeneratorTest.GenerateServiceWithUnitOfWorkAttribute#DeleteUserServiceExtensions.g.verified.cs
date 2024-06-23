@@ -25,8 +25,7 @@ namespace ProjectA.User
             typeof(IService<projectA.User.Dto.DeleteUserDto, Result>),
             typeof(DeleteUserService),
             [
-                new Senlin.Mo.Application.Abstractions.Decorators.UnitOfWork.UnitOfWorkAttribute(),
-                new Senlin.Mo.Application.Abstractions.Decorators.Log.LogAttribute(),
+                new Senlin.Mo.Application.Abstractions.Decorators.UnitOfWork.UnitOfWorkAttribute(false){IsEnable = true},
             ],
             ServiceLifetime.Transient,
             new EndpointData(Endpoint, Handler, Method)

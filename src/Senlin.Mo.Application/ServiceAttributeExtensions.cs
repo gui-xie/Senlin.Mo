@@ -1,7 +1,9 @@
-﻿using System.Text.RegularExpressions;
+﻿using System.Text;
+using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Senlin.Mo.Application.Abstractions;
+using Senlin.Mo.Application.Abstractions.Decorators;
 
 namespace Senlin.Mo.Application;
 
@@ -9,52 +11,98 @@ internal static class ServiceAttributeExtensions
 {
     private static readonly Regex PatternReg = new("{(.*)}");
 
-    public static ServiceAttributeInfo GetServiceAttributeInfo(this GeneratorSyntaxContext ctx, ClassDeclarationSyntax s)
+
+    
+    public static ServiceAttributeInfo GetServiceAttributeInfo(
+        this GeneratorSyntaxContext ctx,
+        ClassDeclarationSyntax s)
     {
-        var isUnitOfWork = true;
         var endpoint = string.Empty;
-        var methods = new string[] { };
+        var method = string.Empty;
         var patternMatchNames = Array.Empty<string>();
-
-        foreach (var attributeSyntax in s.AttributeLists.SelectMany(attributeListSyntax =>
-                     attributeListSyntax.Attributes))
+        var serviceDecorators = new List<string>();
+        
+        var attributes =
+            from attr in s.AttributeLists.SelectMany(attributeListSyntax => attributeListSyntax.Attributes)
+                let symbol = ctx.SemanticModel.GetSymbolInfo(attr).Symbol
+                where symbol is IMethodSymbol
+                select new
+                {
+                    Attribute = attr,
+                    AttributeSymbol = (IMethodSymbol) symbol
+                };
+        foreach (var attr in attributes)
         {
-            if (ctx.SemanticModel.GetSymbolInfo(attributeSyntax).Symbol is not IMethodSymbol attributeSymbol)
-            {
-                continue;
-            }
-
+            var attributeSyntax = attr.Attribute;
+            var attributeSymbol = attr.AttributeSymbol;
             var attributeContainingTypeSymbol = attributeSymbol.ContainingType;
             var fullName = attributeContainingTypeSymbol.ToDisplayString();
-            if (fullName == typeof(UnitOfWorkAttribute).FullName
-                && attributeSymbol.TypeArguments.Length == 1
-                && attributeSymbol.TypeArguments[0].ToDisplayString() == "false")
+            var isServiceEndpointAttribute = fullName == typeof(ServiceEndpointAttribute).FullName;
+            if (isServiceEndpointAttribute)
             {
-                isUnitOfWork = true;
+                (endpoint, method, patternMatchNames) = GetEndpointInfos(attributeSyntax);
                 continue;
             }
-
-            if (fullName != typeof(ServiceEndpointAttribute).FullName) continue;
-            endpoint = attributeSyntax.ArgumentList?.Arguments[0].Expression.ToString().Trim('"') ?? string.Empty;
-            if (attributeSyntax.ArgumentList?.Arguments.Count == 2)
-            {
-                methods = attributeSyntax
-                              .ArgumentList?.Arguments[1].Expression.ToString()
-                              .Split(',')
-                              .Select(t => t.Trim('"').ToUpper())
-                              .ToArray()
-                          ?? Array.Empty<string>();
-            }
-
-            var patternMatches = PatternReg.Matches(endpoint);
-
-            patternMatchNames = new string[patternMatches.Count];
-            for (var i = 0; i < patternMatchNames.Length; i++)
-            {
-                patternMatchNames[i] = patternMatches[i].Groups[1].Value;
+            var isServiceDecorator = attributeContainingTypeSymbol.AllInterfaces.Any(i =>
+                i.ToDisplayString() == typeof(IServiceDecorator).FullName);
+            if (isServiceDecorator){
+                serviceDecorators.Add(GetDecoratorSyntax(attributeSyntax, attributeSymbol));
             }
         }
 
-        return new ServiceAttributeInfo(isUnitOfWork, endpoint, methods, patternMatchNames);
+        return new ServiceAttributeInfo(endpoint, method, patternMatchNames, serviceDecorators.ToArray());
+    }
+    
+    private static (string endPoint, string method, string[] patternMatchNames) GetEndpointInfos(
+        AttributeSyntax attributeSyntax)
+    {
+        var method = string.Empty;
+        var endpoint = attributeSyntax.ArgumentList?.Arguments[0].Expression.ToString().Trim('"') ?? string.Empty;
+        if (attributeSyntax.ArgumentList?.Arguments.Count == 2)
+        {
+            method = attributeSyntax
+                .ArgumentList?.Arguments[1].Expression.ToString()
+                .Trim('"').ToUpper()!;
+        }
+                
+        var patternMatches = PatternReg.Matches(endpoint);
+        var patternMatchNames = new string[patternMatches.Count];
+        for (var i = 0; i < patternMatchNames.Length; i++)
+        {
+            patternMatchNames[i] = patternMatches[i].Groups[1].Value;
+        }    
+        return (endpoint, method, patternMatchNames);
+    }
+    
+    private static string GetDecoratorSyntax(AttributeSyntax attributeSyntax, IMethodSymbol attributeSymbol)
+    {
+        var args = attributeSyntax.ArgumentList?.Arguments ?? [];
+        var attributeCreateSyntax = new StringBuilder("new ");
+        var attributeContainingTypeSymbol = attributeSymbol.ContainingType;
+        attributeCreateSyntax.Append(attributeContainingTypeSymbol.ToDisplayString());
+        attributeCreateSyntax.Append("(");
+        var idx = 0;
+        foreach (var arg in args.Where(a => a.NameEquals == null))
+        {
+            if (idx > 0)
+            {
+                attributeCreateSyntax.Append(",");
+            }
+            attributeCreateSyntax.Append(arg);
+            idx++;
+        }
+        attributeCreateSyntax.Append(")");
+        idx = 0;
+        foreach (var arg in args.Where(a => a.NameEquals != null))
+        {
+            attributeCreateSyntax.Append(idx == 0 ? "{" : ",");
+            attributeCreateSyntax.Append(arg);
+            idx++;
+        }
+        if (idx > 0)
+        {
+            attributeCreateSyntax.Append("}");
+        }
+        return attributeCreateSyntax.ToString();
     }
 }

@@ -113,7 +113,7 @@ namespace projectA.User{
 
         return results.Verify();
     }
-
+    
     [Fact]
     public Task RouteDeleteCommandServiceGenerateSuccess()
     {
@@ -145,6 +145,42 @@ namespace projectA.User.Dto{
 
         return results.Verify();
     }
+    
+    [Fact]
+    public Task GenerateServiceWithUnitOfWorkAttribute()
+    {
+        const string srcText = @"
+using Senlin.Mo.Application.Abstractions;
+using Senlin.Mo.Application.Abstractions.Decorators.UnitOfWork;
+using projectA.User.Dto;
+namespace ProjectA.User{
+    [UnitOfWork(false, IsEnable = true)]
+    [ServiceEndpoint(""user/{id}"", ""DELETE"")]
+    internal class DeleteUserService: ICommandService<DeleteUserDto>
+    {
+        public Task<Result> ExecuteAsync(DeleteUserDto request, CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
+        }
+    }
+}
+namespace projectA.User.Dto{
+    internal class DeleteUserDto{
+        public string Id{get;set;}
+    }
+}
+";
+        const string dtoText = @"
+
+";
+        var driver = GeneratorDriver(srcText, dtoText);
+
+        var results = driver.GetRunResult();
+
+        return results.Verify();
+        
+    }
+
     
     private static GeneratorDriver GeneratorDriver(params string[] srcTexts)
     {

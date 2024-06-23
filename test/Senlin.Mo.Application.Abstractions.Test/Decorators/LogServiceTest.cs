@@ -1,22 +1,23 @@
 ﻿using Microsoft.Extensions.Logging;
 using Moq;
 using Senlin.Mo.Application.Abstractions.Decorators;
+using Senlin.Mo.Application.Abstractions.Decorators.Log;
 using static Moq.It;
 
 namespace Senlin.Mo.Application.Abstractions.Test.Decorators;
 
-public class LogServiceAttributeTest
+public class LogServiceTest
 {
     [Fact]
     public async Task LogServiceShouldBeExecuted()
     {
         var updateCommand = new UpdateCommand();
         var updateUserService = new UpdateUserService();
-        var logger = new Mock<ILogger<LogServiceAttribute<UpdateCommand, bool>>>();
-        LogServiceAttribute<UpdateCommand, bool> logServiceAttribute =
+        var logger = new Mock<ILogger<LogService<UpdateCommand, bool>>>();
+        LogService<UpdateCommand, bool> logService =
             new(updateUserService, logger.Object, () => "1");
 
-        _ = await logServiceAttribute.ExecuteAsync(updateCommand, CancellationToken.None);
+        _ = await logService.ExecuteAsync(updateCommand, CancellationToken.None);
 
         logger.Verify(x =>
                 x.Log(LogLevel.Information,
@@ -32,14 +33,14 @@ public class LogServiceAttributeTest
     {
         var updateCommand = new UpdateCommand();
         var updateUserService = new UpdateUserService();
-        var logger = new Mock<ILogger<LogServiceAttribute<UpdateCommand, bool>>>();
-        LogServiceAttribute<UpdateCommand, bool> logServiceAttribute =
+        var logger = new Mock<ILogger<LogService<UpdateCommand, bool>>>();
+        LogService<UpdateCommand, bool> logService =
             new(updateUserService, logger.Object, () => "1")
             {
                 IsEnable = false
             };
 
-        _ = await logServiceAttribute.ExecuteAsync(updateCommand, CancellationToken.None);
+        _ = await logService.ExecuteAsync(updateCommand, CancellationToken.None);
 
         logger.Verify(x =>
                 x.Log(LogLevel.Information,

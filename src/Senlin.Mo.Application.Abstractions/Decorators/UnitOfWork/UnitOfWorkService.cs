@@ -1,4 +1,4 @@
-﻿namespace Senlin.Mo.Application.Abstractions.Decorators;
+﻿namespace Senlin.Mo.Application.Abstractions.Decorators.UnitOfWork;
 
 /// <summary>
 /// Unit Of Work Service Attribute
@@ -7,10 +7,10 @@
 /// <param name="unitOfWorkHandler"></param>
 /// <typeparam name="TRequest"></typeparam>
 /// <typeparam name="TResponse"></typeparam>
-public class UnitOfWorkServiceAttribute<TRequest, TResponse>(
+public class UnitOfWorkService<TRequest, TResponse>(
     IService<TRequest, TResponse> service,
     IUnitOfWorkHandler unitOfWorkHandler)
-    : Attribute, IService<TRequest, TResponse>
+    : Attribute, IService<TRequest, TResponse>, IUnitOfWorkService
 {
     /// <summary>
     /// Is enable

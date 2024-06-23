@@ -1,7 +1,7 @@
 ﻿using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 
-namespace Senlin.Mo.Application.Abstractions.Decorators;
+namespace Senlin.Mo.Application.Abstractions.Decorators.Log;
 
 /// <summary>
 /// Log Service
@@ -11,10 +11,10 @@ namespace Senlin.Mo.Application.Abstractions.Decorators;
 /// <param name="getUserId"></param>
 /// <typeparam name="TRequest"></typeparam>
 /// <typeparam name="TResponse"></typeparam>
-public class LogServiceAttribute<TRequest, TResponse>(
+public class LogService<TRequest, TResponse>(
     IService<TRequest, TResponse> service,
-    ILogger<LogServiceAttribute<TRequest, TResponse>> logger,
-    GetUserId getUserId) : IService<TRequest, TResponse>
+    ILogger<LogService<TRequest, TResponse>> logger,
+    GetUserId getUserId) : Attribute, IService<TRequest, TResponse>
 {
     /// <summary>
     /// Is enable

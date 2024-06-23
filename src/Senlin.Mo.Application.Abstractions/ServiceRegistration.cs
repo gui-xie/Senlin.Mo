@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using Senlin.Mo.Application.Abstractions.Decorators;
 
 namespace Senlin.Mo.Application.Abstractions;
 
@@ -18,7 +19,7 @@ public class ServiceRegistration
     public ServiceRegistration(
         Type serviceType,
         Type implementation,
-        Type[]? decorators = null,
+        IServiceDecorator[]? decorators = null,
         ServiceLifetime lifeTime = ServiceLifetime.Transient,
         EndpointData? endpointData = null)
     {
@@ -40,14 +41,14 @@ public class ServiceRegistration
     public Type Implementation { get; }
 
     /// <summary>
-    /// Service Decorator
-    /// </summary>
-    public Type[]? Decorators { get; }
-
-    /// <summary>
     /// Service LifeCycle
     /// </summary>
     public ServiceLifetime LifeTime { get; }
+
+    /// <summary>
+    /// Service Decorator
+    /// </summary>
+    public IServiceDecorator[]? Decorators { get; }
 
     /// <summary>
     /// Route Pattern, Handler, Methods

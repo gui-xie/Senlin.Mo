@@ -1,4 +1,6 @@
-﻿namespace Senlin.Mo;
+﻿using Senlin.Mo.Application.Abstractions.Decorators;
+
+namespace Senlin.Mo;
 
 public class ModuleOptions
 {

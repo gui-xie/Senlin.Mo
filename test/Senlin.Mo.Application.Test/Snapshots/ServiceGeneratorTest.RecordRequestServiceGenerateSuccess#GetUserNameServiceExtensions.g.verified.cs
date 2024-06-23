@@ -18,7 +18,7 @@ namespace ProjectA.User
             typeof(IService<ProjectA.User.GetUserNameDto, string>),
             typeof(GetUserNameService),
             [
-                typeof(LogDecorator<,>)
+                new Senlin.Mo.Application.Abstractions.Decorators.Log.LogAttribute(),
             ],
             ServiceLifetime.Transient
         );

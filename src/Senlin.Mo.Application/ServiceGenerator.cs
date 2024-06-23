@@ -1,6 +1,8 @@
 ﻿using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Senlin.Mo.Application.Abstractions.Decorators.Log;
+using Senlin.Mo.Application.Abstractions.Decorators.UnitOfWork;
 
 namespace Senlin.Mo.Application
 {
@@ -10,6 +12,14 @@ namespace Senlin.Mo.Application
     [Generator]
     public class ServiceGenerator : IIncrementalGenerator
     {
+        private static string DefaultLogAttribute = $"new {typeof(LogAttribute).FullName}()";
+        private static string DefaultUnitOfWorkAttribute = $"new {typeof(UnitOfWorkAttribute).FullName}()";
+
+        private static IReadOnlyCollection<string> DefaultServiceAttributes = [DefaultLogAttribute];
+        
+        private static IReadOnlyCollection<string> DefaultCommandServiceAttributes =
+            [DefaultUnitOfWorkAttribute, DefaultLogAttribute];
+        
         /// <summary>
         /// Generate Service Registration and Handler Delegate
         /// </summary>
@@ -54,8 +64,7 @@ namespace Senlin.Mo.Application
 
         private static string GenerateServiceExtensionsSource(ServiceInfo s)
         {
-            
-            return   s.ServiceCategory == ServiceCategory.Command
+            return s.ServiceCategory == ServiceCategory.Command
                 ? GenerateCommandServiceExtensionsSource(s)
                 : GenerateQueryServiceExtensionsSource(s);
         }
@@ -84,13 +93,8 @@ namespace Senlin.Mo.Application
             {
                 source.AppendLine($"        private const string Endpoint = \"{s.Endpoint}\";");
                 source.AppendLine();
-                var methods = string.Join(
-                    "\",\"",
-                    s.Methods.Count == 0
-                        ? new[] { "GET" }
-                        : s.Methods);
-                source.AppendLine(
-                    $"        private static string[] Methods = new []{{\"{methods}\"}};");
+                var method = string.IsNullOrWhiteSpace(s.Method) ? "GET" : s.Method;
+                source.AppendLine($"        private static string Method = \"{method}\";");
                 source.AppendLine();
             }
 
@@ -107,13 +111,19 @@ namespace Senlin.Mo.Application
             source.AppendLine($"            typeof({serviceInterfaceName}),");
             source.AppendLine($"            typeof({serviceName}),");
             source.AppendLine("            [");
-            source.AppendLine("                typeof(LogDecorator<,>)");
+            IEnumerable<string> serviceDecorators = s.ServiceDecorators.Count == 0
+                ? DefaultServiceAttributes
+                : s.ServiceDecorators;
+            foreach (var decorator in serviceDecorators)
+            {
+                source.AppendLine($"                {decorator},");
+            }
             source.AppendLine("            ],");
             source.Append($"            ServiceLifetime.Transient");
             if (!string.IsNullOrWhiteSpace(s.Endpoint))
             {
                 source.AppendLine(",");
-                source.Append($"            new EndpointData(Endpoint, Handler, Methods)");
+                source.Append($"            new EndpointData(Endpoint, Handler, Method)");
             }
 
             source.AppendLine();
@@ -146,12 +156,10 @@ namespace Senlin.Mo.Application
             source.AppendLine("    {");
             if (!string.IsNullOrWhiteSpace(s.Endpoint))
             {
-                var methods = string.Join("\",\"", s.Methods.Count == 0 ? new[] { "POST" } : s.Methods);
-
                 source.AppendLine($"        private const string Endpoint = \"{s.Endpoint}\";");
                 source.AppendLine();
-                source.AppendLine(
-                    $"        private static string[] Methods = new []{{\"{methods}\"}};");
+                var method = string.IsNullOrWhiteSpace(s.Method) ? "POST" : s.Method;
+                source.AppendLine($"        private static string Method = \"{method}\";");
                 source.AppendLine();
             }
 
@@ -164,23 +172,25 @@ namespace Senlin.Mo.Application
             AddRequestObject(source, s);
             source.AppendLine("                cancellationToken);");
             source.AppendLine();
+            
             source.AppendLine($"        public static ServiceRegistration Registration = new ServiceRegistration(");
             source.AppendLine($"            typeof({serviceInterfaceName}),");
             source.AppendLine($"            typeof({serviceName}),");
             source.AppendLine("            [");
-            if (s.IsEnableUnitOfWork)
+            IEnumerable<string> serviceDecorators = s.ServiceDecorators.Count == 0
+                ? DefaultCommandServiceAttributes
+                : s.ServiceDecorators;
+            foreach (var decorator in serviceDecorators)
             {
-                source.AppendLine("                typeof(UnitOfWorkDecorator<,,>),");
+                source.AppendLine($"                {decorator},");
             }
-
-            source.AppendLine("                typeof(LogDecorator<,>)");
             source.AppendLine("            ],");
 
             source.Append($"            ServiceLifetime.Transient");
             if (!string.IsNullOrWhiteSpace(s.Endpoint))
             {
                 source.AppendLine(",");
-                source.Append($"            new EndpointData(Endpoint, Handler, Methods)");
+                source.Append($"            new EndpointData(Endpoint, Handler, Method)");
             }
 
             source.AppendLine();
@@ -223,9 +233,9 @@ namespace Senlin.Mo.Application
                     string.Empty, 
                     string.Empty, 
                     new ServiceInterfaceInfo(string.Empty, string.Empty, string.Empty),
-                    new ServiceAttributeInfo(false, string.Empty, Array.Empty<string>(), Array.Empty<string>()),
+                    new ServiceAttributeInfo(string.Empty, string.Empty, [], []),
                     ServiceCategory.None,
-                    Array.Empty<TypeProperty>(), 
+                    [], 
                     false);
             }
             
@@ -302,7 +312,7 @@ namespace Senlin.Mo.Application
         private static IEnumerable<TypeProperty> GetQueryProperties(
             TypeProperty[] requestProperties,
             string[] patternMatchNames
-            ) =>
+        ) =>
             from p in requestProperties
             where patternMatchNames.Contains(p.Name, StringComparer.InvariantCultureIgnoreCase)
             select p;

@@ -10,11 +10,11 @@ public class ServiceEndpointAttribute: Attribute
     /// Endpoint Attribute
     /// </summary>
     /// <param name="pattern"></param>
-    /// <param name="methods"></param>
-    public ServiceEndpointAttribute(string pattern, params string[] methods)
+    /// <param name="method"></param>
+    public ServiceEndpointAttribute(string pattern, string method = "")
     {
         Pattern = pattern;
-        Methods = methods;
+        Method = method;
     }
 
     /// <summary>
@@ -25,5 +25,5 @@ public class ServiceEndpointAttribute: Attribute
     /// <summary>
     /// Methods
     /// </summary>
-    public string[] Methods { get; }
+    public string Method { get; }
 }

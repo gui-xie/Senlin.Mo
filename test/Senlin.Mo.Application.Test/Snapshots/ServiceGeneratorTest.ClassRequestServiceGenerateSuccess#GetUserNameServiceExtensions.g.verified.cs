@@ -8,7 +8,7 @@ namespace ProjectA.User
     {
         private const string Endpoint = "get-user-name";
 
-        private static string[] Methods = new []{"GET"};
+        private static string Method = "GET";
 
         public static Delegate Handler = (
                 IService<ProjectA.User.GetUserNameDto, ProjectA.Common.PagedResult<ProjectA.User.UserName>> service,
@@ -24,10 +24,10 @@ namespace ProjectA.User
             typeof(IService<ProjectA.User.GetUserNameDto, ProjectA.Common.PagedResult<ProjectA.User.UserName>>),
             typeof(GetUserNameService),
             [
-                typeof(LogDecorator<,>)
+                new Senlin.Mo.Application.Abstractions.Decorators.Log.LogAttribute(),
             ],
             ServiceLifetime.Transient,
-            new EndpointData(Endpoint, Handler, Methods)
+            new EndpointData(Endpoint, Handler, Method)
         );
     }
 }

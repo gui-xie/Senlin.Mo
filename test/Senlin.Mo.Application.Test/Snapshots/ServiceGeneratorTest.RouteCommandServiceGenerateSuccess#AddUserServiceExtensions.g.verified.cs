@@ -8,7 +8,7 @@ namespace ProjectA.User
     {
         private const string Endpoint = "add-user";
 
-        private static string[] Methods = new []{"POST"};
+        private static string Method = "POST";
 
         public static Delegate Handler = (
                 ProjectA.User.AddUserDto addUser,
@@ -22,11 +22,11 @@ namespace ProjectA.User
             typeof(IService<ProjectA.User.AddUserDto, Result>),
             typeof(AddUserService),
             [
-                typeof(UnitOfWorkDecorator<,,>),
-                typeof(LogDecorator<,>)
+                new Senlin.Mo.Application.Abstractions.Decorators.UnitOfWork.UnitOfWorkAttribute(),
+                new Senlin.Mo.Application.Abstractions.Decorators.Log.LogAttribute(),
             ],
             ServiceLifetime.Transient,
-            new EndpointData(Endpoint, Handler, Methods)
+            new EndpointData(Endpoint, Handler, Method)
         );
     }
 }

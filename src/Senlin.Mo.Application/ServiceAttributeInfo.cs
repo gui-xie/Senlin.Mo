@@ -5,17 +5,17 @@ namespace Senlin.Mo.Application;
 
 internal readonly record struct ServiceAttributeInfo
 {
-    public ServiceAttributeInfo(bool isUnitOfWork, string endpoint, string[] methods, string[] patternMatchNames)
+    public ServiceAttributeInfo(string endpoint, string method, string[] patternMatchNames, string[] serviceDecorators)
     {
       
-        IsUnitOfWork = isUnitOfWork;
         Endpoint = endpoint;
-        Methods = methods;
+        Method = method;
         PatternMatchNames = new EquatableArray<string>(patternMatchNames);
+        ServiceDecorators = new EquatableArray<string>(serviceDecorators);
     }
 
-    public readonly bool IsUnitOfWork;
     public readonly string Endpoint;
-    public readonly string[] Methods;
+    public readonly string Method;
     public readonly EquatableArray<string> PatternMatchNames;
+    public readonly EquatableArray<string> ServiceDecorators;
 }

@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Senlin.Mo.Application.Abstractions;
 using Senlin.Mo.Localization.Abstractions;
 
@@ -11,7 +10,8 @@ internal static class ServiceExtensions
     {
         foreach (var serviceRegistration in module.GetServices())
         {
-            if (!(serviceRegistration.ServiceType.IsGenericType && serviceRegistration.ServiceType.Name.StartsWith("IService")
+            if (!(serviceRegistration.ServiceType.IsGenericType 
+                  && serviceRegistration.ServiceType.Name.StartsWith("IService")
                 && serviceRegistration.ServiceType.GetGenericTypeDefinition() == typeof(IService<,>)))
             {
                 var serviceDescription = new ServiceDescriptor(serviceRegistration.ServiceType, serviceRegistration.Implementation, serviceRegistration.LifeTime);
@@ -21,43 +21,17 @@ internal static class ServiceExtensions
             services.AddTransient(serviceRegistration.ServiceType, sp =>
             {
                 var type = serviceRegistration.Implementation;
-                var s = sp.CreateModuleInstance(type, module);
-                var serviceGenericType = serviceRegistration.ServiceType.GetGenericArguments();
+                var s = (IService)sp.CreateModuleInstance(type, module);
                 var decorators = serviceRegistration.Decorators ?? [];
                 foreach (var decorator in decorators)
                 {
-                    Type decoratorType;
-                    if (decorator == typeof(UnitOfWorkDecorator<,,>))
-                    {
-                        if (module.DbContextType is null)
-                        {
-                            continue;
-                        }
-
-                        var unitOfWorkGenericTypeArguments = serviceGenericType
-                            .Concat([module.DbContextType])
-                            .ToArray();
-                        decoratorType = decorator.MakeGenericType(unitOfWorkGenericTypeArguments);
-                        s = Activator.CreateInstance(
-                            decoratorType,
-                            s,
-                            sp.GetRequiredService(module.DbContextType))!;
-                        continue;
-                    }
-
-                    if (decorator.GetGenericArguments().Length != 2) continue;
-                    decoratorType = decorator.MakeGenericType(serviceGenericType);
-                    var args = new List<object> { s };
-                    if (decorator == typeof(LogDecorator<,>))
-                    {
-                        args.Add(sp.GetRequiredService(typeof(ILogger<>).MakeGenericType(serviceGenericType[0])));
-                        args.Add(sp.GetRequiredService<GetUserId>());
-                    }
-                    s = Activator.CreateInstance(
-                        decoratorType,
-                        args.ToArray())!;
+                    s = sp.DecorateService(
+                        decorator.ServiceType, 
+                        serviceRegistration.ServiceType,
+                        s, 
+                        module);
+                    decorator.Configure(s);
                 }
-
                 return s;
             });
         }
@@ -69,13 +43,36 @@ internal static class ServiceExtensions
         {
             type = module.GetLStringResolverType();
         }
-        else if (type == typeof(ILogger))
+        else if (type == typeof(IUnitOfWorkHandler))
         {
-            type = module.GetLoggerType();
+            type = module.DbContextType!;
         }
         return sp.GetRequiredService(type);
     }
 
+    private static IService DecorateService(
+        this IServiceProvider sp,
+        Type decoratorGenericType,
+        Type serviceType,
+        object service,
+        IModule module)
+    {
+        var serviceGenericArguments = serviceType.GetGenericArguments();
+        var decoratorType = decoratorGenericType.MakeGenericType(serviceGenericArguments);
+        var args =  decoratorType
+            .GetConstructors()
+            .First()
+            .GetParameters()
+            .Select(p => 
+                p.ParameterType == serviceType 
+                    ? service 
+                    : sp.GetModuleRequiredService(module, p.ParameterType))
+            .ToArray();
+        return (Activator.CreateInstance(
+            decoratorType, 
+            args) as IService)!;   
+    }
+    
     private static object CreateModuleInstance(
         this IServiceProvider sp,
         Type type,
@@ -83,7 +80,8 @@ internal static class ServiceExtensions
     {
         var args =  type
             .GetConstructors()
-            .First().GetParameters()
+            .First()
+            .GetParameters()
             .Select(p => sp.GetModuleRequiredService(module, p.ParameterType))
             .ToArray();
         return Activator.CreateInstance(

@@ -8,7 +8,7 @@ namespace projectA.User
     {
         private const string Endpoint = "user/{id}";
 
-        private static string[] Methods = new []{"PUT"};
+        private static string Method = "PUT";
 
        private class UpdateUserDto0
         {
@@ -32,11 +32,11 @@ namespace projectA.User
             typeof(IService<projectA.User.UpdateUserDto, Result>),
             typeof(UpdateUserService),
             [
-                typeof(UnitOfWorkDecorator<,,>),
-                typeof(LogDecorator<,>)
+                new Senlin.Mo.Application.Abstractions.Decorators.UnitOfWork.UnitOfWorkAttribute(),
+                new Senlin.Mo.Application.Abstractions.Decorators.Log.LogAttribute(),
             ],
             ServiceLifetime.Transient,
-            new EndpointData(Endpoint, Handler, Methods)
+            new EndpointData(Endpoint, Handler, Method)
         );
     }
 }

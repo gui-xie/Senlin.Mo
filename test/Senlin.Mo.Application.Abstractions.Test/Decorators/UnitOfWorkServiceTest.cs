@@ -1,9 +1,10 @@
 ﻿using Moq;
 using Senlin.Mo.Application.Abstractions.Decorators;
+using Senlin.Mo.Application.Abstractions.Decorators.UnitOfWork;
 
 namespace Senlin.Mo.Application.Abstractions.Test.Decorators;
 
-public class UnitOfWorkServiceAttributeTest
+public class UnitOfWorkServiceTest
 {
     [Fact]
     public async Task UnitOfWorkServiceShouldBeExecuted()
@@ -11,10 +12,10 @@ public class UnitOfWorkServiceAttributeTest
         var updateCommand = new UpdateCommand();
         var updateUserService = new UpdateUserService();
         var unitOfWorkHandler = new Mock<IUnitOfWorkHandler>();
-        UnitOfWorkServiceAttribute<UpdateCommand, bool> unitOfWorkServiceAttribute =
+        UnitOfWorkService<UpdateCommand, bool> unitOfWorkService =
             new(updateUserService, unitOfWorkHandler.Object);
 
-        _ = await unitOfWorkServiceAttribute.ExecuteAsync(updateCommand, CancellationToken.None);
+        _ = await unitOfWorkService.ExecuteAsync(updateCommand, CancellationToken.None);
 
         unitOfWorkHandler.Verify(x =>
                 x.SaveChangesAsync(It.IsAny<CancellationToken>()),
@@ -27,13 +28,13 @@ public class UnitOfWorkServiceAttributeTest
         var updateCommand = new UpdateCommand();
         var updateUserService = new UpdateUserService();
         var unitOfWorkHandler = new Mock<IUnitOfWorkHandler>();
-        UnitOfWorkServiceAttribute<UpdateCommand, bool> unitOfWorkServiceAttribute =
+        UnitOfWorkService<UpdateCommand, bool> unitOfWorkService =
             new(updateUserService, unitOfWorkHandler.Object)
             {
                 IsEnable = false
             };
 
-        _ = await unitOfWorkServiceAttribute.ExecuteAsync(updateCommand, CancellationToken.None);
+        _ = await unitOfWorkService.ExecuteAsync(updateCommand, CancellationToken.None);
 
         unitOfWorkHandler.Verify(x =>
                 x.SaveChangesAsync(It.IsAny<CancellationToken>()),
