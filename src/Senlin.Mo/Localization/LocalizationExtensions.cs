@@ -62,9 +62,12 @@ internal static class LocalizationExtensions
 
     internal static GetCulture GetCulture(this IServiceProvider sp, string defaultCulture)
     {
-        var culture =   sp.GetRequiredService<HttpContextAccessor>().HttpContext!.Features.Get<IRequestCultureFeature>()
-                ?.RequestCulture.Culture.Name
-            ?? defaultCulture;
+        var culture = sp.GetRequiredService<IHttpContextAccessor>()
+                          .HttpContext!
+                          .Features
+                          .Get<IRequestCultureFeature>()
+                          ?.RequestCulture.Culture.Name
+                      ?? defaultCulture;
         return () => culture;
     }
 }
