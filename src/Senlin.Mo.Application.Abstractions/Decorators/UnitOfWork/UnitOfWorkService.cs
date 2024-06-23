@@ -10,12 +10,13 @@
 public class UnitOfWorkService<TRequest, TResponse>(
     IService<TRequest, TResponse> service,
     IUnitOfWorkHandler unitOfWorkHandler)
-    : Attribute, IService<TRequest, TResponse>, IUnitOfWorkService
+    : IService<TRequest, TResponse>,
+        IDecoratorService<UnitOfWorkAttribute>
 {
     /// <summary>
-    /// Is enable
+    /// Decorator Attribute Data (Injected by DI container)
     /// </summary>
-    public bool IsEnable { get; set; } = true;
+    public UnitOfWorkAttribute AttributeData { get; set; } = null!;
 
     /// <summary>
     /// Service ExecuteAsync
@@ -26,7 +27,7 @@ public class UnitOfWorkService<TRequest, TResponse>(
     public async Task<TResponse> ExecuteAsync(TRequest request, CancellationToken cancellationToken)
     {
         var response = await service.ExecuteAsync(request, cancellationToken);
-        if (IsEnable)
+        if (AttributeData.IsEnable)
         {
             await unitOfWorkHandler.SaveChangesAsync(cancellationToken);
         }

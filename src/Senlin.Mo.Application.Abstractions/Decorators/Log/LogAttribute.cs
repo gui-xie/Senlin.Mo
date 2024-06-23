@@ -3,19 +3,19 @@
 /// <summary>
 /// Log attribute
 /// </summary>
-public class LogAttribute: Attribute, IServiceDecorator
+public class LogAttribute : Attribute, IServiceDecorator
 {
     /// <summary>
-    /// Decorator Service Type
+    /// Log Constructor
     /// </summary>
-    public Type ServiceType => typeof(LogService<,>);
+    /// <param name="isEnable"></param>
+    public LogAttribute(bool isEnable = true)
+    {
+        IsEnable = isEnable;
+    }
 
     /// <summary>
-    /// Configure
+    /// Is enable
     /// </summary>
-    /// <param name="service"></param>
-    public void Configure(IService? service)
-    {
-        
-    }
+    public bool IsEnable { get; set; }
 }

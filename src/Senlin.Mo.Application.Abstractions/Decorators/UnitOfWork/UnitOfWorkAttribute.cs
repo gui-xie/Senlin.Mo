@@ -14,22 +14,5 @@ public class UnitOfWorkAttribute : Attribute, IServiceDecorator
     /// <summary>
     /// Is enable
     /// </summary>
-    public bool IsEnable { get; set; } = true;
-
-    /// <summary>
-    /// Decorator Service Type
-    /// </summary>
-    public Type ServiceType => typeof(UnitOfWorkService<,>);
-
-    /// <summary>
-    /// Configure
-    /// </summary>
-    /// <param name="service"></param>
-    public void Configure(IService? service)
-    {
-        if(service is IUnitOfWorkService unitOfWorkService)
-        {
-            unitOfWorkService.IsEnable = IsEnable;
-        }
-    }
+    public bool IsEnable { get; set; }
 }

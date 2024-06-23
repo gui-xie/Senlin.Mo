@@ -8,7 +8,7 @@ namespace ProjectA
     /// <summary>
     /// Grade localization string extensions
     /// </summary>
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Senlin.Mo.Localization", "1.0.13.0")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Senlin.Mo.Localization", "1.0.14.0")]
     public static partial class GradeExtensions
     {
         /// <summary>

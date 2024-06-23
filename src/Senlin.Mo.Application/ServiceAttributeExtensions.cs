@@ -46,7 +46,7 @@ internal static class ServiceAttributeExtensions
             var isServiceDecorator = attributeContainingTypeSymbol.AllInterfaces.Any(i =>
                 i.ToDisplayString() == typeof(IServiceDecorator).FullName);
             if (isServiceDecorator){
-                serviceDecorators.Add(GetDecoratorSyntax(attributeSyntax, attributeSymbol));
+                serviceDecorators.Insert(0, GetDecoratorSyntax(attributeSyntax, attributeSymbol));
             }
         }
 

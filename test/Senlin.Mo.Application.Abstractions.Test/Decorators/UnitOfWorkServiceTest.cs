@@ -31,7 +31,7 @@ public class UnitOfWorkServiceTest
         UnitOfWorkService<UpdateCommand, bool> unitOfWorkService =
             new(updateUserService, unitOfWorkHandler.Object)
             {
-                IsEnable = false
+                AttributeData = new UnitOfWorkAttribute(false)
             };
 
         _ = await unitOfWorkService.ExecuteAsync(updateCommand, CancellationToken.None);

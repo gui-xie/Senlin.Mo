@@ -12,13 +12,11 @@ namespace Senlin.Mo.Application
     [Generator]
     public class ServiceGenerator : IIncrementalGenerator
     {
-        private static string DefaultLogAttribute = $"new {typeof(LogAttribute).FullName}()";
-        private static string DefaultUnitOfWorkAttribute = $"new {typeof(UnitOfWorkAttribute).FullName}()";
+        private static readonly string DefaultLogAttribute = $"new {typeof(LogAttribute).FullName}()";
+        private static readonly string DefaultUnitOfWorkAttribute = $"new {typeof(UnitOfWorkAttribute).FullName}()";
 
-        private static IReadOnlyCollection<string> DefaultServiceAttributes = [DefaultLogAttribute];
-        
-        private static IReadOnlyCollection<string> DefaultCommandServiceAttributes =
-            [DefaultUnitOfWorkAttribute, DefaultLogAttribute];
+        private static readonly IReadOnlyCollection<string> DefaultServiceAttributes = [DefaultLogAttribute];
+        private static readonly IReadOnlyCollection<string> DefaultCommandServiceAttributes = [DefaultUnitOfWorkAttribute, DefaultLogAttribute];
         
         /// <summary>
         /// Generate Service Registration and Handler Delegate
@@ -44,13 +42,15 @@ namespace Senlin.Mo.Application
             });
         }
 
-        private static bool IsServiceClassSyntax(SyntaxNode s, CancellationToken _) =>
-            s is ClassDeclarationSyntax { BaseList.Types.Count: > 0 } c
-            && c.BaseList.Types.Any(t =>
-                t.Type is GenericNameSyntax genericNameSyntax
-                && (genericNameSyntax.Identifier.Text.Contains("IService")
-                    || genericNameSyntax.Identifier.Text.Contains("ICommandService")));
-
+        private static bool IsServiceClassSyntax(SyntaxNode s, CancellationToken _)
+        {
+            return s is ClassDeclarationSyntax { BaseList.Types.Count: > 0 } c
+                   && c.BaseList.Types.Any(t =>
+                       t.Type is GenericNameSyntax genericNameSyntax
+                       && (genericNameSyntax.Identifier.Text.Contains("IService")
+                           || genericNameSyntax.Identifier.Text.Contains("ICommandService")));
+        }
+            
         private static string GetRequestTypeEndpointName(string requestTypeName)
         {
             var requestName = FirstCharToLower(requestTypeName.Split('.').Last());
@@ -221,7 +221,6 @@ namespace Senlin.Mo.Application
                 .Select(p => new TypeProperty(p))
                 .ToArray();
         }
-        
         
         private static ServiceInfo ToServiceInfo(GeneratorSyntaxContext ctx)
         {

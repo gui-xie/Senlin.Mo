@@ -6,6 +6,8 @@ namespace Senlin.Mo;
 
 internal static class ServiceExtensions
 {
+    private static readonly Dictionary<Type, Type> DecoratorServices = new();
+    
     public static void AddAppServices(this IServiceCollection services, IModule module)
     {
         foreach (var serviceRegistration in module.GetServices())
@@ -18,25 +20,38 @@ internal static class ServiceExtensions
                 services.Add(serviceDescription);
                 continue;
             }
-            services.AddTransient(serviceRegistration.ServiceType, sp =>
+            
+            services.AddTransient(
+                serviceRegistration.ServiceType,
+                sp =>
             {
                 var type = serviceRegistration.Implementation;
                 var s = (IService)sp.CreateModuleInstance(type, module);
                 var decorators = serviceRegistration.Decorators ?? [];
-                foreach (var decorator in decorators)
-                {
-                    s = sp.DecorateService(
-                        decorator.ServiceType, 
+                return decorators.Aggregate(s, (current, decorator) 
+                    => sp.DecorateService(
+                        GetDecoratorServiceType(decorator.GetType()),
                         serviceRegistration.ServiceType,
-                        s, 
-                        module);
-                    decorator.Configure(s);
-                }
-                return s;
+                        current,
+                        module));
             });
         }
     }
 
+    
+    private static Type GetDecoratorServiceType(Type decoratorType)
+    {
+        if (DecoratorServices.TryGetValue(decoratorType, out var serviceType))
+        {
+            return serviceType;
+        }
+        var types = 
+            from t in decoratorType.Assembly.GetTypes()
+            where t.IsAssignableTo(decoratorType)
+            select t;
+        return DecoratorServices[decoratorType] = types.First();
+    }
+    
     private static object GetModuleRequiredService(this IServiceProvider sp, IModule module, Type type)
     {
         if (type == typeof(ILStringResolver))

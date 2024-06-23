@@ -14,12 +14,14 @@ namespace Senlin.Mo.Application.Abstractions.Decorators.Log;
 public class LogService<TRequest, TResponse>(
     IService<TRequest, TResponse> service,
     ILogger<LogService<TRequest, TResponse>> logger,
-    GetUserId getUserId) : Attribute, IService<TRequest, TResponse>
+    GetUserId getUserId) : 
+    IService<TRequest, TResponse>, 
+    IDecoratorService<LogAttribute>
 {
     /// <summary>
-    /// Is enable
+    /// Decorator Attribute Data (Injected by DI container)
     /// </summary>
-    public bool IsEnable { get; set; } = true;
+    public LogAttribute AttributeData { get; set; } = null!;
 
     /// <summary>
     /// Service ExecuteAsync
@@ -32,13 +34,13 @@ public class LogService<TRequest, TResponse>(
         CancellationToken cancellationToken)
     {
         Stopwatch? stopwatch = null;
-        if (IsEnable)
+        if (AttributeData.IsEnable)
         {
             stopwatch = Stopwatch.StartNew();
         }
 
         var response = await service.ExecuteAsync(request, cancellationToken);
-        if (!IsEnable) return response;
+        if (!AttributeData.IsEnable) return response;
 
         stopwatch!.Stop();
         logger.LogInformation(
@@ -49,4 +51,5 @@ public class LogService<TRequest, TResponse>(
 
         return response;
     }
+
 }

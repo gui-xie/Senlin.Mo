@@ -145,16 +145,14 @@ namespace projectA.User.Dto{
 
         return results.Verify();
     }
-    
+
     [Fact]
-    public Task GenerateServiceWithUnitOfWorkAttribute()
+    public Task GenerateServiceWithCustomAttribute()
     {
         const string srcText = @"
 using Senlin.Mo.Application.Abstractions;
-using Senlin.Mo.Application.Abstractions.Decorators.UnitOfWork;
 using projectA.User.Dto;
 namespace ProjectA.User{
-    [UnitOfWork(false, IsEnable = true)]
     [ServiceEndpoint(""user/{id}"", ""DELETE"")]
     internal class DeleteUserService: ICommandService<DeleteUserDto>
     {
@@ -170,18 +168,48 @@ namespace projectA.User.Dto{
     }
 }
 ";
-        const string dtoText = @"
-
-";
-        var driver = GeneratorDriver(srcText, dtoText);
+        var driver = GeneratorDriver(srcText);
 
         var results = driver.GetRunResult();
 
         return results.Verify();
+
         
     }
-
     
+    [Fact]
+    public Task GenerateServiceWithUnitOfWorkAttributeAndOrder()
+    {
+        const string srcText = @"
+using Senlin.Mo.Application.Abstractions;
+using Senlin.Mo.Application.Abstractions.Decorators.UnitOfWork;
+using Senlin.Mo.Application.Abstractions.Decorators.Log;
+using projectA.User.Dto;
+namespace ProjectA.User{
+    [UnitOfWork(false, IsEnable = true)]
+    [Log]
+    [ServiceEndpoint(""user/{id}"", ""DELETE"")]
+    internal class DeleteUserService: ICommandService<DeleteUserDto>
+    {
+        public Task<Result> ExecuteAsync(DeleteUserDto request, CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
+        }
+    }
+}
+namespace projectA.User.Dto{
+    internal class DeleteUserDto{
+        public string Id{get;set;}
+    }
+}
+";
+        var driver = GeneratorDriver(srcText);
+
+        var results = driver.GetRunResult();
+
+        return results.Verify();
+    }
+
     private static GeneratorDriver GeneratorDriver(params string[] srcTexts)
     {
         var compilation = CreateCompilation(srcTexts);
@@ -214,3 +242,4 @@ namespace projectA.User.Dto{
         return compilation;
     }
 }
+

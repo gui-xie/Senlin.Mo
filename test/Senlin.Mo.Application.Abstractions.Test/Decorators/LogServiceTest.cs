@@ -37,7 +37,7 @@ public class LogServiceTest
         LogService<UpdateCommand, bool> logService =
             new(updateUserService, logger.Object, () => "1")
             {
-                IsEnable = false
+                AttributeData = new LogAttribute(false)
             };
 
         _ = await logService.ExecuteAsync(updateCommand, CancellationToken.None);
