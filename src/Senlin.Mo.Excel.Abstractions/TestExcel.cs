@@ -1,6 +1,4 @@
-﻿using System.Text.Json;
-
-namespace Senlin.Mo.Excel.Abstractions;
+﻿namespace Senlin.Mo.Excel.Abstractions;
 
 public class TestExcel
 {
@@ -63,10 +61,6 @@ public class TestExcel
                               ]
                             }
                             """;
-        var definition = JsonSerializer.Deserialize<ExcelJson>(json, new JsonSerializerOptions
-        {
-            PropertyNameCaseInsensitive = true
-        });
         
     }
 

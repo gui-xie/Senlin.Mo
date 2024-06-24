@@ -1,10 +1,35 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net8.0</TargetFramework>
+        <TargetFramework>netstandard2.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        <LangVersion>12</LangVersion>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <PublishRepositoryUrl>true</PublishRepositoryUrl>
+        <PackageProjectUrl>https://github.com/gui-xie/Senlin.Mo</PackageProjectUrl>
+        <PackageId>Senlin.Mo.Excel.Abstractions</PackageId>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <PackageDescription>Senlin Mo Excel Abstractions</PackageDescription>
+        <PackageTags>Excel JSON Worksheet</PackageTags>
         <Version>1.0.15-alpha</Version>
         <AssemblyVersion>1.0.15.0</AssemblyVersion>
+        <Authors>Senlin</Authors>
+        <Title>Senlin.Mo.Excel.Abstractions</Title>
+        <Description>(experiment)</Description>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <PackageReleaseNotes>(experiment) Modular monolith library</PackageReleaseNotes>
+        <Copyright>Copyright (c) Senlin 2024</Copyright>
+        <RepositoryUrl>https://github.com/gui-xie/Senlin.Mo</RepositoryUrl>
+        <RepositoryType>git</RepositoryType>
     </PropertyGroup>
+
+    <ItemGroup>
+      <None Update="README.md">
+        <Pack>true</Pack>
+        <PackagePath>\</PackagePath>
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+    </ItemGroup>
 </Project>

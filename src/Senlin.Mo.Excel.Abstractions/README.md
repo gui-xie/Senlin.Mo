@@ -1,0 +1,1 @@
+﻿# Senlin.Mo.Excel.Abstractions
