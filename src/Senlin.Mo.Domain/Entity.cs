@@ -1,6 +1,4 @@
-﻿using System.Linq.Expressions;
-
-namespace Senlin.Mo.Domain;
+﻿namespace Senlin.Mo.Domain;
 
 /// <summary>
 /// Entity base class
@@ -34,16 +32,4 @@ public abstract class Entity
         _domainEvents ??= [];
         _domainEvents.Add(e);
     }
-}
-
-/// <summary>
-///  used for unique judgment
-/// </summary>
-/// <typeparam name="T"></typeparam>
-public interface IUnique<T> where T: class
-{
-    /// <summary>
-    ///  used for unique judgment
-    /// </summary>
-    Expression<Func<T, bool>> GetIsRepeatExpression();
 }

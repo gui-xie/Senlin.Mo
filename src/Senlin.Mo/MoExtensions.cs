@@ -1,5 +1,4 @@
-﻿using System.Runtime.CompilerServices;
-using Microsoft.AspNetCore.Builder;
+﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -30,8 +29,7 @@ public static class MoExtensions
         configureOptions?.Invoke(options);
         
         var modules = options.Modules ?? [];
-        services.TryAddSingleton<GetNow>(()=>DateTimeOffset.Now.ToUnixTimeSeconds());
-        services.TryAddSingleton<GetToday>(()=>DateTime.Today);
+        services.TryAddSingleton<GetNow>(()=>DateTime.UtcNow);
         services.TryAddScoped<GetTenant>(_ => () => options.SystemTenant);
         services.TryAddScoped<GetUserId>(_ => () => string.Empty);
         services.TryAddScoped<GetCulture>(sp => sp.GetCulture(options.LocalizationOptions.DefaultCulture));

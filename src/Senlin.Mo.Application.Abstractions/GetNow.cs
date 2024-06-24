@@ -5,4 +5,4 @@ namespace Senlin.Mo.Application.Abstractions;
 /// <summary>
 /// Get current time stamp
 /// </summary>
-public delegate long GetNow();
+public delegate DateTime GetNow();

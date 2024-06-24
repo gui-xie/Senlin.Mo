@@ -16,9 +16,4 @@ public interface IRepositoryHelper : IClock, IUserHelper, ITenantHelper
     /// generate a new concurrency token
     /// </summary>
     NewConcurrencyToken NewConcurrencyToken { get; }
-    
-    /// <summary>
-    /// Is contains change data capture
-    /// </summary>
-    IsContainsChangeDataCapture IsContainsChangeDataCapture { get; }
 }

@@ -11,16 +11,16 @@
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <PublishRepositoryUrl>true</PublishRepositoryUrl>
         <PackageProjectUrl>https://github.com/gui-xie/Senlin.Mo</PackageProjectUrl>
-        <PackageId>Senlin.Mo.Localization</PackageId>
+        <PackageId>Senlin.Mo.Excel</PackageId>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
-        <PackageDescription>Provide multi-language support, use source generator and json configuration file to generate resource files.</PackageDescription>
-        <PackageTags>Localization JSON Multi-Langugae SourceGenerator</PackageTags>
+        <PackageDescription>JSON SourceGenerator for excel to C# object</PackageDescription>
+        <PackageTags>JSON SourceGenerator Excel</PackageTags>
         <Version>1.0.15-alpha</Version>
         <AssemblyVersion>1.0.15.0</AssemblyVersion>
         <Authors>Senlin</Authors>
-        <Title>Senlin.Mo.Localization</Title>
-        <Description>(experiment)Provide multi-language support, use source generator and json configuration file to generate resource files.</Description>
-        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <Title>Senlin.Mo.Excel</Title>
+        <Description>(experiment)JSON SourceGenerator for excel to C# object.</Description>
+<!--        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>-->
         <PackageReleaseNotes>(experiment) Modular monolith library</PackageReleaseNotes>
         <Copyright>Copyright (c) Senlin 2024</Copyright>
         <RepositoryUrl>https://github.com/gui-xie/Senlin.Mo</RepositoryUrl>
@@ -29,18 +29,11 @@
     <ItemGroup>
         <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4" PrivateAssets="all"/>
         <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.3.1" PrivateAssets="all"/>
-        <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     </ItemGroup>
 
     <ItemGroup>
-        <None Include="README.md" Pack="true" PackagePath="\" />
         <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false"/>
         <None Include="$(OutputPath)\$(AssemblyName).Abstractions.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false"/>
         <None Include="$(OutputPath)\$(AssemblyName).Abstractions.dll" Pack="true" PackagePath="lib/netstandard2.0" Visible="false"/>
-        <None Include="$(NugetPackageRoot)\newtonsoft.json\13.0.3\lib\netstandard2.0\Newtonsoft.Json.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false"/>
-    </ItemGroup>
-
-    <ItemGroup>
-      <ProjectReference Include="..\Senlin.Mo.Localization.Abstractions\Senlin.Mo.Localization.Abstractions.csproj" PrivateAssets="all"/>
     </ItemGroup>
 </Project>

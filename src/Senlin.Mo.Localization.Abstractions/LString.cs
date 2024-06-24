@@ -23,14 +23,12 @@ public readonly struct LString(
     /// <returns></returns>
     public string Resolve(Func<string, string>? resolve = null)
     {
-        var s = resolve?.Invoke(key);
-        if (string.IsNullOrWhiteSpace(s)) s = defaultValue;
+        var s = resolve?.Invoke(key) ?? defaultValue;
         foreach (var arg in args)
         {
             var argKey = arg.Key;
             s = s.Replace($"{{{argKey}}}", arg.Value);
         }
-
         return s;
     }
 }

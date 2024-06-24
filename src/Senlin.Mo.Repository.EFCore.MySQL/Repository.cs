@@ -5,6 +5,7 @@ using Senlin.Mo.Domain;
 using Senlin.Mo.Repository.Abstractions;
 using static Senlin.Mo.Repository.EFCore.EntityShadowPropertyNames;
 using static Senlin.Mo.Application.Abstractions.RepositoryResult;
+using static Senlin.Mo.Domain.DomainExtensions;
 
 namespace Senlin.Mo.Repository.EFCore.MySQL;
 
@@ -48,8 +49,8 @@ public abstract class Repository<T>(
         entry.Property(ConcurrencyToken).CurrentValue = helper.NewConcurrencyToken();
         dbContext.Update(entity);
 
-        if (!helper.IsContainsChangeDataCapture()) return;
-        
+
+        if(entity is not ICdcEntity) return;
         var cdc = CreateCdc(entity.Id, user, now, ChangeDataCaptureType.Delete, entity);
         dbContext.Add(cdc);
     }
@@ -71,8 +72,7 @@ public abstract class Repository<T>(
         entry.Property(ConcurrencyToken).CurrentValue = helper.NewConcurrencyToken();
         dbContext.Update(entity);
 
-        if (!helper.IsContainsChangeDataCapture()) return;
-        
+        if(entity is not ICdcEntity) return;
         var cdc = CreateCdc(entity.Id, user, now, ChangeDataCaptureType.Update, entity);
         dbContext.Add(cdc);
     }
@@ -88,7 +88,7 @@ public abstract class Repository<T>(
     {
         var entry = EntitySet.Entry(entity);
         // ReSharper disable once SuspiciousTypeConversion.Global, will be used in other project
-        if (entity is IUnique<T> uniqueEntity)
+        if (entity is IUniqueEntity<T> uniqueEntity)
         {
             var expression = uniqueEntity.GetIsRepeatExpression();
             if (await EntitySet.AnyAsync(expression, cancellationToken))
@@ -103,16 +103,14 @@ public abstract class Repository<T>(
         entry.Property(CreateUser).CurrentValue = user;
         entry.Property(CreateTime).CurrentValue = now;
         entry.Property(UpdateUser).CurrentValue = string.Empty;
-        entry.Property(UpdateTime).CurrentValue = 0;
+        entry.Property(UpdateTime).CurrentValue = EmptyDateTime;
         entry.Property(DeleteUser).CurrentValue = string.Empty;
-        entry.Property(DeleteTime).CurrentValue = 0;
+        entry.Property(DeleteTime).CurrentValue = EmptyDateTime;
         entry.Property(Tenant).CurrentValue = helper.GetTenant();
         entry.Property(ConcurrencyToken).CurrentValue = helper.NewConcurrencyToken();
-        // entry.Property(UniqueToken).CurrentValue = entity.IsUnique()
         dbContext.Add(entity);
-
-        if (!helper.IsContainsChangeDataCapture()) return Ok();
         
+        if(entity is not ICdcEntity) return Ok();
         var cdc = CreateCdc(id, user, now, ChangeDataCaptureType.Add, entity);
         dbContext.Add(cdc);
         return Ok();
@@ -121,7 +119,7 @@ public abstract class Repository<T>(
     private ChangeDataCapture CreateCdc<TEntity>(
         long entityId,
         string user,
-        long now,
+        DateTime now,
         ChangeDataCaptureType type,
         TEntity entity
     )
@@ -134,7 +132,7 @@ public abstract class Repository<T>(
             type,
             JsonSerializer.Serialize(entity, ChangeDataCaptureExtensions.SerializerOptions));
         var cdcEntry = dbContext.Entry(cdc);
-        cdcEntry.Property(ChangeDataCaptureExtensions.MonthName).CurrentValue = DateTimeOffset.FromUnixTimeSeconds(now).ToLocalTime().ToString("yyMM");
+        cdcEntry.Property(ChangeDataCaptureExtensions.MonthName).CurrentValue = now.ToLocalTime().ToString("yyMM");
         return cdc;
     }
 }
