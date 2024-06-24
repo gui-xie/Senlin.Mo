@@ -1,6 +1,9 @@
 ﻿namespace Senlin.Mo.Application.Abstractions;
 
 /// <summary>
-/// Get current time
+/// ChangedDataCapture Entity
 /// </summary>
-public delegate DateTime GetToday();
+public interface ICdcEntity
+{
+    
+}
