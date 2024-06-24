@@ -21,7 +21,7 @@
       "width": 100,
       "type": "string",
       "comment": "用户姓名",
-      "constraints": {
+      "validations": {
         "required": true,
         "minLength": 2,
         "maxLength": 50
@@ -31,7 +31,7 @@
       "name": "age",
       "displayName": "年龄",
       "type": "number",
-      "constraints": {
+      "validations": {
         "minValue": 18,
         "maxValue": 100
       }

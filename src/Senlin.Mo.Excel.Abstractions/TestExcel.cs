@@ -89,34 +89,6 @@ public class TestExcel
 
         public string Type { get; set; } = string.Empty;
 
-        public Dictionary<string, object> Constraints { get; set; } = new();
-    }
-}
-
-public delegate string GetExcelColumnDisplayName(string name);
-
-public enum ExcelColumnType
-{
-    String,
-    Number,
-    Date,
-    Enum,
-    Image
-}
-
-public interface IExcelColumnConstraint<in T>
-{
-    bool Validate(T value);
-}
-
-public class ExcelColumnRequired<T> : IExcelColumnConstraint<T>
-{
-    public bool Validate(T value)
-    {
-        return value switch
-        {
-            string s => !string.IsNullOrWhiteSpace(s),
-            _ => false
-        };
+        public Dictionary<string, object> Validations { get; set; } = new();
     }
 }

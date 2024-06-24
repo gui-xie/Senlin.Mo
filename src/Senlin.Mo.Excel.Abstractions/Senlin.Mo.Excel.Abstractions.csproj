@@ -7,8 +7,4 @@
         <Version>1.0.15-alpha</Version>
         <AssemblyVersion>1.0.15.0</AssemblyVersion>
     </PropertyGroup>
-
-    <ItemGroup>
-        <PackageReference Include="ClosedXML" Version="0.102.2" />
-    </ItemGroup>
 </Project>
