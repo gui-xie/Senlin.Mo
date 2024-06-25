@@ -9,7 +9,7 @@ namespace Senlin.Mo.Localization.Abstractions;
 /// <param name="getCultureResource">get culture resource</param>
 public class LStringResolver(
     GetCulture getCulture,
-    GetCultureResource getCultureResource): ILStringResolver
+    GetCultureResource getCultureResource) : ILStringResolver
 {
     private static readonly ConcurrentDictionary<string, Lazy<Dictionary<string, string>>> Dictionaries = new();
 
@@ -18,7 +18,7 @@ public class LStringResolver(
         var culture = getCulture();
         var dict = Dictionaries.GetOrAdd(
             culture,
-            _ => new Lazy<Dictionary<string, string>>(() 
+            _ => new Lazy<Dictionary<string, string>>(()
                 => getCultureResource(culture)));
         if (dict.Value is null) return string.Empty;
         dict.Value.TryGetValue(key, out var v);
@@ -32,7 +32,6 @@ public class LStringResolver(
     public string this[LString lString] => this.Resolve(lString);
 }
 
-
 /// <summary>
 /// Localization string resolver
 /// </summary>
@@ -41,8 +40,7 @@ public class LStringResolver(
 /// <typeparam name="T"></typeparam>
 public class LStringResolver<T>(
     GetCulture getCulture,
-    GetCultureResource getCultureResource) 
+    GetCultureResource getCultureResource)
     : LStringResolver(getCulture, getCultureResource)
 {
-        
 }

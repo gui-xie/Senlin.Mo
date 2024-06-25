@@ -37,7 +37,7 @@ public class ChangeDataCapture
     /// <summary>
     /// Change Type
     /// </summary>
-    public ChangeDataCaptureType Type { get; private set; }
+    public string Type { get; private set; }
 
     /// <summary>
     /// Change Data
@@ -59,7 +59,7 @@ public class ChangeDataCapture
         string entityType,
         string changeUser,
         DateTime changeTime,
-        ChangeDataCaptureType type,
+        string type,
         string changeContent
     ) => new()
     {

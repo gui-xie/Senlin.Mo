@@ -50,8 +50,9 @@ public abstract class Repository<T>(
         dbContext.Update(entity);
 
 
-        if(entity is not ICdcEntity) return;
-        var cdc = CreateCdc(entity.Id, user, now, ChangeDataCaptureType.Delete, entity);
+        if(entity is not ICdcEntity e) return;
+        var cdcType = e.GetChangeDataCaptureType() ?? ChangeDataCaptureType.Delete;
+        var cdc = CreateCdc(entity.Id, user, now, cdcType, entity);
         dbContext.Add(cdc);
     }
     
@@ -72,8 +73,9 @@ public abstract class Repository<T>(
         entry.Property(ConcurrencyToken).CurrentValue = helper.NewConcurrencyToken();
         dbContext.Update(entity);
 
-        if(entity is not ICdcEntity) return;
-        var cdc = CreateCdc(entity.Id, user, now, ChangeDataCaptureType.Update, entity);
+        if(entity is not ICdcEntity e) return;
+        var cdcType = e.GetChangeDataCaptureType() ?? ChangeDataCaptureType.Update;
+        var cdc = CreateCdc(entity.Id, user, now, cdcType, entity);
         dbContext.Add(cdc);
     }
 
@@ -110,8 +112,9 @@ public abstract class Repository<T>(
         entry.Property(ConcurrencyToken).CurrentValue = helper.NewConcurrencyToken();
         dbContext.Add(entity);
         
-        if(entity is not ICdcEntity) return Ok();
-        var cdc = CreateCdc(id, user, now, ChangeDataCaptureType.Add, entity);
+        if(entity is not ICdcEntity e) return Ok();
+        var cdcType = e.GetChangeDataCaptureType() ?? ChangeDataCaptureType.Add;
+        var cdc = CreateCdc(id, user, now, cdcType, entity);
         dbContext.Add(cdc);
         return Ok();
     }
@@ -120,7 +123,7 @@ public abstract class Repository<T>(
         long entityId,
         string user,
         DateTime now,
-        ChangeDataCaptureType type,
+        string type,
         TEntity entity
     )
     {

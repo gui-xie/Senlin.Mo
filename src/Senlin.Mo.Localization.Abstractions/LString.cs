@@ -24,6 +24,10 @@ public readonly struct LString(
     public string Resolve(Func<string, string>? resolve = null)
     {
         var s = resolve?.Invoke(key) ?? defaultValue;
+        if (string.IsNullOrWhiteSpace(s))
+        {
+            s = defaultValue;
+        }
         foreach (var arg in args)
         {
             var argKey = arg.Key;

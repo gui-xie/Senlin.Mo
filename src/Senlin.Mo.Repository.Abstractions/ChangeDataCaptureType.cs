@@ -3,18 +3,20 @@
 /// <summary>
 /// Change Data Capture Type
 /// </summary>
-public enum ChangeDataCaptureType
+public static class ChangeDataCaptureType
 {
     /// <summary>
     /// Add
     /// </summary>
-    Add,
+    public const string Add = "Add";
+
     /// <summary>
     /// Update
     /// </summary>
-    Update,
+    public const string Update = "Update";
+
     /// <summary>
     /// Delete
     /// </summary>
-    Delete
+    public const string Delete = "Delete";
 }
