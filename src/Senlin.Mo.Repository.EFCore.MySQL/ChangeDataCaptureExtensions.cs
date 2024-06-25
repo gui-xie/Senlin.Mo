@@ -9,6 +9,8 @@ namespace Senlin.Mo.Repository.EFCore.MySQL;
 /// </summary>
 public static class ChangeDataCaptureExtensions
 {
+    public const int MaxTypeLength = 10;
+
     internal const string MonthName = "Month";
     
     internal static readonly JsonSerializerOptions SerializerOptions = new()

@@ -4,6 +4,7 @@ using Senlin.Mo.Application.Abstractions;
 using Senlin.Mo.Domain;
 using Senlin.Mo.Repository.Abstractions;
 using static Senlin.Mo.Repository.EFCore.EntityShadowPropertyNames;
+using static Senlin.Mo.Repository.EFCore.MySQL.ChangeDataCaptureExtensions;
 
 namespace Senlin.Mo.Repository.EFCore.MySQL;
 
@@ -56,9 +57,10 @@ public abstract class RepositoryDbContext<T>(
         modelBuilder.UseCollation("utf8mb4_zh_0900_as_cs").HasCharSet("utf8mb4");
 
         var changeDataCaptureBuilder = modelBuilder.Entity<ChangeDataCapture>();
-        changeDataCaptureBuilder.Property<string>(ChangeDataCaptureExtensions.MonthName);
+        changeDataCaptureBuilder.Property<string>(MonthName);
         changeDataCaptureBuilder.Property(e => e.ChangeData).HasColumnType("json");
         changeDataCaptureBuilder.HasKey(e => e.Id);
+        changeDataCaptureBuilder.Property(e => e.Type).HasMaxLength(MaxTypeLength);
 
         var assembly = typeof(T).Assembly;
         modelBuilder.ApplyConfigurationsFromAssembly(assembly);
