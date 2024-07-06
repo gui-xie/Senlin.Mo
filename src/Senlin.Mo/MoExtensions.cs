@@ -61,6 +61,7 @@ public static class MoExtensions
         services.AddModuleLStringResolver(module, options.GetLocalizationPath(module.Name));
         services.AddDbContext(module, options.GetModuleConnectionString(module.Name));
         services.AddAppServices(module);
+        services.TryAddSingleton<IEventExecutor, EventExecutor>();
     }
 
     /// <summary>

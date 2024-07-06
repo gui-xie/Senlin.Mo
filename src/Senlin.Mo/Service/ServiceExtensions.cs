@@ -39,7 +39,6 @@ internal static class ServiceExtensions
             });
         }
     }
-
     
     private static Type GetDecoratorServiceType(Type decoratorType)
     {

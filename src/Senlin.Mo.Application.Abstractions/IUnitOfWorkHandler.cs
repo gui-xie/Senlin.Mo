@@ -1,4 +1,6 @@
-﻿namespace Senlin.Mo.Application.Abstractions;
+﻿using Senlin.Mo.Domain;
+
+namespace Senlin.Mo.Application.Abstractions;
 
 /// <summary>
 /// Unit Of Work Handler
@@ -11,4 +13,10 @@ public interface IUnitOfWorkHandler
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     Task SaveChangesAsync(CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Get Domain Events
+    /// </summary>
+    /// <returns></returns>
+    IReadOnlyCollection<IDomainEvent> GetDomainEvents();
 }

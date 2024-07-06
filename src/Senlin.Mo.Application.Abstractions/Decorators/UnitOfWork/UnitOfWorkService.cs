@@ -11,7 +11,8 @@ namespace Senlin.Mo.Application.Abstractions.Decorators.UnitOfWork;
 /// <typeparam name="TResponse"></typeparam>
 public class UnitOfWorkService<TRequest, TResponse>(
     IService<TRequest, TResponse> service,
-    IUnitOfWorkHandler unitOfWorkHandler)
+    IUnitOfWorkHandler unitOfWorkHandler,
+    IEventExecutor eventExecutor)
     : IService<TRequest, TResponse>,
         IDecoratorService<UnitOfWorkAttribute>
 {
@@ -31,10 +32,13 @@ public class UnitOfWorkService<TRequest, TResponse>(
         var response = await service.ExecuteAsync(request, cancellationToken);
         if (!AttributeData.IsEnable) return response;
         var isSuccess = response is Result result && result;
-        if (isSuccess)
+        if (!isSuccess) return response;
+        var events = unitOfWorkHandler.GetDomainEvents();
+        foreach (var e in events)
         {
-            await unitOfWorkHandler.SaveChangesAsync(cancellationToken);
+            await eventExecutor.ExecuteAsync(e, cancellationToken);
         }
+        await unitOfWorkHandler.SaveChangesAsync(cancellationToken);
         return response;
     }
 }

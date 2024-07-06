@@ -101,18 +101,13 @@ public abstract class RepositoryDbContext<T>(
         builder.HasKey(e => e.Id);
     }
 
-    /// <summary>
-    /// Get domain events
-    /// </summary>
-    /// <param name="dbContext"></param>
-    /// <returns></returns>
-    public List<IDomainEvent> GetDomainEvents(DbContext dbContext)
+    public new Task SaveChangesAsync(CancellationToken cancellationToken)
+        => base.SaveChangesAsync(cancellationToken);
+
+    public IReadOnlyCollection<IDomainEvent> GetDomainEvents()
     {
-        var entries = dbContext.ChangeTracker.Entries<Entity>();
+        var entries = ChangeTracker.Entries<Entity>();
         var domainEvents = entries.SelectMany(e => e.Entity.GetDomainEvents());
         return domainEvents.ToList();
     }
-
-    public new Task SaveChangesAsync(CancellationToken cancellationToken)
-        => base.SaveChangesAsync(cancellationToken);
 }

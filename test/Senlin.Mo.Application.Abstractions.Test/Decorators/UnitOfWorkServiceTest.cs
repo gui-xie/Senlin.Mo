@@ -12,8 +12,9 @@ public class UnitOfWorkServiceTest
         var updateCommand = new UpdateCommand();
         var updateUserService = new UpdateUserService();
         var unitOfWorkHandler = new Mock<IUnitOfWorkHandler>();
+        var eventHandler = new Mock<IEventExecutor>();
         UnitOfWorkService<UpdateCommand, bool> unitOfWorkService =
-            new(updateUserService, unitOfWorkHandler.Object);
+            new(updateUserService, unitOfWorkHandler.Object, eventHandler.Object);
 
         _ = await unitOfWorkService.ExecuteAsync(updateCommand, CancellationToken.None);
 
@@ -28,8 +29,9 @@ public class UnitOfWorkServiceTest
         var updateCommand = new UpdateCommand();
         var updateUserService = new UpdateUserService();
         var unitOfWorkHandler = new Mock<IUnitOfWorkHandler>();
+        var eventHandler = new Mock<IEventExecutor>();
         UnitOfWorkService<UpdateCommand, bool> unitOfWorkService =
-            new(updateUserService, unitOfWorkHandler.Object)
+            new(updateUserService, unitOfWorkHandler.Object, eventHandler.Object)
             {
                 AttributeData = new UnitOfWorkAttribute(false)
             };
