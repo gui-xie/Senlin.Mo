@@ -6,7 +6,7 @@ namespace ProjectA
     /// <summary>
     /// Auto generated localization string
     /// </summary>
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Senlin.Mo.Localization", "1.0.18.0")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Senlin.Mo.Localization", "1.0.20.0")]
     public static partial class L
     {
         /// <summary>

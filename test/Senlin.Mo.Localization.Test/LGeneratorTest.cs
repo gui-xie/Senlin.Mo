@@ -16,7 +16,7 @@ public class LGeneratorTest
         const string srcText = @"
 using Senlin.Mo.Localization.Abstractions;
 namespace ProjectA {
-    [LString(""__"")]
+    [LString]
     public enum Grade
     {
         Excellent,

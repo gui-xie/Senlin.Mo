@@ -13,8 +13,8 @@
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageDescription>Senlin Mo Excel Abstractions</PackageDescription>
         <PackageTags>Excel JSON Worksheet</PackageTags>
-        <Version>1.0.19-alpha</Version>
-        <AssemblyVersion>1.0.9.0</AssemblyVersion>
+        <Version>1.0.20-alpha</Version>
+        <AssemblyVersion>1.0.20.0</AssemblyVersion>
         <Authors>Senlin</Authors>
         <Title>Senlin.Mo.Excel.Abstractions</Title>
         <Description>(experiment)</Description>

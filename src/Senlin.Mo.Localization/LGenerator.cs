@@ -91,6 +91,7 @@ public class LGenerator : IIncrementalGenerator
                      where attribute.Name.ToString().StartsWith(LStringAttributePrefix) 
                      select attribute.ArgumentList?.Arguments.FirstOrDefault()))
         {
+            if(separatorArg is null) continue;
             separator = separatorArg.Expression.ToString().Trim('"');
         }
 
