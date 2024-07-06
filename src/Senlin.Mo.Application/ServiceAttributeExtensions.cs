@@ -11,15 +11,13 @@ internal static class ServiceAttributeExtensions
 {
     private static readonly Regex PatternReg = new("{(.*)}");
 
-
-    
     public static ServiceAttributeInfo GetServiceAttributeInfo(
         this GeneratorSyntaxContext ctx,
         ClassDeclarationSyntax s)
     {
         var endpoint = string.Empty;
         var method = string.Empty;
-        var patternMatchNames = Array.Empty<string>();
+        var queryParameters = Array.Empty<string>();
         var serviceDecorators = new List<string>();
         
         var attributes =
@@ -40,7 +38,7 @@ internal static class ServiceAttributeExtensions
             var isServiceEndpointAttribute = fullName == typeof(ServiceEndpointAttribute).FullName;
             if (isServiceEndpointAttribute)
             {
-                (endpoint, method, patternMatchNames) = GetEndpointInfos(attributeSyntax);
+                (endpoint, method, queryParameters) = GetEndpointInfos(attributeSyntax);
                 continue;
             }
             var isServiceDecorator = attributeContainingTypeSymbol.AllInterfaces.Any(i =>
@@ -50,7 +48,7 @@ internal static class ServiceAttributeExtensions
             }
         }
 
-        return new ServiceAttributeInfo(endpoint, method, patternMatchNames, serviceDecorators.ToArray());
+        return new ServiceAttributeInfo(endpoint, method, queryParameters, serviceDecorators.ToArray());
     }
     
     private static (string endPoint, string method, string[] patternMatchNames) GetEndpointInfos(
@@ -66,12 +64,12 @@ internal static class ServiceAttributeExtensions
         }
                 
         var patternMatches = PatternReg.Matches(endpoint);
-        var patternMatchNames = new string[patternMatches.Count];
-        for (var i = 0; i < patternMatchNames.Length; i++)
+        var queryParameters = new string[patternMatches.Count];
+        for (var i = 0; i < queryParameters.Length; i++)
         {
-            patternMatchNames[i] = patternMatches[i].Groups[1].Value;
-        }    
-        return (endpoint, method, patternMatchNames);
+            queryParameters[i] = patternMatches[i].Groups[1].Value;
+        }
+        return (endpoint, method, queryParameters);
     }
     
     private static string GetDecoratorSyntax(AttributeSyntax attributeSyntax, IMethodSymbol attributeSymbol)

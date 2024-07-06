@@ -17,6 +17,7 @@ public class LGenerator : IIncrementalGenerator
     private const string MoLocalizationFile = "build_property.MoLocalizationFile";
     private const string LStringAttributeName = "Senlin.Mo.Localization.Abstractions.LStringAttribute";
     private const string LStringKeyAttributeName = "LStringKey";
+    private const string LStringAttributePrefix = "LString";
 
     /// <summary>
     /// Initialize
@@ -80,7 +81,22 @@ public class LGenerator : IIncrementalGenerator
         public INamedTypeSymbol AttributeSymbol { get; } = AttributeSymbol;
         public EnumDeclarationSyntax EnumSyntax { get; } = EnumSyntax;
     }
+    
+    private static string GetSeparator(EnumDeclarationSyntax enumSyntax)
+    {
+        var separator = "_";
+        foreach (var separatorArg in 
+                 (from attr in enumSyntax.AttributeLists 
+                     from attribute in attr.Attributes
+                     where attribute.Name.ToString().StartsWith(LStringAttributePrefix) 
+                     select attribute.ArgumentList?.Arguments.FirstOrDefault()))
+        {
+            separator = separatorArg.Expression.ToString().Trim('"');
+        }
 
+        return separator;
+    }
+    
     private static void AddEnumAttributeSource(IncrementalGeneratorInitializationContext context)
     {
         var compilationContext = context
@@ -92,7 +108,8 @@ public class LGenerator : IIncrementalGenerator
                 (a, b) => a is EnumDeclarationSyntax,
                 (ctx, _) => (ctx.TargetSymbol, TargetNode: (EnumDeclarationSyntax)ctx.TargetNode))
             .Where(x => x.TargetSymbol is INamedTypeSymbol)
-            .Select((x, _) => new EnumLStringInfo((INamedTypeSymbol)x.TargetSymbol, x.TargetNode))
+            .Select((x, _) =>
+                new EnumLStringInfo((INamedTypeSymbol)x.TargetSymbol, x.TargetNode))
             .Combine(compilationContext);
 
         context.RegisterSourceOutput(attributeProviders, (ctx, info) =>
@@ -104,8 +121,7 @@ public class LGenerator : IIncrementalGenerator
             if (enumFields.Count == 0) return;
             var enumNamespace = GetNamespace(enumSyntax);
             var enumParameterName = enumName[0].ToString().ToLower() + enumName.Substring(1);
-
-            // generate
+            var separator = GetSeparator(enumSyntax);
             var className = $"{enumName}Extensions";
             var source = new StringBuilder();
             source.AppendLine("#nullable enable");
@@ -134,14 +150,15 @@ public class LGenerator : IIncrementalGenerator
             source.AppendLine("            {");
             foreach (var enumField in enumFields)
             {
-                var lKeyProperty = $"{enumName}{enumField.Identifier.Text}";
+                var lKeyProperty = $"{enumName}{separator}{enumField.Identifier.Text}";
                 foreach (var enumFieldAttr in enumField.AttributeLists)
                 {
                     foreach (var fieldAttr in enumFieldAttr.Attributes)
                     {
                         if (fieldAttr.Name.ToString().EndsWith(LStringKeyAttributeName))
                         {
-                            var attrValue = fieldAttr.ArgumentList?.Arguments[0].Expression.ToString().Trim('"');
+                            var attrValue = fieldAttr.ArgumentList?.Arguments[0]
+                                .Expression.ToString().Trim('"');
                             if (attrValue is not null)
                             {
                                 lKeyProperty = attrValue;

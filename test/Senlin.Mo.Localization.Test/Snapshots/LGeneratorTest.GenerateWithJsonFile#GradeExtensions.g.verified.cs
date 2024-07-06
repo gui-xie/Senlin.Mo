@@ -8,7 +8,7 @@ namespace ProjectA
     /// <summary>
     /// Grade localization string extensions
     /// </summary>
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Senlin.Mo.Localization", "1.0.14.0")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Senlin.Mo.Localization", "1.0.18.0")]
     public static partial class GradeExtensions
     {
         /// <summary>
@@ -18,10 +18,10 @@ namespace ProjectA
         {
             return grade switch
             {
-                Grade.Excellent => L.GradeExcellent,
-                Grade.Good => L.GradeGood,
-                Grade.Pass => L.GradePass,
-                Grade.Fail => L.GradeFail,
+                Grade.Excellent => L.Grade__Excellent,
+                Grade.Good => L.Grade__Good,
+                Grade.Pass => L.Grade__Pass,
+                Grade.Fail => L.Grade__Fail,
                 _ => LString.Empty
             };
         }

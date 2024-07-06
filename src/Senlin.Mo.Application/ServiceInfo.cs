@@ -22,7 +22,7 @@ internal readonly record struct ServiceInfo
         Method = serviceAttributeInfo.Method;
         RequestProperties = new EquatableArray<TypeProperty>(requestProperties);
         IsRequestRecord = isRequestRecord;
-        PatternMatchNames = serviceAttributeInfo.PatternMatchNames;
+        QueryParameters = serviceAttributeInfo.QueryParameters;
         ServiceDecorators = serviceAttributeInfo.ServiceDecorators;
     }
 
@@ -34,6 +34,6 @@ internal readonly record struct ServiceInfo
     public readonly string Method;
     public readonly EquatableArray<TypeProperty> RequestProperties;
     public readonly bool IsRequestRecord;
-    public readonly EquatableArray<string> PatternMatchNames;
+    public readonly EquatableArray<string> QueryParameters;
     public readonly EquatableArray<string> ServiceDecorators;
 }

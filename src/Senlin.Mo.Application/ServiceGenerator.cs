@@ -71,15 +71,14 @@ namespace Senlin.Mo.Application
 
         private static string GenerateQueryServiceExtensionsSource(ServiceInfo s)
         {
-         
             var serviceName = s.ServiceName;
             var ns = s.ServiceNamespace;
             var serviceInterfaceName = s.ServiceInterfaceInfo.Name;
-            var isContainsQuery = s.PatternMatchNames.Count > 0;
+            var isContainsQuery = s.QueryParameters.Count > 0;
             var isCommand = s.ServiceCategory == ServiceCategory.Command;
             var requestName = s.ServiceInterfaceInfo.RequestName;
             var requestProperties = s.RequestProperties.ToArray();
-            var matchNames = s.PatternMatchNames.ToArray();
+            var queryParameters = s.QueryParameters.ToArray();
             
             var source = new StringBuilder();
             source.AppendLine("using Senlin.Mo.Application.Abstractions;");
@@ -100,7 +99,7 @@ namespace Senlin.Mo.Application
 
             source.Append(CreateClassWithoutQueryParameters(s));
             source.AppendLine($"        public static Delegate Handler = (");
-            AddParameters(source, isContainsQuery, isCommand, requestName, requestProperties, matchNames);
+            AddParameters(source, isContainsQuery, isCommand, requestName, requestProperties, queryParameters);
             source.AppendLine($"                {serviceInterfaceName} service,");
             source.AppendLine("                CancellationToken cancellationToken) ");
             source.AppendLine("            => service.ExecuteAsync(");
@@ -139,11 +138,11 @@ namespace Senlin.Mo.Application
             var serviceName = s.ServiceName;
             var ns = s.ServiceNamespace;
             var serviceInterfaceName = s.ServiceInterfaceInfo.Name;
-            var isContainsQuery = s.PatternMatchNames.Count > 0;
+            var isContainsQuery = s.QueryParameters.Count > 0;
             var isCommand = s.ServiceCategory == ServiceCategory.Command;
             var requestName = s.ServiceInterfaceInfo.RequestName;
             var requestProperties = s.RequestProperties.ToArray();
-            var matchNames = s.PatternMatchNames.ToArray();
+            var matchNames = s.QueryParameters.ToArray();
 
             var source = new StringBuilder();
             source.AppendLine("using Senlin.Mo.Application.Abstractions;");
@@ -154,18 +153,19 @@ namespace Senlin.Mo.Application
             source.AppendLine("{");
             source.AppendLine($"    public static class {serviceName}Extensions");
             source.AppendLine("    {");
+            var method = s.Method;
             if (!string.IsNullOrWhiteSpace(s.Endpoint))
             {
                 source.AppendLine($"        private const string Endpoint = \"{s.Endpoint}\";");
                 source.AppendLine();
-                var method = string.IsNullOrWhiteSpace(s.Method) ? "POST" : s.Method;
+                 method = string.IsNullOrWhiteSpace(s.Method) ? "POST" : s.Method;
                 source.AppendLine($"        private static string Method = \"{method}\";");
                 source.AppendLine();
             }
 
             source.Append(CreateClassWithoutQueryParameters(s));
             source.AppendLine($"        public static Delegate Handler = (");
-            AddParameters(source, isContainsQuery, isCommand, requestName, requestProperties, matchNames);
+            AddParameters(source, isContainsQuery, isCommand && method != "DELETE", requestName, requestProperties, matchNames);
             source.AppendLine($"                {serviceInterfaceName} service,");
             source.AppendLine("                CancellationToken cancellationToken) ");
             source.AppendLine("            => service.ExecuteAsync(");
@@ -299,21 +299,21 @@ namespace Senlin.Mo.Application
             return nameSpace;
         }
 
-        private static bool IsContainsQuery(ServiceInfo s) => s.PatternMatchNames.Count > 0;
+        private static bool IsContainsQuery(ServiceInfo s) => s.QueryParameters.Count > 0;
 
         private static string GetBodyClassName(string requestName) => $"{requestName.Split('.').Last()}0";
 
         private static IEnumerable<TypeProperty> GetBodyProperties(ServiceInfo s) =>
             from p in s.RequestProperties
-            where !s.PatternMatchNames.Contains(p.Name, StringComparer.InvariantCultureIgnoreCase)
+            where !s.QueryParameters.Contains(p.Name, StringComparer.InvariantCultureIgnoreCase)
             select p;
 
         private static IEnumerable<TypeProperty> GetQueryProperties(
             TypeProperty[] requestProperties,
-            string[] patternMatchNames
+            string[] queryParameters
         ) =>
             from p in requestProperties
-            where patternMatchNames.Contains(p.Name, StringComparer.InvariantCultureIgnoreCase)
+            where queryParameters.Contains(p.Name, StringComparer.InvariantCultureIgnoreCase)
             select p;
 
         private static string CreateClassWithoutQueryParameters(ServiceInfo s)
@@ -337,12 +337,12 @@ namespace Senlin.Mo.Application
         private static void AddParameters(
             StringBuilder source,
             bool isContainsQuery, 
-            bool isCommand,
+            bool containsBody,
             string requestName,
             TypeProperty[] requestTypeProperties,
-            string[] patternMatchNames)
+            string[] queryParameters)
         {
-            if (isCommand && !isContainsQuery)
+            if (containsBody && !isContainsQuery)
             {
                 source.AppendLine($"                {requestName} {GetRequestTypeEndpointName(requestName)},");
                 return;
@@ -350,7 +350,7 @@ namespace Senlin.Mo.Application
 
             if (isContainsQuery)
             {
-                var queryProperties = GetQueryProperties(requestTypeProperties, patternMatchNames).ToList();
+                var queryProperties = GetQueryProperties(requestTypeProperties, queryParameters).ToList();
                 foreach (var p in queryProperties)
                 {
                     source.AppendLine($"                {p.TypeName} {FirstCharToLower(p.Name)},");
@@ -371,7 +371,7 @@ namespace Senlin.Mo.Application
         private static void AddRequestObject(StringBuilder source, ServiceInfo s)
         {
             var isContainsQuery = IsContainsQuery(s);
-            if (s.ServiceCategory == ServiceCategory.Command && !isContainsQuery)
+            if (s.ServiceCategory == ServiceCategory.Command && s.Method != "DELETE" && !isContainsQuery)
             {
                 source.AppendLine($"                {GetRequestTypeEndpointName(s.ServiceInterfaceInfo.RequestName)},");
                 return;
@@ -385,7 +385,7 @@ namespace Senlin.Mo.Application
             }).ToArray();
             if (isContainsQuery)
             {
-                var queryProperties = GetQueryProperties(s.RequestProperties.ToArray(), s.PatternMatchNames.ToArray())
+                var queryProperties = GetQueryProperties(s.RequestProperties.ToArray(), s.QueryParameters.ToArray())
                     .Select(p => new
                     {
                         IsQuery = true,

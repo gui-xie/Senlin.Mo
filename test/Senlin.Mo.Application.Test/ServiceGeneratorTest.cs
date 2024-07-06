@@ -136,10 +136,34 @@ namespace projectA.User.Dto{
     }
 }
 ";
-        const string dtoText = @"
+        var driver = GeneratorDriver(srcText);
 
+        var results = driver.GetRunResult();
+
+        return results.Verify();
+    }
+
+    [Fact]
+    public Task MultiDeleteSuccess()
+    {
+        const string srcText = @"
+using Senlin.Mo.Application.Abstractions;
+using projectA.User.Dto;
+namespace ProjectA.User{
+    [ServiceEndpoint(""user"", ""DELETE"")]
+    internal class DeleteUserService: ICommandService<DeleteUserDto>
+    {
+        public Task<Result> ExecuteAsync(DeleteUserDto request, CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
+        }
+    }
+}
+namespace projectA.User.Dto{
+    internal record DeleteUserDto(string[] Ids);
+}
 ";
-        var driver = GeneratorDriver(srcText, dtoText);
+        var driver = GeneratorDriver(srcText);
 
         var results = driver.GetRunResult();
 

@@ -1,4 +1,6 @@
-﻿namespace Senlin.Mo.Application.Abstractions.Decorators.UnitOfWork;
+﻿using Senlin.Mo.Domain;
+
+namespace Senlin.Mo.Application.Abstractions.Decorators.UnitOfWork;
 
 /// <summary>
 /// Unit Of Work Service Attribute
@@ -27,11 +29,12 @@ public class UnitOfWorkService<TRequest, TResponse>(
     public async Task<TResponse> ExecuteAsync(TRequest request, CancellationToken cancellationToken)
     {
         var response = await service.ExecuteAsync(request, cancellationToken);
-        if (AttributeData.IsEnable)
+        if (!AttributeData.IsEnable) return response;
+        var isSuccess = response is Result result && result;
+        if (isSuccess)
         {
             await unitOfWorkHandler.SaveChangesAsync(cancellationToken);
         }
-
         return response;
     }
 }

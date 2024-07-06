@@ -15,8 +15,8 @@
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageDescription>JSON SourceGenerator for excel to C# object</PackageDescription>
         <PackageTags>JSON SourceGenerator Excel</PackageTags>
-        <Version>1.0.17-alpha</Version>
-        <AssemblyVersion>1.0.17.0</AssemblyVersion>
+        <Version>1.0.18-alpha</Version>
+        <AssemblyVersion>1.0.18.0</AssemblyVersion>
         <Authors>Senlin</Authors>
         <Title>Senlin.Mo.Excel</Title>
         <Description>(experiment)JSON SourceGenerator for excel to C# object.</Description>
