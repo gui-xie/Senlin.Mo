@@ -4,7 +4,7 @@ using System.Collections.Immutable;
 namespace Senlin.Mo.Application.Helpers;
 
 /// <summary>
-/// An immutable, equatable array. This is equivalent to <see cref="Array{T}"/> but with value equality support.
+/// An immutable, equatable array.
 /// </summary>
 /// <typeparam name="T">The type of values in the array.</typeparam>
 internal readonly struct EquatableArray<T> : IEquatable<EquatableArray<T>>, IEnumerable<T>

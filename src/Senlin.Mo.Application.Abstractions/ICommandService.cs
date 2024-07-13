@@ -6,7 +6,7 @@ namespace Senlin.Mo.Application.Abstractions;
 /// Command service interface
 /// </summary>
 /// <typeparam name="TCommand">Command</typeparam>
-public interface ICommandService<in TCommand> : IService<TCommand, Result>
+public interface ICommandService<in TCommand> : IService<TCommand, IResult>
 {
     
 }
@@ -16,7 +16,7 @@ public interface ICommandService<in TCommand> : IService<TCommand, Result>
 /// </summary>
 /// <typeparam name="TCommand">Command</typeparam>
 /// <typeparam name="TResultData">Result data</typeparam>
-public interface ICommandService<in TCommand, TResultData> : IService<TCommand, Result<TResultData>>
+public interface ICommandService<in TCommand, TResultData> : IService<TCommand, IResult<TResultData>>
 {
     
 }

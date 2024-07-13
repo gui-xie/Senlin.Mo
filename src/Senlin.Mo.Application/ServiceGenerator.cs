@@ -1,7 +1,6 @@
 ﻿using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Senlin.Mo.Application.Abstractions.Decorators.Log;
 using Senlin.Mo.Application.Abstractions.Decorators.UnitOfWork;
 
 namespace Senlin.Mo.Application
@@ -12,11 +11,10 @@ namespace Senlin.Mo.Application
     [Generator]
     public class ServiceGenerator : IIncrementalGenerator
     {
-        private static readonly string DefaultLogAttribute = $"new {typeof(LogAttribute).FullName}()";
         private static readonly string DefaultUnitOfWorkAttribute = $"new {typeof(UnitOfWorkAttribute).FullName}()";
 
-        private static readonly IReadOnlyCollection<string> DefaultServiceAttributes = [DefaultLogAttribute];
-        private static readonly IReadOnlyCollection<string> DefaultCommandServiceAttributes = [DefaultUnitOfWorkAttribute, DefaultLogAttribute];
+        private static readonly IReadOnlyCollection<string> DefaultServiceAttributes = [];
+        private static readonly IReadOnlyCollection<string> DefaultCommandServiceAttributes = [DefaultUnitOfWorkAttribute];
         
         /// <summary>
         /// Generate Service Registration and Handler Delegate
@@ -39,6 +37,9 @@ namespace Senlin.Mo.Application
                 var s = p.Left;
                 var serviceExtensionsFileName = $"{s.ServiceName}Extensions.g.cs";
                 ctx.AddSource(serviceExtensionsFileName, GenerateServiceExtensionsSource(s));
+                
+                var serviceInterfaceFileName = $"I{s.ServiceName}.g.cs";
+                ctx.AddSource(serviceInterfaceFileName, GenerateServiceInterfaceSource(s));
             });
         }
 
@@ -127,6 +128,41 @@ namespace Senlin.Mo.Application
 
             source.AppendLine();
             source.AppendLine("        );");
+            source.AppendLine("    }");
+            source.AppendLine("}");
+            return source.ToString();
+        }
+
+        private static string GenerateServiceInterfaceSource(ServiceInfo s)
+        {
+            var serviceName = s.ServiceName;
+            var serviceInterfaceName = s.ServiceInterfaceInfo.Name;
+            var requestTypeName = s.ServiceInterfaceInfo.RequestName;
+            var requestName = GetRequestTypeEndpointName(requestTypeName);
+            var responseTypeName = s.ServiceInterfaceInfo.ResponseName;
+            var source = new StringBuilder();
+            source.AppendLine("using Senlin.Mo.Application.Abstractions;");
+            
+            source.AppendLine($"namespace {s.ServiceNamespace}");
+            source.AppendLine("{");
+            source.AppendLine($"    public interface I{serviceName}");
+            source.AppendLine("    {");
+            source.AppendLine($"        Task<{responseTypeName}> ExecuteAsync({requestTypeName} {requestName}, CancellationToken cancellationToken);");
+            source.AppendLine();
+            source.AppendLine($"        public class {serviceName}Impl : I{serviceName}");
+            source.AppendLine("        {");
+            source.AppendLine($"            private readonly {serviceInterfaceName} _service;");
+            source.AppendLine();
+            source.AppendLine($"            public {serviceName}Impl({serviceInterfaceName} service)");
+            source.AppendLine("            {");
+            source.AppendLine("                _service = service;");
+            source.AppendLine("            }");
+            source.AppendLine();
+            source.AppendLine($"            public Task<{responseTypeName}> ExecuteAsync({requestTypeName} {requestName}, CancellationToken cancellationToken)");
+            source.AppendLine("            {");
+            source.AppendLine($"                return _service.ExecuteAsync({requestName}, cancellationToken);");
+            source.AppendLine("            }");
+            source.AppendLine("        }");
             source.AppendLine("    }");
             source.AppendLine("}");
             return source.ToString();
@@ -251,8 +287,8 @@ namespace Senlin.Mo.Application
             if (isCommandService)
             {
                 responseTypeName = string.IsNullOrWhiteSpace(responseTypeName) 
-                    ? "Result" 
-                    : $"Result<{responseTypeName}>";
+                    ? "Senlin.Mo.Domain.IResult" 
+                    : $"Senlin.Mo.Domain.IResult<{responseTypeName}>";
             }
 
             var requestProperties = GetRequestProperties(requestTypeSymbol);

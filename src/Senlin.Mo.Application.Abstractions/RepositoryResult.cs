@@ -35,16 +35,4 @@ public class RepositoryResult
     /// <param name="result"></param>
     /// <returns></returns>
     public static implicit operator bool(RepositoryResult result) => result.Type == RepositoryResultType.Ok;
-
-    /// <summary>
-    /// Convert to string
-    /// </summary>
-    /// <returns></returns>
-    public static implicit operator Result(RepositoryResult result) =>
-        result.Type switch
-        {
-            RepositoryResultType.Ok => Result.Success(),
-            RepositoryResultType.Repeat => Result.Fail("Entity Repeat"),
-            _ => Result.Fail("Unknown Error")
-        };
 }

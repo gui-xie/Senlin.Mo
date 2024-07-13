@@ -16,9 +16,9 @@ public class ServiceExtensionsTest
         services.AddAppServices(module);
         var sp = services.BuildServiceProvider();
         
-        var service = sp.GetRequiredService<IService<AModule.AddDto, Result>>();
+        var service = sp.GetRequiredService<IService<AModule.AddDto, IResult>>();
 
-        service.Should().BeOfType<LogConsoleService<AModule.AddDto, Result>>();
+        service.Should().BeOfType<LogConsoleService<AModule.AddDto, IResult>>();
     }
 
     public class AModule : IModule
@@ -28,7 +28,7 @@ public class ServiceExtensionsTest
         public IEnumerable<ServiceRegistration> GetServices()
         {
             yield return new ServiceRegistration(
-                typeof(IService<AddDto, Result>),
+                typeof(IService<AddDto, IResult>),
                 typeof(AddService),
                 [new LogConsoleAttribute("AddService")]
             );
@@ -38,10 +38,7 @@ public class ServiceExtensionsTest
 
         public class AddService : ICommandService<AddDto>
         {
-            public Task<Result> ExecuteAsync(AddDto request, CancellationToken cancellationToken)
-            {
-                return Result.Success();
-            }
+            public Task<IResult> ExecuteAsync(AddDto request, CancellationToken cancellationToken) => Result.SuccessTask();
         }
 
         public Type? DbContextType => null;

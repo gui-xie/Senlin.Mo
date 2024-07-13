@@ -31,8 +31,7 @@ public class UnitOfWorkService<TRequest, TResponse>(
     {
         var response = await service.ExecuteAsync(request, cancellationToken);
         if (!AttributeData.IsEnable) return response;
-        var isSuccess = response is Result result && result;
-        if (!isSuccess) return response;
+        if (response is not IResult { IsSuccess: true }) return response;
         var events = unitOfWorkHandler.GetDomainEvents();
         foreach (var e in events)
         {
