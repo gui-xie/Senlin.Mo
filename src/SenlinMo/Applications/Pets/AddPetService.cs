@@ -11,3 +11,8 @@ public class AddPetService : ICommandService<AddPetDto>
         return Result.SuccessTask();
     }
 }
+
+public class AddPetEvent : IDomainEvent
+{
+    
+}

@@ -8,8 +8,8 @@
 
     <ItemGroup>
         <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.2"/>
-        <PackageReference Include="Senlin.Mo.Application" Version="1.0.21-alpha" />
         <PackageReference Include="Senlin.Mo.Domain" Version="1.0.21-alpha" />
+        <PackageReference Include="Senlin.Mo.Application" Version="1.0.21-alpha" />
         <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0"/>
     </ItemGroup>
 
