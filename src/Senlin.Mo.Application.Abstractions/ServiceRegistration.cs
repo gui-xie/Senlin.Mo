@@ -2,7 +2,6 @@
 using Senlin.Mo.Application.Abstractions.Decorators;
 
 namespace Senlin.Mo.Application.Abstractions;
-
 /// <summary>
 /// Service registration
 /// </summary>

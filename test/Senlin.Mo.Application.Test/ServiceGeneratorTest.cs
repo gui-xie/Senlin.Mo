@@ -37,7 +37,6 @@ using Senlin.Mo.Application.Abstractions;
 using ProjectA.Common;
 namespace ProjectA.User{
     public class GetUserNameDto{}
-    [ServiceEndpoint(""get-user-name"")]
     internal class GetUserNameService: IService<GetUserNameDto, PagedResult<UserName>>
     {
         public Task<string> ExecuteAsync(GetUserNameDto request, CancellationToken cancellationToken)

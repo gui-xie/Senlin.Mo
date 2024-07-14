@@ -143,6 +143,20 @@ namespace Senlin.Mo.Application
             var source = new StringBuilder();
             source.AppendLine("using Senlin.Mo.Application.Abstractions;");
             
+            // source.AppendLine($"        public static ServiceRegistration Registration = new ServiceRegistration(");
+            // source.AppendLine($"            typeof({serviceInterfaceName}),");
+            // source.AppendLine($"            typeof({serviceName}),");
+            // source.AppendLine("            [");
+            // IEnumerable<string> serviceDecorators = s.ServiceDecorators.Count == 0
+            //     ? DefaultCommandServiceAttributes
+            //     : s.ServiceDecorators;
+            // foreach (var decorator in serviceDecorators)
+            // {
+            //     source.AppendLine($"                {decorator},");
+            // }
+            // source.AppendLine("            ],");
+            // source.Append($"            ServiceLifetime.Transient");
+            
             source.AppendLine($"namespace {s.ServiceNamespace}");
             source.AppendLine("{");
             source.AppendLine($"    public interface I{serviceName}");
@@ -163,6 +177,23 @@ namespace Senlin.Mo.Application
             source.AppendLine($"                return _service.ExecuteAsync({requestName}, cancellationToken);");
             source.AppendLine("            }");
             source.AppendLine("        }");
+            // add service registration
+            source.AppendLine();
+            source.AppendLine($"        public static ServiceRegistration Registration = new ServiceRegistration(");
+            source.AppendLine($"            typeof({serviceInterfaceName}),");
+            source.AppendLine($"            typeof({serviceName}Impl),");
+            source.AppendLine("            [");
+            IEnumerable<string> serviceDecorators = s.ServiceDecorators.Count == 0
+                ? DefaultCommandServiceAttributes
+                : s.ServiceDecorators;
+            foreach (var decorator in serviceDecorators)
+            {
+                source.AppendLine($"                {decorator},");
+            }
+            source.AppendLine("            ],");
+            source.Append("           ServiceLifetime.Transient");
+            source.AppendLine();
+            source.AppendLine("        );");
             source.AppendLine("    }");
             source.AppendLine("}");
             return source.ToString();
@@ -262,7 +293,7 @@ namespace Senlin.Mo.Application
         {
             var s = (ClassDeclarationSyntax)ctx.Node;
             var interfaceSymbol = ctx.GetServiceInterfaceSymbol(s);
-            if (interfaceSymbol is null)
+            if (interfaceSymbol is null || interfaceSymbol.TypeArguments.Length == 0)
             {
                 return new ServiceInfo(
                     string.Empty, 
