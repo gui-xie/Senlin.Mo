@@ -4,7 +4,7 @@ using Senlin.Mo.Application.Abstractions;
 using Senlin.Mo.Domain;
 using Senlin.Mo.Repository.Abstractions;
 using static Senlin.Mo.Repository.EFCore.EntityShadowPropertyNames;
-using static Senlin.Mo.Application.Abstractions.RepositoryResult;
+using static Senlin.Mo.Repository.Abstractions.RepositoryResult;
 using static Senlin.Mo.Domain.DomainExtensions;
 
 namespace Senlin.Mo.Repository.EFCore.MySQL;

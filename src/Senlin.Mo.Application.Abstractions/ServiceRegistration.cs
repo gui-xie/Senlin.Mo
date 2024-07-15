@@ -13,20 +13,14 @@ public class ServiceRegistration
     /// <param name="serviceType"></param>
     /// <param name="implementation"></param>
     /// <param name="decorators"></param>
-    /// <param name="lifeTime"></param>
-    /// <param name="endpointData"></param>
     public ServiceRegistration(
         Type serviceType,
         Type implementation,
-        IServiceDecorator[]? decorators = null,
-        ServiceLifetime lifeTime = ServiceLifetime.Transient,
-        EndpointData? endpointData = null)
+        IServiceDecorator[]? decorators = null)
     {
         ServiceType = serviceType;
         Implementation = implementation;
         Decorators = decorators;
-        LifeTime = lifeTime;
-        EndpointData = endpointData;
     }
 
     /// <summary>
@@ -40,17 +34,7 @@ public class ServiceRegistration
     public Type Implementation { get; }
 
     /// <summary>
-    /// Service LifeCycle
-    /// </summary>
-    public ServiceLifetime LifeTime { get; }
-
-    /// <summary>
     /// Service Decorator
     /// </summary>
     public IServiceDecorator[]? Decorators { get; }
-
-    /// <summary>
-    /// Route Pattern, Handler, Methods
-    /// </summary>
-    public EndpointData? EndpointData { get; }
 }

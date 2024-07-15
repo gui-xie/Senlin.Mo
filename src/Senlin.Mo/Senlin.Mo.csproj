@@ -49,5 +49,6 @@
 
     <ItemGroup>
       <Folder Include="Excel\" />
+      <Folder Include="Middlewares\" />
     </ItemGroup>
 </Project>

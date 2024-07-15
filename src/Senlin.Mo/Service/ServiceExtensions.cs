@@ -1,5 +1,4 @@
-﻿using System.Runtime.CompilerServices;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Senlin.Mo.Application.Abstractions;
 using Senlin.Mo.Application.Abstractions.Decorators;
 using Senlin.Mo.Localization.Abstractions;
@@ -18,7 +17,10 @@ internal static class ServiceExtensions
                   && serviceRegistration.ServiceType.Name.StartsWith("IService")
                 && serviceRegistration.ServiceType.GetGenericTypeDefinition() == typeof(IService<,>)))
             {
-                var serviceDescription = new ServiceDescriptor(serviceRegistration.ServiceType, serviceRegistration.Implementation, serviceRegistration.LifeTime);
+                var serviceDescription = new ServiceDescriptor(
+                    serviceRegistration.ServiceType, 
+                    serviceRegistration.Implementation, 
+                    ServiceLifetime.Transient);
                 services.Add(serviceDescription);
                 continue;
             }

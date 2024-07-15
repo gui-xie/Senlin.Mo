@@ -1,4 +1,4 @@
-﻿namespace Senlin.Mo.Application.Abstractions;
+﻿namespace Senlin.Mo.Repository.Abstractions;
 
 /// <summary>
 /// Repository operation result type

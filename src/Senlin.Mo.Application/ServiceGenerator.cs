@@ -35,9 +35,6 @@ namespace Senlin.Mo.Application
             context.RegisterSourceOutput(provider, (ctx, p) =>
             {
                 var s = p.Left;
-                var serviceExtensionsFileName = $"{s.ServiceName}Extensions.g.cs";
-                ctx.AddSource(serviceExtensionsFileName, GenerateServiceExtensionsSource(s));
-                
                 var serviceInterfaceFileName = $"I{s.ServiceName}.g.cs";
                 ctx.AddSource(serviceInterfaceFileName, GenerateServiceInterfaceSource(s));
             });
@@ -63,76 +60,6 @@ namespace Senlin.Mo.Application
             return requestName;
         }
 
-        private static string GenerateServiceExtensionsSource(ServiceInfo s)
-        {
-            return s.ServiceCategory == ServiceCategory.Command
-                ? GenerateCommandServiceExtensionsSource(s)
-                : GenerateQueryServiceExtensionsSource(s);
-        }
-
-        private static string GenerateQueryServiceExtensionsSource(ServiceInfo s)
-        {
-            var serviceName = s.ServiceName;
-            var ns = s.ServiceNamespace;
-            var serviceInterfaceName = s.ServiceInterfaceInfo.Name;
-            var isContainsQuery = s.QueryParameters.Count > 0;
-            var isCommand = s.ServiceCategory == ServiceCategory.Command;
-            var requestName = s.ServiceInterfaceInfo.RequestName;
-            var requestProperties = s.RequestProperties.ToArray();
-            var queryParameters = s.QueryParameters.ToArray();
-            
-            var source = new StringBuilder();
-            source.AppendLine("using Senlin.Mo.Application.Abstractions;");
-            source.AppendLine("using Senlin.Mo.Domain;");
-            source.AppendLine("using Microsoft.Extensions.DependencyInjection;");
-            source.AppendLine($"namespace {ns}");
-            source.AppendLine("{");
-            source.AppendLine($"    public static class {serviceName}Extensions");
-            source.AppendLine("    {");
-            if (!string.IsNullOrWhiteSpace(s.Endpoint))
-            {
-                source.AppendLine($"        private const string Endpoint = \"{s.Endpoint}\";");
-                source.AppendLine();
-                var method = string.IsNullOrWhiteSpace(s.Method) ? "GET" : s.Method;
-                source.AppendLine($"        private static string Method = \"{method}\";");
-                source.AppendLine();
-            }
-
-            source.Append(CreateClassWithoutQueryParameters(s));
-            source.AppendLine($"        public static Delegate Handler = (");
-            AddParameters(source, isContainsQuery, isCommand, requestName, requestProperties, queryParameters);
-            source.AppendLine($"                {serviceInterfaceName} service,");
-            source.AppendLine("                CancellationToken cancellationToken) ");
-            source.AppendLine("            => service.ExecuteAsync(");
-            AddRequestObject(source, s);
-            source.AppendLine("                cancellationToken);");
-            source.AppendLine();
-            source.AppendLine($"        public static ServiceRegistration Registration = new ServiceRegistration(");
-            source.AppendLine($"            typeof({serviceInterfaceName}),");
-            source.AppendLine($"            typeof({serviceName}),");
-            source.AppendLine("            [");
-            IEnumerable<string> serviceDecorators = s.ServiceDecorators.Count == 0
-                ? DefaultServiceAttributes
-                : s.ServiceDecorators;
-            foreach (var decorator in serviceDecorators)
-            {
-                source.AppendLine($"                {decorator},");
-            }
-            source.AppendLine("            ],");
-            source.Append($"            ServiceLifetime.Transient");
-            if (!string.IsNullOrWhiteSpace(s.Endpoint))
-            {
-                source.AppendLine(",");
-                source.Append($"            new EndpointData(Endpoint, Handler, Method)");
-            }
-
-            source.AppendLine();
-            source.AppendLine("        );");
-            source.AppendLine("    }");
-            source.AppendLine("}");
-            return source.ToString();
-        }
-
         private static string GenerateServiceInterfaceSource(ServiceInfo s)
         {
             var serviceName = s.ServiceName;
@@ -142,21 +69,6 @@ namespace Senlin.Mo.Application
             var responseTypeName = s.ServiceInterfaceInfo.ResponseName;
             var source = new StringBuilder();
             source.AppendLine("using Senlin.Mo.Application.Abstractions;");
-            
-            // source.AppendLine($"        public static ServiceRegistration Registration = new ServiceRegistration(");
-            // source.AppendLine($"            typeof({serviceInterfaceName}),");
-            // source.AppendLine($"            typeof({serviceName}),");
-            // source.AppendLine("            [");
-            // IEnumerable<string> serviceDecorators = s.ServiceDecorators.Count == 0
-            //     ? DefaultCommandServiceAttributes
-            //     : s.ServiceDecorators;
-            // foreach (var decorator in serviceDecorators)
-            // {
-            //     source.AppendLine($"                {decorator},");
-            // }
-            // source.AppendLine("            ],");
-            // source.Append($"            ServiceLifetime.Transient");
-            
             source.AppendLine($"namespace {s.ServiceNamespace}");
             source.AppendLine("{");
             source.AppendLine($"    public interface I{serviceName}");
@@ -190,9 +102,7 @@ namespace Senlin.Mo.Application
             {
                 source.AppendLine($"                {decorator},");
             }
-            source.AppendLine("            ],");
-            source.Append("           ServiceLifetime.Transient");
-            source.AppendLine();
+            source.AppendLine("            ]");
             source.AppendLine("        );");
             source.AppendLine("    }");
             source.AppendLine("}");

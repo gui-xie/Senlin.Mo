@@ -15,7 +15,7 @@ public interface IResult
     /// Get Error Message
     /// </summary>
     /// <returns></returns>
-    string GetErrorMessage();
+    string Message { get; }
 }
 
 /// <summary>
@@ -28,5 +28,5 @@ public interface IResult<out T>: IResult
     /// Get Data
     /// </summary>
     /// <returns></returns>
-    T? GetData();
+    T? Data { get; }
 }
