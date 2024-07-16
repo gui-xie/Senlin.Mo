@@ -208,6 +208,7 @@ public class LGenerator : IIncrementalGenerator
         var source = new StringBuilder();
         source.AppendLine("#nullable enable");
         source.AppendLine("using Senlin.Mo.Localization.Abstractions;");
+        source.AppendLine("using System.Collections.Generic;");
         source.AppendLine($"namespace {assemblyName}");
         source.AppendLine("{");
         source.AppendLine("    /// <summary>");

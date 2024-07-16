@@ -31,11 +31,13 @@ public class UnitOfWorkService<TRequest, TResponse>(
     {
         var response = await service.ExecuteAsync(request, cancellationToken);
         if (!AttributeData.IsEnable) return response;
-        if (response is not IResult { IsSuccess: true }) return response;
+        if (response is not IResult r || !r.IsSuccess()) return response;
         var events = unitOfWorkHandler.GetDomainEvents();
         foreach (var e in events)
         {
-            await eventExecutor.ExecuteAsync(e, cancellationToken);
+            var method = typeof(IEventExecutor).GetMethod(nameof(IEventExecutor.ExecuteAsync))!;
+            var genericMethod = method.MakeGenericMethod(e.GetType());
+            await (Task)genericMethod.Invoke(eventExecutor, [e, cancellationToken])!;
         }
         await unitOfWorkHandler.SaveChangesAsync(cancellationToken);
         return response;

@@ -12,9 +12,5 @@ public enum ResultStatus
     /// <summary>
     /// Fail
     /// </summary>
-    Fail,
-    /// <summary>
-    /// Warning
-    /// </summary>
-    Warning
+    Fail
 }

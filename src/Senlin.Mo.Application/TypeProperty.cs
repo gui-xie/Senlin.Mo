@@ -6,7 +6,7 @@ internal readonly record struct TypeProperty
 {
     public TypeProperty(IPropertySymbol propertySymbol)
     {
-        TypeName = propertySymbol.Type.ToDisplayString();
+        TypeName = propertySymbol.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
         Name = propertySymbol.Name;
     }
 

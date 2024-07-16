@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using Senlin.Mo.Application.Abstractions.Decorators;
+﻿using Senlin.Mo.Application.Abstractions.Decorators;
 
 namespace Senlin.Mo.Application.Abstractions;
 /// <summary>

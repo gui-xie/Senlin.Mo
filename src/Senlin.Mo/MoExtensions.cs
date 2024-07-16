@@ -32,14 +32,13 @@ public static class MoExtensions
         services.TryAddSingleton<GetNow>(()=>DateTime.UtcNow);
         services.TryAddScoped<GetTenant>(_ => () => options.SystemTenant);
         services.TryAddScoped<GetUserId>(_ => () => string.Empty);
-        services.TryAddScoped<GetCulture>(sp => sp.GetCulture(options.LocalizationOptions.DefaultCulture));
+        services.TryAddScoped<GetCulture>(sp => sp.GetCulture(options.LocalizationOptions));
         services.TryAddSingleton<NewConcurrencyToken>(() => Guid.NewGuid().ToByteArray());
         services.TryAddSingleton<GetSystemTenant>(() => options.SystemTenant);
         services.TryAddScoped<IRepositoryHelper, RepositoryHelper>();
 
         services
             .AddHttpContextAccessor()
-            .AddLocalization()
             .AddSingleton<IdGenerator>()
             .ConfigureLog(options.Logger)
             .ConfigureLocalization(options.LocalizationOptions);
@@ -61,7 +60,7 @@ public static class MoExtensions
         services.AddModuleLStringResolver(module, options.GetLocalizationPath(module.Name));
         services.AddDbContext(module, options.GetModuleConnectionString(module.Name));
         services.AddAppServices(module);
-        services.TryAddSingleton<IEventExecutor, EventExecutor>();
+        services.TryAddScoped<IEventExecutor, EventExecutor>();
     }
 
     /// <summary>
@@ -74,6 +73,7 @@ public static class MoExtensions
         Action<IApplicationBuilder>? exceptionHandlerBuilder = null)
     {
         app.UseExceptionHandler(exceptionHandlerBuilder ?? ConfigureExceptionHandler);
+        app.UseRequestLocalization();
     }
 
     private static void ConfigureExceptionHandler(IApplicationBuilder b) =>

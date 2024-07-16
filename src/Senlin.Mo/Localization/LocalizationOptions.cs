@@ -2,9 +2,17 @@
 
 public class LocalizationOptions
 {
-    public string DefaultCulture { get; set; } = "en";
+    private string[] _cultures = ["en"];
 
-    public string CultureQueryStringKey { get; set; } = "culture";
-
-    public string CultureHeaderName { get; set; } = "Mo-Culture";
+    public string[] SupportedCultures
+    {
+        get => _cultures;
+        set
+        {
+            if (value.Length > 0)
+            {
+                _cultures = value;
+            }
+        }
+    }
 }

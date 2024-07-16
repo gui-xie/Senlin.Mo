@@ -8,10 +8,10 @@ internal class EventExecutor(IServiceProvider sp) : IEventExecutor
 {
     public async Task ExecuteAsync<T>(T e, CancellationToken cancellationToken) where T : IDomainEvent
     {
-        var services = sp.GetServices<IEventHandler<T>>();
-        foreach (var s in services)
+        var handlers = sp.GetServices<IEventHandler<T>>();
+        foreach (var handler in handlers)
         {
-            await s.ExecuteAsync(e, cancellationToken);
+            await handler.ExecuteAsync(e, cancellationToken);
         }
     }
 }

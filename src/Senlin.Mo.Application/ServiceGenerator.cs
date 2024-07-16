@@ -2,6 +2,7 @@
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Senlin.Mo.Application.Abstractions.Decorators.UnitOfWork;
+using Senlin.Mo.Application.Helpers;
 
 namespace Senlin.Mo.Application
 {
@@ -14,8 +15,10 @@ namespace Senlin.Mo.Application
         private static readonly string DefaultUnitOfWorkAttribute = $"new {typeof(UnitOfWorkAttribute).FullName}()";
 
         private static readonly IReadOnlyCollection<string> DefaultServiceAttributes = [];
-        private static readonly IReadOnlyCollection<string> DefaultCommandServiceAttributes = [DefaultUnitOfWorkAttribute];
-        
+
+        private static readonly IReadOnlyCollection<string> DefaultCommandServiceAttributes =
+            [DefaultUnitOfWorkAttribute];
+
         /// <summary>
         /// Generate Service Registration and Handler Delegate
         /// </summary>
@@ -48,7 +51,7 @@ namespace Senlin.Mo.Application
                        && (genericNameSyntax.Identifier.Text.Contains("IService")
                            || genericNameSyntax.Identifier.Text.Contains("ICommandService")));
         }
-            
+
         private static string GetRequestTypeEndpointName(string requestTypeName)
         {
             var requestName = FirstCharToLower(requestTypeName.Split('.').Last());
@@ -68,114 +71,226 @@ namespace Senlin.Mo.Application
             var requestName = GetRequestTypeEndpointName(requestTypeName);
             var responseTypeName = s.ServiceInterfaceInfo.ResponseName;
             var source = new StringBuilder();
-            source.AppendLine("using Senlin.Mo.Application.Abstractions;");
-            source.AppendLine($"namespace {s.ServiceNamespace}");
-            source.AppendLine("{");
-            source.AppendLine($"    public interface I{serviceName}");
-            source.AppendLine("    {");
-            source.AppendLine($"        Task<{responseTypeName}> ExecuteAsync({requestTypeName} {requestName}, CancellationToken cancellationToken);");
-            source.AppendLine();
-            source.AppendLine($"        public class {serviceName}Impl : I{serviceName}");
-            source.AppendLine("        {");
-            source.AppendLine($"            private readonly {serviceInterfaceName} _service;");
-            source.AppendLine();
-            source.AppendLine($"            public {serviceName}Impl({serviceInterfaceName} service)");
-            source.AppendLine("            {");
-            source.AppendLine("                _service = service;");
-            source.AppendLine("            }");
-            source.AppendLine();
-            source.AppendLine($"            public Task<{responseTypeName}> ExecuteAsync({requestTypeName} {requestName}, CancellationToken cancellationToken)");
-            source.AppendLine("            {");
-            source.AppendLine($"                return _service.ExecuteAsync({requestName}, cancellationToken);");
-            source.AppendLine("            }");
-            source.AppendLine("        }");
-            // add service registration
-            source.AppendLine();
-            source.AppendLine($"        public static ServiceRegistration Registration = new ServiceRegistration(");
-            source.AppendLine($"            typeof({serviceInterfaceName}),");
-            source.AppendLine($"            typeof({serviceName}Impl),");
-            source.AppendLine("            [");
-            IEnumerable<string> serviceDecorators = s.ServiceDecorators.Count == 0
-                ? DefaultCommandServiceAttributes
-                : s.ServiceDecorators;
-            foreach (var decorator in serviceDecorators)
-            {
-                source.AppendLine($"                {decorator},");
-            }
-            source.AppendLine("            ]");
-            source.AppendLine("        );");
-            source.AppendLine("    }");
-            source.AppendLine("}");
-            return source.ToString();
-        }
-
-        private static string GenerateCommandServiceExtensionsSource(
-            ServiceInfo s)
+            source.Append($$"""
+    using Senlin.Mo.Application.Abstractions;
+    namespace {{s.ServiceNamespace}}
+    {
+        public interface I{{serviceName}}
         {
-            var serviceName = s.ServiceName;
-            var ns = s.ServiceNamespace;
-            var serviceInterfaceName = s.ServiceInterfaceInfo.Name;
-            var isContainsQuery = s.QueryParameters.Count > 0;
-            var isCommand = s.ServiceCategory == ServiceCategory.Command;
-            var requestName = s.ServiceInterfaceInfo.RequestName;
-            var requestProperties = s.RequestProperties.ToArray();
-            var matchNames = s.QueryParameters.ToArray();
-
-            var source = new StringBuilder();
-            source.AppendLine("using Senlin.Mo.Application.Abstractions;");
-            source.AppendLine("using Senlin.Mo.Domain;");
-            source.AppendLine("using Microsoft.Extensions.DependencyInjection;");
-
-            source.AppendLine($"namespace {ns}");
-            source.AppendLine("{");
-            source.AppendLine($"    public static class {serviceName}Extensions");
-            source.AppendLine("    {");
-            var method = s.Method;
-            if (!string.IsNullOrWhiteSpace(s.Endpoint))
+            Task<{{responseTypeName}}> ExecuteAsync({{requestTypeName}} {{requestName}}, CancellationToken cancellationToken);
+        
+            public class {{serviceName}}Impl: I{{serviceName}}
             {
-                source.AppendLine($"        private const string Endpoint = \"{s.Endpoint}\";");
-                source.AppendLine();
-                 method = string.IsNullOrWhiteSpace(s.Method) ? "POST" : s.Method;
-                source.AppendLine($"        private static string Method = \"{method}\";");
-                source.AppendLine();
+                private readonly {{serviceInterfaceName}} _service;
+                
+                public {{serviceName}}Impl({{serviceInterfaceName}} service)
+                {
+                    _service = service;
+                }
+                
+                public Task<{{responseTypeName}}> ExecuteAsync({{requestTypeName}} {{requestName}}, CancellationToken cancellationToken)
+                {
+                    return _service.ExecuteAsync({{requestName}}, cancellationToken);
+                }
             }
-
-            source.Append(CreateClassWithoutQueryParameters(s));
-            source.AppendLine($"        public static Delegate Handler = (");
-            AddParameters(source, isContainsQuery, isCommand && method != "DELETE", requestName, requestProperties, matchNames);
-            source.AppendLine($"                {serviceInterfaceName} service,");
-            source.AppendLine("                CancellationToken cancellationToken) ");
-            source.AppendLine("            => service.ExecuteAsync(");
-            AddRequestObject(source, s);
-            source.AppendLine("                cancellationToken);");
-            source.AppendLine();
             
-            source.AppendLine($"        public static ServiceRegistration Registration = new ServiceRegistration(");
-            source.AppendLine($"            typeof({serviceInterfaceName}),");
-            source.AppendLine($"            typeof({serviceName}),");
-            source.AppendLine("            [");
-            IEnumerable<string> serviceDecorators = s.ServiceDecorators.Count == 0
-                ? DefaultCommandServiceAttributes
-                : s.ServiceDecorators;
-            foreach (var decorator in serviceDecorators)
-            {
-                source.AppendLine($"                {decorator},");
-            }
-            source.AppendLine("            ],");
-
-            source.Append($"            ServiceLifetime.Transient");
-            if (!string.IsNullOrWhiteSpace(s.Endpoint))
-            {
-                source.AppendLine(",");
-                source.Append($"            new EndpointData(Endpoint, Handler, Method)");
-            }
-
-            source.AppendLine();
-            source.AppendLine("        );");
-            source.AppendLine("    }");
-            source.AppendLine("}");
+            public static ServiceRegistration Registration = new ServiceRegistration(
+                typeof({{serviceInterfaceName}}),
+                typeof({{serviceName}}),
+                [{{CreateServiceDecorators(s.ServiceDecorators, s.ServiceCategory)}}]);
+            {{CreateHandler(s)}}        
+            {{CreateIdHandler(s)}}
+        }
+    }
+    """);
             return source.ToString();
         }
+
+        private static string CreateHandler(ServiceInfo s)
+        {
+            var serviceInterfaceName = s.ServiceInterfaceInfo.Name;
+            var requestTypeName = s.ServiceInterfaceInfo.RequestName;
+            var requestName = GetRequestTypeEndpointName(requestTypeName);
+            return s.ServiceCategory == ServiceCategory.Command
+                ? CreateCommandHandler(serviceInterfaceName, requestTypeName, requestName)
+                : CreateQueryHandler(serviceInterfaceName, requestTypeName, s.IsRequestRecord, s.RequestProperties);
+        }
+
+        private static StringBuilder CreateIdHandler(ServiceInfo s)
+        {
+            var serviceInterfaceName = s.ServiceInterfaceInfo.Name;
+            var requestTypeName = s.ServiceInterfaceInfo.RequestName;
+            var sb = new StringBuilder();
+            if(s.ServiceCategory != ServiceCategory.Command || !s.RequestProperties.Any(IsId)) return sb;
+            var withoutIdProperties = s.RequestProperties.Where(p => !IsId(p)).ToArray();
+            sb.AppendLine();
+            var isSplitDto = withoutIdProperties.Length > 0;
+            if (isSplitDto)
+            {
+                sb.Append(CreateSplitDto(s.RequestProperties, requestTypeName, s.IsRequestRecord));
+                sb.Append($$"""
+                    public static Delegate IdHandler = (
+                        {{serviceInterfaceName}} service,
+                        string id,
+                        Dto dto,
+                        CancellationToken cancellationToken){
+                            return service.ExecuteAsync(Dto.ToDto(id, dto), cancellationToken);   
+                        }
+                """);
+            }
+            else
+            {
+                var createDto = s.IsRequestRecord ? "(id)": "{ Id = id}";
+                sb.Append($$"""
+                    public static Delegate IdHandler = (
+                        {{serviceInterfaceName}} service,
+                        string id,
+                        CancellationToken cancellationToken){
+                            return service.ExecuteAsync(
+                                new {{requestTypeName}}{{createDto}}, 
+                                cancellationToken);   
+                        }
+                """);                
+            }
+            sb.AppendLine();
+            return sb;
+        }
+        
+        private static string CreateCommandHandler(
+            string serviceInterfaceName,
+            string requestTypeName,
+            string requestName) =>
+            $$"""
+            public static Delegate Handler = (
+                {{serviceInterfaceName}} service,
+                {{requestTypeName}} {{requestName}},
+                CancellationToken cancellationToken){
+                    return service.ExecuteAsync({{requestName}}, cancellationToken);   
+                }
+            """;
+
+        private static string CreateQueryHandler(
+            string serviceInterfaceName,
+            string requestTypeName,
+            bool isRequestRecord,
+            EquatableArray<TypeProperty> requestProperties) =>
+            $$"""
+            public static Delegate Handler = (
+                {{serviceInterfaceName}} service,
+                {{CreateRequestPropertyFields(requestProperties)}}
+                CancellationToken cancellationToken){
+                    return service.ExecuteAsync(new {{requestTypeName}}{{CreateQueryDto(requestProperties, isRequestRecord)}}, cancellationToken);   
+                }                    
+            """;
+        
+        private static StringBuilder CreateQueryDto(EquatableArray<TypeProperty> properties, bool isRecord)
+        {
+            var sb = new StringBuilder();
+            var flag = false;
+            var createSymbol = "{}";
+            Action<TypeProperty> assignProperty = p => sb.Append($"            {p.Name} = {FirstCharToLower(p.Name)}");
+            if (isRecord)
+            {
+                createSymbol = "()";
+                assignProperty = p => sb.Append($"{FirstCharToLower(p.Name)}");
+            }
+
+            sb.AppendLine($"        {createSymbol[0]}");
+            foreach (var p in properties)
+            {
+                if (flag) sb.AppendLine(",");
+                flag = true;
+                assignProperty(p);
+            }
+
+            sb.AppendLine();
+            sb.AppendLine($"        {createSymbol[1]}");
+            return sb;
+        }
+
+        private static StringBuilder CreateSplitDto(
+            EquatableArray<TypeProperty> properties,
+            string requestTypeName,
+            bool isRequestRecord)
+        {
+            var sb = new StringBuilder();
+            var flag = false;
+            var createSymbol = "{}";
+            Action<TypeProperty> assignProperty = p =>
+            {
+                if (IsId(p))
+                {
+                    sb.AppendLine("            Id = id");
+                    return;
+                }
+                sb.Append($"            {p.Name} = {FirstCharToLower(p.Name)}");
+            };
+            if (isRequestRecord)
+            {
+                createSymbol = "()";
+                assignProperty = p =>
+                {
+                    if (IsId(p))
+                    {
+                        sb.AppendLine("            id");
+                        return;
+                    }
+                    sb.Append($"{FirstCharToLower(p.Name)}");
+                };
+            }
+            sb.AppendLine();
+            sb.AppendLine("    public class Dto");
+            sb.AppendLine("    {");
+            foreach (var p in properties)
+            {
+                if(IsId(p)) continue;
+                sb.AppendLine($"        public {p.TypeName} {p.Name} {{ get; set; }}");
+            }
+            sb.AppendLine();
+            sb.AppendLine($"        public static {requestTypeName} ToDto(string id, Dto dto)");
+            sb.AppendLine("        {");
+            sb.AppendLine($"            return new {requestTypeName}");
+            sb.AppendLine($"            {createSymbol[0]}");
+            foreach (var p in properties)
+            {
+                if (flag) sb.AppendLine(",");
+                flag = true;
+                assignProperty(p);
+            }
+            return sb;
+        }
+
+        private static StringBuilder CreateRequestPropertyFields(EquatableArray<TypeProperty> properties)
+        {
+            var sb = new StringBuilder();
+            foreach (var p in properties)
+            {
+                sb.AppendLine($"       {p.TypeName} {FirstCharToLower(p.Name)},");
+            }
+            return sb;
+        }
+
+        private static IEnumerable<string> GetDefaultServiceDecorators(ServiceCategory category) =>
+            category == ServiceCategory.Command ? DefaultCommandServiceAttributes : DefaultServiceAttributes;
+
+        private static StringBuilder CreateServiceDecorators(EquatableArray<string> serviceDecorators, ServiceCategory category)
+        {
+            var sb = new StringBuilder();
+            sb.AppendLine("            new IServiceDecorator[]{");
+            var decorators = GetServiceDecorators(serviceDecorators, category);
+            foreach (var decorator in decorators)
+            {
+                sb.AppendLine($"                {decorator},");
+            }
+            sb.AppendLine("            }");
+            return sb;
+        }
+        
+        private static IEnumerable<string> GetServiceDecorators(
+            EquatableArray<string> serviceDecorators, ServiceCategory category) =>
+            serviceDecorators.Count == 0
+                ? GetDefaultServiceDecorators(category)
+                : serviceDecorators;
 
         private static string FirstCharToLower(string str)
         {
@@ -186,6 +301,8 @@ namespace Senlin.Mo.Application
 
             return char.ToLower(str[0]) + str.Substring(1);
         }
+
+        private static bool IsId(TypeProperty t) => t.Name.Equals("Id", StringComparison.InvariantCultureIgnoreCase);
 
         private static TypeProperty[] GetRequestProperties(ITypeSymbol typeSymbol)
         {
@@ -198,7 +315,7 @@ namespace Senlin.Mo.Application
                 .Select(p => new TypeProperty(p))
                 .ToArray();
         }
-        
+
         private static ServiceInfo ToServiceInfo(GeneratorSyntaxContext ctx)
         {
             var s = (ClassDeclarationSyntax)ctx.Node;
@@ -206,15 +323,15 @@ namespace Senlin.Mo.Application
             if (interfaceSymbol is null || interfaceSymbol.TypeArguments.Length == 0)
             {
                 return new ServiceInfo(
-                    string.Empty, 
-                    string.Empty, 
+                    string.Empty,
+                    string.Empty,
                     new ServiceInterfaceInfo(string.Empty, string.Empty, string.Empty),
                     new ServiceAttributeInfo(string.Empty, string.Empty, [], []),
                     ServiceCategory.None,
-                    [], 
+                    [],
                     false);
             }
-            
+
 
             var isCommandService = interfaceSymbol.IsCommandService();
             var requestTypeSymbol = interfaceSymbol.TypeArguments[0];
@@ -224,11 +341,12 @@ namespace Senlin.Mo.Application
                 var responseType = interfaceSymbol.TypeArguments[1];
                 responseTypeName = responseType.ToDisplayString();
             }
+
             var requestTypeName = requestTypeSymbol.ToDisplayString();
             if (isCommandService)
             {
-                responseTypeName = string.IsNullOrWhiteSpace(responseTypeName) 
-                    ? "Senlin.Mo.Domain.IResult" 
+                responseTypeName = string.IsNullOrWhiteSpace(responseTypeName)
+                    ? "Senlin.Mo.Domain.IResult"
                     : $"Senlin.Mo.Domain.IResult<{responseTypeName}>";
             }
 
@@ -237,7 +355,7 @@ namespace Senlin.Mo.Application
             var serviceInterfaceName = $"IService<{requestTypeName}, {responseTypeName}>";
             var serviceInterfaceInfo =
                 new ServiceInterfaceInfo(serviceInterfaceName, requestTypeName, responseTypeName);
-            
+
             return new ServiceInfo(
                 s.Identifier.ToString(),
                 GetNamespace(s),
@@ -247,7 +365,7 @@ namespace Senlin.Mo.Application
                 requestProperties,
                 isRequestRecord);
         }
-        
+
 
         private static string GetNamespace(BaseTypeDeclarationSyntax syntax)
         {
@@ -274,155 +392,6 @@ namespace Senlin.Mo.Application
             }
 
             return nameSpace;
-        }
-
-        private static bool IsContainsQuery(ServiceInfo s) => s.QueryParameters.Count > 0;
-
-        private static string GetBodyClassName(string requestName) => $"{requestName.Split('.').Last()}0";
-
-        private static IEnumerable<TypeProperty> GetBodyProperties(ServiceInfo s) =>
-            from p in s.RequestProperties
-            where !s.QueryParameters.Contains(p.Name, StringComparer.InvariantCultureIgnoreCase)
-            select p;
-
-        private static IEnumerable<TypeProperty> GetQueryProperties(
-            TypeProperty[] requestProperties,
-            string[] queryParameters
-        ) =>
-            from p in requestProperties
-            where queryParameters.Contains(p.Name, StringComparer.InvariantCultureIgnoreCase)
-            select p;
-
-        private static string CreateClassWithoutQueryParameters(ServiceInfo s)
-        {
-            if (!IsContainsQuery(s)) return string.Empty;
-            var properties = GetBodyProperties(s).ToList();
-            if (properties.Count == 0) return string.Empty;
-            var sb = new StringBuilder();
-            sb.AppendLine($"       private class {GetBodyClassName(s.ServiceInterfaceInfo.RequestName)}");
-            sb.AppendLine("        {");
-            foreach (var p in properties)
-            {
-                sb.AppendLine($"            public {p.TypeName} {p.Name} {{ get; set; }}");
-            }
-
-            sb.AppendLine("        }");
-            sb.AppendLine();
-            return sb.ToString();
-        }
-
-        private static void AddParameters(
-            StringBuilder source,
-            bool isContainsQuery, 
-            bool containsBody,
-            string requestName,
-            TypeProperty[] requestTypeProperties,
-            string[] queryParameters)
-        {
-            if (containsBody && !isContainsQuery)
-            {
-                source.AppendLine($"                {requestName} {GetRequestTypeEndpointName(requestName)},");
-                return;
-            }
-
-            if (isContainsQuery)
-            {
-                var queryProperties = GetQueryProperties(requestTypeProperties, queryParameters).ToList();
-                foreach (var p in queryProperties)
-                {
-                    source.AppendLine($"                {p.TypeName} {FirstCharToLower(p.Name)},");
-                }
-
-                if (queryProperties.Count ==requestTypeProperties.Length) return;
-                var className = GetBodyClassName(requestName);
-                source.AppendLine($"                {className} {FirstCharToLower(className)},");
-                return;
-            }
-
-            foreach (var p in requestTypeProperties)
-            {
-                source.AppendLine($"                {p.TypeName} {FirstCharToLower(p.Name)},");
-            }
-        }
-
-        private static void AddRequestObject(StringBuilder source, ServiceInfo s)
-        {
-            var isContainsQuery = IsContainsQuery(s);
-            if (s.ServiceCategory == ServiceCategory.Command && s.Method != "DELETE" && !isContainsQuery)
-            {
-                source.AppendLine($"                {GetRequestTypeEndpointName(s.ServiceInterfaceInfo.RequestName)},");
-                return;
-            }
-
-            var parameters = s.RequestProperties.Select(p => new
-            {
-                IsQuery = true,
-                p.TypeName,
-                p.Name
-            }).ToArray();
-            if (isContainsQuery)
-            {
-                var queryProperties = GetQueryProperties(s.RequestProperties.ToArray(), s.QueryParameters.ToArray())
-                    .Select(p => new
-                    {
-                        IsQuery = true,
-                        p.TypeName,
-                        p.Name
-                    });
-                var bodyProperties = GetBodyProperties(s)
-                    .Select(p => new
-                    {
-                        IsQuery = false,
-                        p.TypeName,
-                        p.Name
-                    });
-                parameters = queryProperties.Concat(bodyProperties).ToArray();
-            }
-
-            var className = FirstCharToLower(GetBodyClassName(s.ServiceInterfaceInfo.RequestName));
-            if (s.IsRequestRecord)
-            {
-                source.Append($"                new {s.ServiceInterfaceInfo.RequestName}(");
-                var flag = false;
-                foreach (var p in parameters)
-                {
-                    if (flag)
-                    {
-                        source.Append(",");
-                    }
-
-                    flag = true;
-                    var propertyNameParameter = p.IsQuery
-                        ? FirstCharToLower(p.Name)
-                        : $"{className}.{p.Name}";
-                    source.Append(propertyNameParameter);
-                }
-
-                source.AppendLine("),");
-            }
-            else
-            {
-                source.AppendLine($"                new {s.ServiceInterfaceInfo.RequestName}");
-                source.AppendLine("                {");
-                var flag = false;
-                foreach (var p in parameters)
-                {
-                    if (flag)
-                    {
-                        source.Append(",");
-                        source.AppendLine();
-                    }
-
-                    flag = true;
-                    var propertyNameParameter = p.IsQuery
-                        ? FirstCharToLower(p.Name)
-                        : $"{className}.{p.Name}";
-                    source.Append($"                    {p.Name} = {FirstCharToLower(propertyNameParameter)}");
-                }
-
-                source.AppendLine();
-                source.AppendLine("                },");
-            }
         }
     }
 }

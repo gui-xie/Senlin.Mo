@@ -9,7 +9,7 @@ public interface IResult
     /// <summary>
     /// Is Success
     /// </summary>
-    bool IsSuccess { get; }
+    ResultStatus Status { get; }
 
     /// <summary>
     /// Get Error Message

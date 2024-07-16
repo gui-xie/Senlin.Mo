@@ -32,21 +32,13 @@ public abstract class Result
     public static IResult<T> Success<T>(T data) => R<T>.CreateSuccess(data);
     
     /// <summary>
-    /// Create Success Result with data type
-    /// </summary>
-    /// <param name="data"></param>
-    /// <typeparam name="T"></typeparam>
-    /// <returns></returns>
-    public static Task<IResult<T>> SuccessTask<T>(T data) => Task.FromResult(Success(data));
-    
-    /// <summary>
     /// Create Error Result with data type
     /// </summary>
     /// <param name="message"></param>
     /// <typeparam name="T"></typeparam>
     /// <returns></returns>
     public static IResult<T> Fail<T>(string message) => R<T>.CreateFailure(message);
-    
+
     private class R<T> : IResult<T>
     {
         private R()
@@ -58,7 +50,7 @@ public abstract class Result
             return new R<T>
             {
                 Data = data,
-                IsSuccess = true,
+                Status = ResultStatus.Success,
                 Message = string.Empty
             };
         }
@@ -68,12 +60,12 @@ public abstract class Result
             return new R<T>
             {
                 Data = default,
-                IsSuccess = false,
+                Status = ResultStatus.Fail,
                 Message = message
             };
         }
 
-        public bool IsSuccess { get; private set; }
+        public ResultStatus Status { get; private set; }
         public string Message { get; private set; } = string.Empty;
         public T? Data { get; private set; }
     }
@@ -82,17 +74,17 @@ public abstract class Result
     {
         public R(string message)
         {
-            IsSuccess = false;
+            Status = ResultStatus.Fail;
             Message = message;
         }
 
         public R()
         {
-            IsSuccess = true;
+            Status = ResultStatus.Success;
             Message = string.Empty;
         }
 
-        public bool IsSuccess { get; }
+        public ResultStatus Status { get; }
         public string Message { get; }
     }
 }
