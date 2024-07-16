@@ -99,7 +99,7 @@ namespace Senlin.Mo.Application
             public static ServiceRegistration Registration = new ServiceRegistration(
                 typeof({{serviceInterfaceName}}),
                 typeof({{serviceName}}),
-                [{{CreateServiceDecorators(s.ServiceDecorators, s.ServiceCategory)}}]);
+                {{CreateServiceDecorators(s.ServiceDecorators, s.ServiceCategory)}});
             {{CreateHandler(s)}}        
             {{CreateIdHandler(s)}}
         }
@@ -135,7 +135,7 @@ namespace Senlin.Mo.Application
                         {{serviceInterfaceName}} service,
                         string id,
                         Dto dto,
-                        CancellationToken cancellationToken){
+                        CancellationToken cancellationToken)=>{
                             return service.ExecuteAsync(Dto.ToDto(id, dto), cancellationToken);   
                         }
                 """);
@@ -225,7 +225,7 @@ namespace Senlin.Mo.Application
                     sb.Append("            Id = id");
                     return;
                 }
-                sb.Append($"            {p.Name} = {FirstCharToLower(p.Name)}");
+                sb.Append($"            {p.Name} = dto.{FirstCharToLower(p.Name)}");
             };
             if (isRequestRecord)
             {
@@ -237,7 +237,7 @@ namespace Senlin.Mo.Application
                         sb.Append("            id");
                         return;
                     }
-                    sb.Append($"{FirstCharToLower(p.Name)}");
+                    sb.Append($"dto.{FirstCharToLower(p.Name)}");
                 };
             }
             sb.AppendLine();
@@ -260,7 +260,7 @@ namespace Senlin.Mo.Application
                 assignProperty(p);
             }
 
-            sb.AppendLine($"            {createSymbol[1]}");
+            sb.AppendLine($"            {createSymbol[1]};");
             sb.AppendLine("        }");
             sb.AppendLine("    }");
             return sb;
