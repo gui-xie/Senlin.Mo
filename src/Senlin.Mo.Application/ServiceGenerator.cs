@@ -137,7 +137,7 @@ namespace Senlin.Mo.Application
                         Dto dto,
                         CancellationToken cancellationToken)=>{
                             return service.ExecuteAsync(Dto.ToDto(id, dto), cancellationToken);   
-                        }
+                        };
                 """);
             }
             else
@@ -151,7 +151,7 @@ namespace Senlin.Mo.Application
                             return service.ExecuteAsync(
                                 new {{requestTypeName}}{{createDto}}, 
                                 cancellationToken);   
-                        }
+                        };
                 """);                
             }
             sb.AppendLine();
@@ -168,7 +168,7 @@ namespace Senlin.Mo.Application
                 {{requestTypeName}} {{requestName}},
                 CancellationToken cancellationToken) => {
                     return service.ExecuteAsync({{requestName}}, cancellationToken);   
-                }
+                };
             """;
 
         private static string CreateQueryHandler(
@@ -182,7 +182,7 @@ namespace Senlin.Mo.Application
                 {{CreateRequestPropertyFields(requestProperties)}}
                 CancellationToken cancellationToken) => {
                     return service.ExecuteAsync(new {{requestTypeName}}{{CreateQueryDto(requestProperties, isRequestRecord)}}, cancellationToken);   
-                }                    
+                };                   
             """;
         
         private static StringBuilder CreateQueryDto(EquatableArray<TypeProperty> properties, bool isRecord)
@@ -225,7 +225,7 @@ namespace Senlin.Mo.Application
                     sb.Append("            Id = id");
                     return;
                 }
-                sb.Append($"            {p.Name} = dto.{FirstCharToLower(p.Name)}");
+                sb.Append($"            {p.Name} = dto.{p.Name}");
             };
             if (isRequestRecord)
             {
@@ -237,7 +237,7 @@ namespace Senlin.Mo.Application
                         sb.Append("            id");
                         return;
                     }
-                    sb.Append($"dto.{FirstCharToLower(p.Name)}");
+                    sb.Append($"dto.{p.Name}");
                 };
             }
             sb.AppendLine();
