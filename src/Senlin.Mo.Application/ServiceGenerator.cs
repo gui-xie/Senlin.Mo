@@ -71,8 +71,10 @@ namespace Senlin.Mo.Application
             var requestName = GetRequestTypeEndpointName(requestTypeName);
             var responseTypeName = s.ServiceInterfaceInfo.ResponseName;
             var source = new StringBuilder();
+            
             source.Append($$"""
     using Senlin.Mo.Application.Abstractions;
+    using Senlin.Mo.Application.Abstractions.Decorators;
     namespace {{s.ServiceNamespace}}
     {
         public interface I{{serviceName}}
@@ -164,7 +166,7 @@ namespace Senlin.Mo.Application
             public static Delegate Handler = (
                 {{serviceInterfaceName}} service,
                 {{requestTypeName}} {{requestName}},
-                CancellationToken cancellationToken){
+                CancellationToken cancellationToken) => {
                     return service.ExecuteAsync({{requestName}}, cancellationToken);   
                 }
             """;
@@ -178,7 +180,7 @@ namespace Senlin.Mo.Application
             public static Delegate Handler = (
                 {{serviceInterfaceName}} service,
                 {{CreateRequestPropertyFields(requestProperties)}}
-                CancellationToken cancellationToken){
+                CancellationToken cancellationToken) => {
                     return service.ExecuteAsync(new {{requestTypeName}}{{CreateQueryDto(requestProperties, isRequestRecord)}}, cancellationToken);   
                 }                    
             """;
@@ -220,7 +222,7 @@ namespace Senlin.Mo.Application
             {
                 if (IsId(p))
                 {
-                    sb.AppendLine("            Id = id");
+                    sb.Append("            Id = id");
                     return;
                 }
                 sb.Append($"            {p.Name} = {FirstCharToLower(p.Name)}");
@@ -232,7 +234,7 @@ namespace Senlin.Mo.Application
                 {
                     if (IsId(p))
                     {
-                        sb.AppendLine("            id");
+                        sb.Append("            id");
                         return;
                     }
                     sb.Append($"{FirstCharToLower(p.Name)}");
@@ -257,6 +259,10 @@ namespace Senlin.Mo.Application
                 flag = true;
                 assignProperty(p);
             }
+
+            sb.AppendLine($"            {createSymbol[1]}");
+            sb.AppendLine("        }");
+            sb.AppendLine("    }");
             return sb;
         }
 
@@ -276,6 +282,7 @@ namespace Senlin.Mo.Application
         private static StringBuilder CreateServiceDecorators(EquatableArray<string> serviceDecorators, ServiceCategory category)
         {
             var sb = new StringBuilder();
+            sb.AppendLine();
             sb.AppendLine("            new IServiceDecorator[]{");
             var decorators = GetServiceDecorators(serviceDecorators, category);
             foreach (var decorator in decorators)
@@ -339,15 +346,15 @@ namespace Senlin.Mo.Application
             if (interfaceSymbol.TypeArguments.Length > 1)
             {
                 var responseType = interfaceSymbol.TypeArguments[1];
-                responseTypeName = responseType.ToDisplayString();
+                responseTypeName = responseType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
             }
 
-            var requestTypeName = requestTypeSymbol.ToDisplayString();
+            var requestTypeName = requestTypeSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
             if (isCommandService)
             {
                 responseTypeName = string.IsNullOrWhiteSpace(responseTypeName)
-                    ? "Senlin.Mo.Domain.IResult"
-                    : $"Senlin.Mo.Domain.IResult<{responseTypeName}>";
+                    ? "global::Senlin.Mo.Domain.IResult"
+                    : $"global::Senlin.Mo.Domain.IResult<{responseTypeName}>";
             }
 
             var requestProperties = GetRequestProperties(requestTypeSymbol);
