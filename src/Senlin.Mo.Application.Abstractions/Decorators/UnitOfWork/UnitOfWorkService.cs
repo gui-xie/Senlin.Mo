@@ -1,4 +1,5 @@
-﻿using Senlin.Mo.Domain;
+﻿using Microsoft.Extensions.Logging;
+using Senlin.Mo.Domain;
 
 namespace Senlin.Mo.Application.Abstractions.Decorators.UnitOfWork;
 
@@ -12,7 +13,8 @@ namespace Senlin.Mo.Application.Abstractions.Decorators.UnitOfWork;
 public class UnitOfWorkService<TRequest, TResponse>(
     IService<TRequest, TResponse> service,
     IUnitOfWorkHandler unitOfWorkHandler,
-    IEventExecutor eventExecutor)
+    IEventExecutor eventExecutor,
+    ILogger<UnitOfWorkService<TRequest, TResponse>> logger)
     : IService<TRequest, TResponse>,
         IDecoratorService<UnitOfWorkAttribute>
 {
@@ -40,6 +42,19 @@ public class UnitOfWorkService<TRequest, TResponse>(
             await (Task)genericMethod.Invoke(eventExecutor, [e, cancellationToken])!;
         }
         await unitOfWorkHandler.SaveChangesAsync(cancellationToken);
+        try
+        {
+            foreach (var e in events)
+            {
+                var method = typeof(IEventExecutor).GetMethod(nameof(IEventExecutor.PostExecuteAsync))!;
+                var genericMethod = method.MakeGenericMethod(e.GetType());
+                await (Task)genericMethod.Invoke(eventExecutor, [e, cancellationToken])!;
+            }
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Post Execute Event Error");
+        }
         return response;
     }
 }

@@ -15,4 +15,12 @@ public interface IEventExecutor
     /// <typeparam name="T"></typeparam>
     /// <returns></returns>
     Task ExecuteAsync<T>(T e, CancellationToken cancellationToken) where T : IDomainEvent;
+    
+    /// <summary>
+    /// Execute event handler(After unit of work)
+    /// </summary>
+    /// <param name="e"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task PostExecuteAsync<T>(T e, CancellationToken cancellationToken) where T : IDomainEvent;
 }

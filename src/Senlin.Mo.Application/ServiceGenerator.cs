@@ -129,14 +129,15 @@ namespace Senlin.Mo.Application
             var isSplitDto = withoutIdProperties.Length > 0;
             if (isSplitDto)
             {
-                sb.Append(CreateSplitDto(s.RequestProperties, requestTypeName, s.IsRequestRecord));
+                var splitDtoClassName = requestTypeName.Split('.').Last() + "_0";
+                sb.Append(CreateSplitDto(s.RequestProperties, requestTypeName, s.IsRequestRecord, splitDtoClassName));
                 sb.Append($$"""
                     public static Delegate IdHandler = (
                         {{serviceInterfaceName}} service,
                         string id,
-                        Dto dto,
+                        {{splitDtoClassName}} dto,
                         CancellationToken cancellationToken)=>{
-                            return service.ExecuteAsync(Dto.ToDto(id, dto), cancellationToken);   
+                            return service.ExecuteAsync({{splitDtoClassName}}.ToDto(id, dto), cancellationToken);   
                         };
                 """);
             }
@@ -147,7 +148,7 @@ namespace Senlin.Mo.Application
                     public static Delegate IdHandler = (
                         {{serviceInterfaceName}} service,
                         string id,
-                        CancellationToken cancellationToken){
+                        CancellationToken cancellationToken) => {
                             return service.ExecuteAsync(
                                 new {{requestTypeName}}{{createDto}}, 
                                 cancellationToken);   
@@ -213,7 +214,8 @@ namespace Senlin.Mo.Application
         private static StringBuilder CreateSplitDto(
             EquatableArray<TypeProperty> properties,
             string requestTypeName,
-            bool isRequestRecord)
+            bool isRequestRecord,
+            string splitDtoClassName)
         {
             var sb = new StringBuilder();
             var flag = false;
@@ -237,11 +239,11 @@ namespace Senlin.Mo.Application
                         sb.Append("            id");
                         return;
                     }
-                    sb.Append($"dto.{p.Name}");
+                    sb.Append($"        dto.{p.Name}");
                 };
             }
             sb.AppendLine();
-            sb.AppendLine("    public class Dto");
+            sb.AppendLine($"    public class {splitDtoClassName}");
             sb.AppendLine("    {");
             foreach (var p in properties)
             {
@@ -249,7 +251,7 @@ namespace Senlin.Mo.Application
                 sb.AppendLine($"        public {p.TypeName} {p.Name} {{ get; set; }}");
             }
             sb.AppendLine();
-            sb.AppendLine($"        public static {requestTypeName} ToDto(string id, Dto dto)");
+            sb.AppendLine($"        public static {requestTypeName} ToDto(string id, {splitDtoClassName} dto)");
             sb.AppendLine("        {");
             sb.AppendLine($"            return new {requestTypeName}");
             sb.AppendLine($"            {createSymbol[0]}");
@@ -259,7 +261,7 @@ namespace Senlin.Mo.Application
                 flag = true;
                 assignProperty(p);
             }
-
+            sb.AppendLine();
             sb.AppendLine($"            {createSymbol[1]};");
             sb.AppendLine("        }");
             sb.AppendLine("    }");
