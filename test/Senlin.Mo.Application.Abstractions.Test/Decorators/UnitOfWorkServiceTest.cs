@@ -1,4 +1,5 @@
-﻿using Moq;
+﻿using Microsoft.Extensions.Logging;
+using Moq;
 using Senlin.Mo.Application.Abstractions.Decorators;
 using Senlin.Mo.Application.Abstractions.Decorators.UnitOfWork;
 
@@ -13,8 +14,9 @@ public class UnitOfWorkServiceTest
         var updateUserService = new UpdateUserService();
         var unitOfWorkHandler = new Mock<IUnitOfWorkHandler>();
         var eventHandler = new Mock<IEventExecutor>();
+        var logger = new Mock<ILogger<UnitOfWorkService<UpdateCommand, bool>>>();
         UnitOfWorkService<UpdateCommand, bool> unitOfWorkService =
-            new(updateUserService, unitOfWorkHandler.Object, eventHandler.Object);
+            new(updateUserService, unitOfWorkHandler.Object, eventHandler.Object, logger.Object);
 
         _ = await unitOfWorkService.ExecuteAsync(updateCommand, CancellationToken.None);
 
@@ -30,8 +32,9 @@ public class UnitOfWorkServiceTest
         var updateUserService = new UpdateUserService();
         var unitOfWorkHandler = new Mock<IUnitOfWorkHandler>();
         var eventHandler = new Mock<IEventExecutor>();
+        var logger = new Mock<ILogger<UnitOfWorkService<UpdateCommand, bool>>>();
         UnitOfWorkService<UpdateCommand, bool> unitOfWorkService =
-            new(updateUserService, unitOfWorkHandler.Object, eventHandler.Object)
+            new(updateUserService, unitOfWorkHandler.Object, eventHandler.Object, logger.Object)
             {
                 AttributeData = new UnitOfWorkAttribute(false)
             };

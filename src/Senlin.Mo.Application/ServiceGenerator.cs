@@ -99,9 +99,10 @@ namespace Senlin.Mo.Application
             public static ServiceRegistration Registration = new ServiceRegistration(
                 typeof({{serviceInterfaceName}}),
                 typeof({{serviceName}}),
-                {{CreateServiceDecorators(s.ServiceDecorators, s.ServiceCategory)}});
-            {{CreateHandler(s)}}        
-            {{CreateIdHandler(s)}}
+                {{CreateServiceDecorators(s.ServiceDecorators, s.ServiceCategory)}}
+            );
+    {{CreateHandler(s)}}        
+    {{CreateIdHandler(s)}}
         }
     }
     """);
@@ -136,7 +137,7 @@ namespace Senlin.Mo.Application
                         {{serviceInterfaceName}} service,
                         string id,
                         {{splitDtoClassName}} dto,
-                        CancellationToken cancellationToken)=>{
+                        CancellationToken cancellationToken) => {
                             return service.ExecuteAsync({{splitDtoClassName}}.ToDto(id, dto), cancellationToken);   
                         };
                 """);
@@ -164,12 +165,12 @@ namespace Senlin.Mo.Application
             string requestTypeName,
             string requestName) =>
             $$"""
-            public static Delegate Handler = (
-                {{serviceInterfaceName}} service,
-                {{requestTypeName}} {{requestName}},
-                CancellationToken cancellationToken) => {
-                    return service.ExecuteAsync({{requestName}}, cancellationToken);   
-                };
+                    public static Delegate Handler = (
+                        {{serviceInterfaceName}} service,
+                        {{requestTypeName}} {{requestName}},
+                        CancellationToken cancellationToken) => {
+                            return service.ExecuteAsync({{requestName}}, cancellationToken);   
+                        };
             """;
 
         private static string CreateQueryHandler(
@@ -178,12 +179,15 @@ namespace Senlin.Mo.Application
             bool isRequestRecord,
             EquatableArray<TypeProperty> requestProperties) =>
             $$"""
-            public static Delegate Handler = (
-                {{serviceInterfaceName}} service,
-                {{CreateRequestPropertyFields(requestProperties)}}
-                CancellationToken cancellationToken) => {
-                    return service.ExecuteAsync(new {{requestTypeName}}{{CreateQueryDto(requestProperties, isRequestRecord)}}, cancellationToken);   
-                };                   
+                    public static Delegate Handler = (
+                        {{serviceInterfaceName}} service,
+                        {{CreateRequestPropertyFields(requestProperties)}}
+                        CancellationToken cancellationToken) => {
+                            return service.ExecuteAsync(
+                                new {{requestTypeName}}
+                                {{CreateQueryDto(requestProperties, isRequestRecord)}}, 
+                                cancellationToken);   
+                        };                   
             """;
         
         private static StringBuilder CreateQueryDto(EquatableArray<TypeProperty> properties, bool isRecord)
@@ -191,23 +195,23 @@ namespace Senlin.Mo.Application
             var sb = new StringBuilder();
             var flag = false;
             var createSymbol = "{}";
-            Action<TypeProperty> assignProperty = p => sb.Append($"            {p.Name} = {FirstCharToLower(p.Name)}");
+            Action<TypeProperty> assignProperty = p => sb.Append($"                        {p.Name} = {FirstCharToLower(p.Name)}");
             if (isRecord)
             {
                 createSymbol = "()";
-                assignProperty = p => sb.Append($"{FirstCharToLower(p.Name)}");
+                assignProperty = p => sb.Append($"                        {FirstCharToLower(p.Name)}");
             }
 
-            sb.AppendLine($"        {createSymbol[0]}");
+            sb.AppendLine();
+            sb.AppendLine($"            {createSymbol[0]}");
             foreach (var p in properties)
             {
                 if (flag) sb.AppendLine(",");
                 flag = true;
                 assignProperty(p);
             }
-
             sb.AppendLine();
-            sb.AppendLine($"        {createSymbol[1]}");
+            sb.Append($"        {createSymbol[1]}");
             return sb;
         }
 
@@ -284,7 +288,6 @@ namespace Senlin.Mo.Application
         private static StringBuilder CreateServiceDecorators(EquatableArray<string> serviceDecorators, ServiceCategory category)
         {
             var sb = new StringBuilder();
-            sb.AppendLine();
             sb.AppendLine("            new IServiceDecorator[]{");
             var decorators = GetServiceDecorators(serviceDecorators, category);
             foreach (var decorator in decorators)
