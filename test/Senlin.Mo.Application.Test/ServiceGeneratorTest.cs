@@ -265,4 +265,3 @@ namespace projectA.User.Dto{
         return compilation;
     }
 }
-

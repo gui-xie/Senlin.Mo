@@ -2,7 +2,7 @@
 
 public class ModuleOptions
 {
-    public GetModuleLocalizationPath GetLocalizationPath { get; set; } = moduleName => $"L/{moduleName}";
+    public GetModuleLocalizationPath GetLocalizationPath { get; set; } = _ => $"L";
 
-    public GetModuleConnectionString GetModuleConnectionString { get; set; } = moduleName => string.Empty;
+    public GetModuleConnectionString GetModuleConnectionString { get; set; } = _ => throw new NotImplementedException();
 }

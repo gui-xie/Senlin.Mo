@@ -4,7 +4,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Senlin.Mo.Application.Abstractions;
 using Senlin.Mo.Localization.Abstractions;
+using Senlin.Mo.Middlewares;
 using Senlin.Mo.Repository.Abstractions;
+using SharpGrip.FluentValidation.AutoValidation.Endpoints.Extensions;
 
 namespace Senlin.Mo;
 
@@ -14,6 +16,7 @@ namespace Senlin.Mo;
 public static class MoExtensions
 {
     private static IModule[]? _modules;
+    private static readonly MoConfigureOptions Options = new();
 
     /// <summary>
     /// Configure Mo Application
@@ -25,27 +28,31 @@ public static class MoExtensions
         this IServiceCollection services,
         Action<MoConfigureOptions>? configureOptions = null)
     {
-        var options = new MoConfigureOptions();
-        configureOptions?.Invoke(options);
+        configureOptions?.Invoke(Options);
         
-        var modules = options.Modules ?? [];
-        services.TryAddSingleton<GetNow>(()=>DateTime.UtcNow);
-        services.TryAddScoped<GetTenant>(_ => () => options.SystemTenant);
+        var modules = Options.Modules ?? [];
+        services.TryAddSingleton<GetNow>(()=>DateTime.Now);
+        services.TryAddScoped<GetTenant>(_ => () => Options.SystemTenant);
         services.TryAddScoped<GetUserId>(_ => () => string.Empty);
-        services.TryAddScoped<GetCulture>(sp => sp.GetCulture(options.LocalizationOptions));
+        services.TryAddScoped<GetCulture>(sp => sp.GetCulture(Options.LocalizationOptions));
         services.TryAddSingleton<NewConcurrencyToken>(() => Guid.NewGuid().ToByteArray());
-        services.TryAddSingleton<GetSystemTenant>(() => options.SystemTenant);
+        services.TryAddSingleton<GetSystemTenant>(() => Options.SystemTenant);
         services.TryAddScoped<IRepositoryHelper, RepositoryHelper>();
 
         services
             .AddHttpContextAccessor()
             .AddSingleton<IdGenerator>()
-            .ConfigureLog(options.Logger)
-            .ConfigureLocalization(options.LocalizationOptions);
+            .ConfigureLog(Options.Logger)
+            .ConfigureLocalization(Options.LocalizationOptions)
+            .AddFluentValidationAutoValidation();
+        if (!Options.Logger.DisableDefaultMiddleware)
+        {
+            services.AddScoped<LogMiddleware>();
+        }
 
         foreach (var module in modules)
         {
-            services.AddModule(module, options.ModuleOptions);
+            services.AddModule(module, Options.ModuleOptions);
         }
 
         _modules ??= modules;
@@ -72,6 +79,10 @@ public static class MoExtensions
         this WebApplication app,
         Action<IApplicationBuilder>? exceptionHandlerBuilder = null)
     {
+        if (!Options.Logger.DisableDefaultMiddleware)
+        {
+            app.UseMiddleware<LogMiddleware>();
+        }
         app.UseExceptionHandler(exceptionHandlerBuilder ?? ConfigureExceptionHandler);
         app.UseRequestLocalization();
     }

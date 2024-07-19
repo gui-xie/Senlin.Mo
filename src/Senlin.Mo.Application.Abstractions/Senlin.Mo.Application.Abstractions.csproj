@@ -15,8 +15,8 @@
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageDescription>Modular monolith application abstraction</PackageDescription>
         <PackageTags>Mo Modular monolith application abstraction</PackageTags>
-        <Version>1.0.25-alpha</Version>
-        <AssemblyVersion>1.0.25.0</AssemblyVersion>
+        <Version>1.0.26-alpha</Version>
+        <AssemblyVersion>1.0.26.0</AssemblyVersion>
         <Authors>Senlin</Authors>
         <Title>Senlin.Mo.Application.Abstractions</Title>
         <Description>(experiment)Modular monolith application abstraction</Description>

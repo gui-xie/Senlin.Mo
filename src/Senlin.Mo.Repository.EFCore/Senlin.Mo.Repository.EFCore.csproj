@@ -14,8 +14,8 @@
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageDescription>Modular monolith repository EFCore</PackageDescription>
         <PackageTags>Modular monolith repository EFCore EntityFrameworkCore</PackageTags>
-        <Version>1.0.25-alpha</Version>
-        <AssemblyVersion>1.0.25.0</AssemblyVersion>
+        <Version>1.0.26-alpha</Version>
+        <AssemblyVersion>1.0.26.0</AssemblyVersion>
         <Authors>Senlin</Authors>
         <Title>Senlin.Mo.Repository.EFCore</Title>
         <Description>(experiment)Modular monolith repository EFCore</Description>
@@ -31,9 +31,9 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="8.0.5"/>
-        <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="8.0.2" />
-        <PackageReference Include="Pomelo.EntityFrameworkCore.MySql.Json.Microsoft" Version="8.0.2" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="8.0.0"/>
+        <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="8.0.0" />
+        <PackageReference Include="Pomelo.EntityFrameworkCore.MySql.Json.Microsoft" Version="8.0.0" />
     </ItemGroup>
 
     <ItemGroup>

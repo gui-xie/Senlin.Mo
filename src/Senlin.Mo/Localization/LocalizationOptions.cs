@@ -2,7 +2,7 @@
 
 public class LocalizationOptions
 {
-    private string[] _cultures = ["en"];
+    private string[] _cultures = ["en", "zh"];
 
     public string[] SupportedCultures
     {
