@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Senlin.Mo.Application.Abstractions;
 using Senlin.Mo.Application.Abstractions.Decorators;
+using static Senlin.Mo.RegistrationExtensions;
 
 namespace Senlin.Mo;
 
@@ -10,7 +11,15 @@ internal static class ServiceExtensions
     
     internal static void AddAppServices(this IServiceCollection services, IModule module)
     {
-        foreach (var serviceRegistration in module.GetServices())
+        var assemblies = module.Assemblies;
+        var serviceRegistrations =
+            module.GetServices()
+                .Concat(GetServiceRegistrations(assemblies))
+                .Concat(GetRepositoryRegistrations(assemblies))
+                .Concat(GetEventHandlersRegistrations(assemblies))
+                .Concat(GetValidatorRegistrations(assemblies));
+                
+        foreach (var serviceRegistration in serviceRegistrations)
         {
             if (!(serviceRegistration.ServiceType.IsGenericType 
                   && serviceRegistration.ServiceType.Name.StartsWith("IService")
