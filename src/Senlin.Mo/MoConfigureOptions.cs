@@ -5,16 +5,6 @@ namespace Senlin.Mo;
 public class MoConfigureOptions
 {
     /// <summary>
-    /// Modules
-    /// </summary>
-    public IModule[]? Modules { get; set; }
-
-    /// <summary>
-    /// Module options
-    /// </summary>
-    public ModuleOptions ModuleOptions { get; set; } = new();
-
-    /// <summary>
     /// Logger options
     /// </summary>
     public LoggerOptions Logger { get; set; } = new();

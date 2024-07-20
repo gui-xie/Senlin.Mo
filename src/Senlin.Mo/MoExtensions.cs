@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Senlin.Mo.Application.Abstractions;
@@ -17,21 +18,36 @@ public static class MoExtensions
 {
     private static IModule[]? _modules;
     private static readonly MoConfigureOptions Options = new();
+    private static readonly Dictionary<IModule, Type> ModuleDbContextTypes = new();
 
     /// <summary>
     /// Configure Mo Application
     /// </summary>
     /// <param name="services"></param>
+    /// <param name="module"></param>
     /// <param name="configureOptions"></param>
     /// <returns></returns>
     public static IServiceCollection ConfigureMo(
         this IServiceCollection services,
+        IModule module,
+        Action<MoConfigureOptions>? configureOptions = null) =>
+        services.ConfigureMo([module], configureOptions);
+
+    /// <summary>
+    /// Configure Mo Application
+    /// </summary>
+    /// <param name="services"></param>
+    /// <param name="modules"></param>
+    /// <param name="configureOptions"></param>
+    /// <returns></returns>
+    public static IServiceCollection ConfigureMo(
+        this IServiceCollection services,
+        IModule[] modules,
         Action<MoConfigureOptions>? configureOptions = null)
     {
         configureOptions?.Invoke(Options);
-        
-        var modules = Options.Modules ?? [];
-        services.TryAddSingleton<GetNow>(()=>DateTime.Now);
+
+        services.TryAddSingleton<GetNow>(() => DateTime.Now);
         services.TryAddScoped<GetTenant>(_ => () => Options.SystemTenant);
         services.TryAddScoped<GetUserId>(_ => () => string.Empty);
         services.TryAddScoped<GetCulture>(sp => sp.GetCulture(Options.LocalizationOptions));
@@ -52,20 +68,26 @@ public static class MoExtensions
 
         foreach (var module in modules)
         {
-            services.AddModule(module, Options.ModuleOptions);
+            services.AddModule(module);
         }
 
         _modules ??= modules;
         return services;
     }
-    
+
     private static void AddModule(
         this IServiceCollection services,
-        IModule module,
-        ModuleOptions options)
+        IModule module)
     {
-        services.AddModuleLStringResolver(module, options.GetLocalizationPath(module.Name));
-        services.AddDbContext(module, options.GetModuleConnectionString(module.Name));
+        services.AddModuleLStringResolver(module);
+        var dbContextType = module.Assemblies
+            .SelectMany(assembly => assembly.GetTypes())
+            .FirstOrDefault(type => type.IsAssignableTo(typeof(DbContext)));
+        if (dbContextType is not null)
+        {
+            ModuleDbContextTypes[module] = dbContextType;
+            services.AddDbContext(dbContextType, module.ConnectionString);
+        }
         services.AddAppServices(module);
         services.TryAddScoped<IEventExecutor, EventExecutor>();
     }
@@ -83,10 +105,14 @@ public static class MoExtensions
         {
             app.UseMiddleware<LogMiddleware>();
         }
+
         app.UseExceptionHandler(exceptionHandlerBuilder ?? ConfigureExceptionHandler);
         app.UseRequestLocalization();
     }
 
+    internal static Type GetDbContextType(this IModule module) =>
+        ModuleDbContextTypes[module];
+    
     private static void ConfigureExceptionHandler(IApplicationBuilder b) =>
         b.Run(context => Results.Problem().ExecuteAsync(context));
 }

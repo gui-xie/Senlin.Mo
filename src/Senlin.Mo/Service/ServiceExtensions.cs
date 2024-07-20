@@ -1,7 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Senlin.Mo.Application.Abstractions;
 using Senlin.Mo.Application.Abstractions.Decorators;
-using Senlin.Mo.Localization.Abstractions;
 
 namespace Senlin.Mo;
 
@@ -9,7 +8,7 @@ internal static class ServiceExtensions
 {
     private static readonly Dictionary<Type, Type> DecoratorServices = new();
     
-    public static void AddAppServices(this IServiceCollection services, IModule module)
+    internal static void AddAppServices(this IServiceCollection services, IModule module)
     {
         foreach (var serviceRegistration in module.GetServices())
         {
@@ -59,14 +58,11 @@ internal static class ServiceExtensions
     
     private static object GetModuleRequiredService(this IServiceProvider sp, IModule module, Type type)
     {
-        if (type == typeof(ILStringResolver))
+        if (type == typeof(IUnitOfWorkHandler))
         {
-            type = module.GetLStringResolverType();
+            type = module.GetDbContextType();
         }
-        else if (type == typeof(IUnitOfWorkHandler))
-        {
-            type = module.DbContextType!;
-        }
+
         return sp.GetRequiredService(type);
     }
 

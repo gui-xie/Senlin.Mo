@@ -264,7 +264,7 @@ public class LGenerator : IIncrementalGenerator
         lResource.AppendLine("    /// </summary>");
         lResource.AppendLine(
             $"    [System.CodeDom.Compiler.GeneratedCodeAttribute(\"{ExecutingAssembly.Name}\", \"{ExecutingAssembly.Version}\")]");
-        lResource.AppendLine("    public static partial class L");
+        lResource.AppendLine("    public partial class L");
         lResource.AppendLine("    {");
         var firstProperty = true;
         foreach (var info in infos)

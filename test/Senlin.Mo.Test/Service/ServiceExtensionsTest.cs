@@ -1,4 +1,5 @@
-﻿using FluentAssertions;
+﻿using System.Reflection;
+using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Senlin.Mo.Application.Abstractions;
 using Senlin.Mo.Application.Abstractions.Decorators;
@@ -34,7 +35,9 @@ public class ServiceExtensionsTest
             );
         }
 
-        public record AddDto();
+        public Assembly[] Assemblies { get; } = [];
+
+        public record AddDto;
 
         public class AddService : ICommandService<AddDto>
         {
@@ -42,6 +45,8 @@ public class ServiceExtensionsTest
         }
 
         public Type? DbContextType => null;
+        public string LocalizationPath => "L";
+        public string ConnectionString  => throw new NotImplementedException();
     }
 
     public class LogConsoleAttribute(string data) : Attribute, IServiceDecorator

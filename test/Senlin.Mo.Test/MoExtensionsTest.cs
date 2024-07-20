@@ -11,7 +11,7 @@ public class MoExtensionsTest
     {
         var service = new ServiceCollection();
         service.AddScoped<GetCulture>(sp => ()=> "zh");
-        service.ConfigureMo();
+        service.ConfigureMo([]);
         
         var provider = service.BuildServiceProvider();
         using var s = provider.CreateScope();

@@ -1,4 +1,6 @@
-﻿namespace Senlin.Mo.Application.Abstractions;
+﻿using System.Reflection;
+
+namespace Senlin.Mo.Application.Abstractions;
 
 /// <summary>
 /// Module Interface
@@ -6,19 +8,23 @@
 public interface IModule
 {
     /// <summary>
-    /// Module Name
-    /// </summary>
-    string Name { get; }
-
-    /// <summary>
     /// Get Services registration
     /// </summary>
     /// <returns></returns>
     IEnumerable<ServiceRegistration> GetServices();
+ 
+    /// <summary>
+    /// Get Module Assemblies (for auto registration, etc)
+    /// </summary>
+    Assembly[] Assemblies { get; }
     
     /// <summary>
-    /// Get DbContext Type
+    /// Get Localization Path
     /// </summary>
-    Type? DbContextType { get; }
-}
+    string LocalizationPath { get; }
 
+    /// <summary>
+    /// Get Connection String
+    /// </summary>
+    string ConnectionString { get; }
+}

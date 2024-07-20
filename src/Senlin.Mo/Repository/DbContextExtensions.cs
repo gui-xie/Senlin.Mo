@@ -11,11 +11,9 @@ internal static class DbContextExtensions
 {
     public static void AddDbContext(
         this IServiceCollection services,
-        IModule module,
+        Type dbContextType,
         string connectionStringValue)
     {
-        var dbContextType = module.DbContextType;
-        if (dbContextType is null) return;
         var connectionStringType = typeof(ConnectionString<>).MakeGenericType(dbContextType);
         var connectionString = Activator.CreateInstance(connectionStringType, connectionStringValue)!;
         services.AddSingleton(connectionStringType, connectionString);
