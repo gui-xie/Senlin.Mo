@@ -15,8 +15,8 @@
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageDescription>Modular monolith domain base class lib</PackageDescription>
         <PackageTags>Modular monolith domain</PackageTags>
-        <Version>1.0.26-alpha</Version>
-        <AssemblyVersion>1.0.26.0</AssemblyVersion>
+        <Version>1.0.27-alpha</Version>
+        <AssemblyVersion>1.0.27.0</AssemblyVersion>
         <Authors>Senlin</Authors>
         <Title>Senlin.Mo.Domain</Title>
         <Description>(experiment)Modular monolith domain base class lib</Description>

@@ -1,7 +1,9 @@
 ﻿using Microsoft.Extensions.Logging;
+using Senlin.Mo.Application.Abstractions;
+using Senlin.Mo.Application.Abstractions.Decorators;
 using Senlin.Mo.Domain;
 
-namespace Senlin.Mo.Application.Abstractions.Decorators.UnitOfWork;
+namespace Senlin.Mo.DecoratorServices;
 
 /// <summary>
 /// Unit Of Work Service Attribute

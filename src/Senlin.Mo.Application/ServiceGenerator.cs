@@ -1,7 +1,7 @@
 ﻿using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Senlin.Mo.Application.Abstractions.Decorators.UnitOfWork;
+using Senlin.Mo.Application.Abstractions.Decorators;
 using Senlin.Mo.Application.Helpers;
 
 namespace Senlin.Mo.Application

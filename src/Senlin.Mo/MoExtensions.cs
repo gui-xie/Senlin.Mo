@@ -1,9 +1,12 @@
-﻿using Microsoft.AspNetCore.Builder;
+﻿using System.Reflection;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Senlin.Mo.Application.Abstractions;
+using Senlin.Mo.Endpoints;
 using Senlin.Mo.Localization.Abstractions;
 using Senlin.Mo.Middlewares;
 using Senlin.Mo.Repository.Abstractions;
@@ -16,7 +19,7 @@ namespace Senlin.Mo;
 /// </summary>
 public static class MoExtensions
 {
-    private static IModule[]? _modules;
+    private static IModule[] _modules = [];
     private static readonly MoConfigureOptions Options = new();
     private static readonly Dictionary<IModule, Type> ModuleDbContextTypes = new();
 
@@ -71,7 +74,7 @@ public static class MoExtensions
             services.AddModule(module);
         }
 
-        _modules ??= modules;
+        _modules = modules;
         return services;
     }
 
@@ -96,18 +99,31 @@ public static class MoExtensions
     /// Use Mo
     /// </summary>
     /// <param name="app"></param>
+    /// <param name="endPointPrefix">default "/"</param>
     /// <param name="exceptionHandlerBuilder"></param>
-    public static void UseMo(
+    public static RouteGroupBuilder UseMo(
         this WebApplication app,
+        string endPointPrefix = "/",
         Action<IApplicationBuilder>? exceptionHandlerBuilder = null)
     {
         if (!Options.Logger.DisableDefaultMiddleware)
         {
             app.UseMiddleware<LogMiddleware>();
         }
-
         app.UseExceptionHandler(exceptionHandlerBuilder ?? ConfigureExceptionHandler);
         app.UseRequestLocalization();
+        var group = app
+            .MapGroup(endPointPrefix)
+            .AddFluentValidationAutoValidation();
+
+        foreach (var module in _modules)
+        {
+            var type = module.GetType().Assembly.GetTypes()
+                .FirstOrDefault(t => t.IsAssignableTo(typeof(IModuleEndPoint)));
+            if(type is null) continue;
+            type.GetMethod(nameof(IModuleEndPoint.Map), BindingFlags.Static | BindingFlags.Public)?.Invoke(null, [group]);
+        }
+        return group;
     }
 
     internal static Type GetDbContextType(this IModule module) =>

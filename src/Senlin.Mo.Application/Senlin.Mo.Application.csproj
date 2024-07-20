@@ -15,8 +15,8 @@
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageDescription>Generate Service Handler for minimal api and service decorators.</PackageDescription>
         <PackageTags>Application Servcie MinimalApi Handler SourceGenerator</PackageTags>
-        <Version>1.0.26-alpha</Version>
-        <AssemblyVersion>1.0.26.0</AssemblyVersion>
+        <Version>1.0.27-alpha</Version>
+        <AssemblyVersion>1.0.27.0</AssemblyVersion>
         <Authors>Senlin</Authors>
         <Title>Senlin.Mo.Application</Title>
         <Description>Generate Service Handler for minimal api and service decorators</Description>

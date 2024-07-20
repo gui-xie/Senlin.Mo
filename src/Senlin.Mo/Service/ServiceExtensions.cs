@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using System.Reflection;
+using Microsoft.Extensions.DependencyInjection;
 using Senlin.Mo.Application.Abstractions;
 using Senlin.Mo.Application.Abstractions.Decorators;
 using static Senlin.Mo.RegistrationExtensions;
@@ -18,7 +19,7 @@ internal static class ServiceExtensions
                 .Concat(GetRepositoryRegistrations(assemblies))
                 .Concat(GetEventHandlersRegistrations(assemblies))
                 .Concat(GetValidatorRegistrations(assemblies));
-                
+        
         foreach (var serviceRegistration in serviceRegistrations)
         {
             if (!(serviceRegistration.ServiceType.IsGenericType 
@@ -58,10 +59,12 @@ internal static class ServiceExtensions
         }
 
         var decoratorServiceType = typeof(IDecoratorService<>).MakeGenericType(decoratorType);
-        var types = 
-            from t in decoratorType.Assembly.GetTypes()
+        Assembly[] assemblies = [decoratorType.Assembly, typeof(ServiceExtensions).Assembly];
+        var types =
+            from t in assemblies.SelectMany(a=>a.GetTypes())
             where t.IsAssignableTo(decoratorServiceType)
             select t;
+        
         return DecoratorServices[decoratorType] = types.First();
     }
     

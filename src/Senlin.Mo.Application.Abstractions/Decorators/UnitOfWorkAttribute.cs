@@ -1,4 +1,4 @@
-﻿namespace Senlin.Mo.Application.Abstractions.Decorators.UnitOfWork;
+﻿namespace Senlin.Mo.Application.Abstractions.Decorators;
 
 /// <summary>
 /// Unit of work attribute
