@@ -46,7 +46,39 @@ public class LGenerator : IIncrementalGenerator
                 var infos = GetLStringInfos(dict);
                 CreateLSource(ctx, assemblyName, infos);
                 CreateLResourceSource(ctx, assemblyName, infos);
+                CreateDynamicIl(ctx, assemblyName);
             });
+    }
+
+    private static void CreateDynamicIl(
+        SourceProductionContext ctx,
+        string assemblyName)
+    {
+        var source = new StringBuilder();
+        source.AppendLine("#nullable enable");
+        source.AppendLine("using Senlin.Mo.Localization.Abstractions;");
+        source.AppendLine($"namespace {assemblyName}");
+        source.AppendLine("{");
+        source.AppendLine("    /// <summary>");
+        source.AppendLine("    /// Localization string");
+        source.AppendLine("    /// </summary>");
+        source.AppendLine("    public interface IL : ILStringResolver");
+        source.AppendLine("    {");
+        source.AppendLine("        private class LImpl : IL");
+        source.AppendLine("        {");
+        source.AppendLine("            private readonly LStringResolver _lStringResolver;");
+        source.AppendLine();
+        source.AppendLine("            public LImpl(LStringResolver lStringResolver)");
+        source.AppendLine("            {");
+        source.AppendLine("                _lStringResolver = lStringResolver;");
+        source.AppendLine("            }");
+        source.AppendLine();
+        source.AppendLine("            public string this[LString lString] => _lStringResolver[lString];");
+        source.AppendLine("        }");
+        source.AppendLine("    }");
+        source.AppendLine("}");
+        source.Append("#nullable restore");
+        ctx.AddSource("IL.g.cs", source.ToString());
     }
 
     private static string GetNamespace(BaseTypeDeclarationSyntax syntax)
@@ -245,7 +277,7 @@ public class LGenerator : IIncrementalGenerator
         source.AppendLine("        };");
         source.AppendLine("    }");
         source.AppendLine("}");
-        source.Append("#nullable restore");
+        source.AppendLine("#nullable restore");
         ctx.AddSource("LResource.g.cs", source.ToString());
     }
 
