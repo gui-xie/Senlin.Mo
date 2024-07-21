@@ -10,9 +10,11 @@ internal static class ServiceExtensions
 {
     private static readonly Dictionary<Type, Type> DecoratorServices = new();
     
-    internal static void AddAppServices(this IServiceCollection services, IModule module)
+    internal static void AddAppServices(
+        this IServiceCollection services,
+        IModule module,
+        Assembly[] assemblies)
     {
-        var assemblies = module.Assemblies;
         var serviceRegistrations =
             module.GetServices()
                 .Concat(GetServiceRegistrations(assemblies))

@@ -14,7 +14,7 @@ public class ServiceExtensionsTest
     {
         var services = new ServiceCollection();
         var module = new AModule();
-        services.AddAppServices(module);
+        services.AddAppServices(module, []);
         var sp = services.BuildServiceProvider();
         
         var service = sp.GetRequiredService<IService<AModule.AddDto, IResult>>();

@@ -9,15 +9,14 @@ public interface IModule
 {
     /// <summary>
     /// Get Services registration
+    /// Senlin.Mo will auto registration the following services
+    /// class name end with "Service" and implement IService<,> or ICommandService<>
+    /// class name end with "Repository" and implement interface name end with Repository
+    /// class name end with "Validator" and implement IVaildator<>
+    /// class name end with "EventHandler" and implement IEventHandler<> or IPostEventHandler<>
     /// </summary>
-    /// <returns></returns>
     IEnumerable<ServiceRegistration> GetServices();
  
-    /// <summary>
-    /// Get Module Assemblies (for auto registration, etc)
-    /// </summary>
-    Assembly[] Assemblies { get; }
-    
     /// <summary>
     /// Get Localization Path
     /// </summary>

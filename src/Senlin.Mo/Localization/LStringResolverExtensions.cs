@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using System.Reflection;
+using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Senlin.Mo.Application.Abstractions;
@@ -12,10 +13,10 @@ internal static class LStringResolverExtensions
 
     private static Type GetLStringResolverType(Type type) => typeof(ILStringResolver<>).MakeGenericType(type);
 
-    private static Type? GetModuleResolverType(IModule module)
+    private static Type? GetModuleResolverType(IEnumerable<Assembly> assemblies)
     {
         var resolverInterfaces =
-            from t in module.Assemblies.SelectMany(t => t.GetTypes())
+            from t in assemblies.SelectMany(t => t.GetTypes())
             where t.IsAssignableTo(typeof(ILStringResolver)) && t.IsInterface
             select t;
         var resolver = resolverInterfaces.FirstOrDefault();
@@ -24,11 +25,12 @@ internal static class LStringResolverExtensions
 
     public static void AddModuleLStringResolver(
         this IServiceCollection services,
-        IModule module)
+        string localizationPath,
+        IEnumerable<Assembly> assemblies)
     {
-        var resolverType = GetModuleResolverType(module);
+        var resolverType = GetModuleResolverType(assemblies);
         if (resolverType is null) return;
-        var getResource = GetJsonFileResourcesFn(module.LocalizationPath);
+        var getResource = GetJsonFileResourcesFn(localizationPath);
         var impl = (from type in resolverType.Assembly.GetTypes()
             where type.IsAssignableTo(resolverType) && !type.IsInterface
             select type).First();

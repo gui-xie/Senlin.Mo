@@ -82,16 +82,24 @@ public static class MoExtensions
         this IServiceCollection services,
         IModule module)
     {
-        services.AddModuleLStringResolver(module);
-        var dbContextType = module.Assemblies
-            .SelectMany(assembly => assembly.GetTypes())
+        var assembly = module.GetType().Assembly;
+        var assemblyNamePrefix = assembly.FullName?.Split(',')[0] ?? string.Empty;
+        var referencedAssemblyNames = assembly.GetReferencedAssemblies();
+        var assemblies = referencedAssemblyNames
+            .Where(a => a.Name?.StartsWith(assemblyNamePrefix) == true)
+            .Select(Assembly.Load)
+            .Concat([assembly])
+            .ToArray();
+        services.AddModuleLStringResolver(module.LocalizationPath, assemblies);
+        var dbContextType = assemblies
+            .SelectMany(a => a.GetTypes())
             .FirstOrDefault(type => type.IsAssignableTo(typeof(DbContext)));
         if (dbContextType is not null)
         {
             ModuleDbContextTypes[module] = dbContextType;
             services.AddDbContext(dbContextType, module.ConnectionString);
         }
-        services.AddAppServices(module);
+        services.AddAppServices(module, assemblies);
         services.TryAddScoped<IEventExecutor, EventExecutor>();
     }
 
