@@ -1,6 +1,6 @@
 ﻿//HintName: LResource.g.cs
 #nullable enable
-using Senlin.Mo.Localization.Abstractions;
+using Senlinz.Localization.Abstractions;
 namespace ProjectA
 {
     /// <summary>

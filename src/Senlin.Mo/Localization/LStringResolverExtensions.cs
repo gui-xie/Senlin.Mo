@@ -3,7 +3,7 @@ using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Senlin.Mo.Application.Abstractions;
-using Senlin.Mo.Localization.Abstractions;
+using Senlinz.Localization.Abstractions;
 
 namespace Senlin.Mo;
 

@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Net.Http.Headers;
-using Senlin.Mo.Localization.Abstractions;
+using Senlinz.Localization.Abstractions;
 
 namespace Senlin.Mo;
 

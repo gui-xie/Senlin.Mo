@@ -1,11 +1,11 @@
-﻿global using static Senlin.Mo.Localization.Test.TestHelper;
+﻿global using static Senlinz.Localization.Test.TestHelper;
 
 using System.Runtime.CompilerServices;
 using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
 
-namespace Senlin.Mo.Localization.Test;
+namespace Senlinz.Localization.Test;
 
 public static class TestHelper
 {

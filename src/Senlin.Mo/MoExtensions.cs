@@ -7,7 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Senlin.Mo.Application.Abstractions;
 using Senlin.Mo.Endpoints;
-using Senlin.Mo.Localization.Abstractions;
+using Senlinz.Localization.Abstractions;
 using Senlin.Mo.Middlewares;
 using Senlin.Mo.Repository.Abstractions;
 using SharpGrip.FluentValidation.AutoValidation.Endpoints.Extensions;

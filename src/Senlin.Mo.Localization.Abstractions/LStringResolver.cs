@@ -1,6 +1,6 @@
 ﻿using System.Collections.Concurrent;
 
-namespace Senlin.Mo.Localization.Abstractions;
+namespace Senlinz.Localization.Abstractions;
 
 /// <summary>
 /// Localization string resolver

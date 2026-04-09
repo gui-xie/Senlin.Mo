@@ -1,12 +1,12 @@
 ﻿//HintName: L.g.cs
 #nullable enable
-using Senlin.Mo.Localization.Abstractions;
+using Senlinz.Localization.Abstractions;
 namespace ProjectA
 {
     /// <summary>
     /// Auto generated localization string
     /// </summary>
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Senlin.Mo.Localization", "1.0.20.0")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Senlinz.Localization", "1.0.28.0")]
     public static partial class L
     {
         /// <summary>

@@ -11,14 +11,16 @@
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <PublishRepositoryUrl>true</PublishRepositoryUrl>
         <PackageProjectUrl>https://github.com/gui-xie/Senlin.Mo</PackageProjectUrl>
-        <PackageId>Senlin.Mo.Localization</PackageId>
+        <AssemblyName>Senlinz.Localization</AssemblyName>
+        <RootNamespace>Senlinz.Localization</RootNamespace>
+        <PackageId>Senlinz.Localization</PackageId>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageDescription>Provide multi-language support, use source generator and json configuration file to generate resource files.</PackageDescription>
         <PackageTags>Localization JSON Multi-Langugae SourceGenerator</PackageTags>
         <Version>1.0.28-alpha</Version>
         <AssemblyVersion>1.0.28.0</AssemblyVersion>
         <Authors>Senlin</Authors>
-        <Title>Senlin.Mo.Localization</Title>
+        <Title>Senlinz.Localization</Title>
         <Description>(experiment)Provide multi-language support, use source generator and json configuration file to generate resource files.</Description>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <PackageReleaseNotes>(experiment) Modular monolith library</PackageReleaseNotes>

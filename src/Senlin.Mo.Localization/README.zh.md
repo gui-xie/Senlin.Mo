@@ -1,4 +1,4 @@
-﻿# Senlin.Mo.Localization
+﻿# Senlinz.Localization
 
 [![GitHub](https://img.shields.io/badge/-source-181717.svg?logo=GitHub)](https://github.com/gui-xie/Senlin.Mo)
 [![GitHub](https://img.shields.io/github/license/gui-xie/Senlin.Mo?color=blue&label=License)](https://github.com/gui-xie/Senlin.Mo/blob/master/license.txt)
@@ -13,7 +13,7 @@
 
 ### 添加NuGet包
 ```shell
-dotnet add package Senlin.Mo.Localization
+dotnet add package Senlinz.Localization
 ```
 ### 定义JSON文件
 * 在项目中创建 l.json 文件

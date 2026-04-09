@@ -1,6 +1,6 @@
 ﻿//HintName: GradeExtensions.g.cs
 #nullable enable
-using Senlin.Mo.Localization.Abstractions;
+using Senlinz.Localization.Abstractions;
 using ProjectA;
 
 namespace ProjectA
@@ -8,7 +8,7 @@ namespace ProjectA
     /// <summary>
     /// Grade localization string extensions
     /// </summary>
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Senlin.Mo.Localization", "1.0.20.0")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Senlinz.Localization", "1.0.28.0")]
     public static partial class GradeExtensions
     {
         /// <summary>

@@ -13,4 +13,4 @@
 
 目前仅包含以下功能：
 
-1. `Senlin.Mo.Localization`：基于JSON格式，实现多语言
+1. `Senlinz.Localization`：基于JSON格式，实现多语言

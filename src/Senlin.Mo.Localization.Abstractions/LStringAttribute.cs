@@ -1,4 +1,4 @@
-﻿namespace Senlin.Mo.Localization.Abstractions;
+﻿namespace Senlinz.Localization.Abstractions;
 
 /// <summary>
 /// Localization string attribute

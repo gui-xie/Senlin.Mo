@@ -5,7 +5,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Newtonsoft.Json;
 
-namespace Senlin.Mo.Localization;
+namespace Senlinz.Localization;
 
 /// <summary>
 /// Localization config generator
@@ -15,7 +15,7 @@ public class LGenerator : IIncrementalGenerator
 {
     private static readonly AssemblyName ExecutingAssembly = Assembly.GetExecutingAssembly().GetName();
     private const string MoLocalizationFile = "build_property.MoLocalizationFile";
-    private const string LStringAttributeName = "Senlin.Mo.Localization.Abstractions.LStringAttribute";
+    private const string LStringAttributeName = "Senlinz.Localization.Abstractions.LStringAttribute";
     private const string LStringKeyAttributeName = "LStringKey";
     private const string LStringAttributePrefix = "LString";
 
@@ -56,7 +56,7 @@ public class LGenerator : IIncrementalGenerator
     {
         var source = new StringBuilder();
         source.AppendLine("#nullable enable");
-        source.AppendLine("using Senlin.Mo.Localization.Abstractions;");
+        source.AppendLine("using Senlinz.Localization.Abstractions;");
         source.AppendLine($"namespace {assemblyName}");
         source.AppendLine("{");
         source.AppendLine("    /// <summary>");
@@ -158,7 +158,7 @@ public class LGenerator : IIncrementalGenerator
             var className = $"{enumName}Extensions";
             var source = new StringBuilder();
             source.AppendLine("#nullable enable");
-            source.AppendLine("using Senlin.Mo.Localization.Abstractions;");
+            source.AppendLine("using Senlinz.Localization.Abstractions;");
             if (!string.IsNullOrWhiteSpace(enumNamespace) && enumName != assemblyName)
             {
                 source.AppendLine($"using {enumNamespace};");
@@ -239,7 +239,7 @@ public class LGenerator : IIncrementalGenerator
     {
         var source = new StringBuilder();
         source.AppendLine("#nullable enable");
-        source.AppendLine("using Senlin.Mo.Localization.Abstractions;");
+        source.AppendLine("using Senlinz.Localization.Abstractions;");
         source.AppendLine("using System.Collections.Generic;");
         source.AppendLine($"namespace {assemblyName}");
         source.AppendLine("{");
@@ -288,7 +288,7 @@ public class LGenerator : IIncrementalGenerator
     {
         var lResource = new StringBuilder();
         lResource.AppendLine("#nullable enable");
-        lResource.AppendLine("using Senlin.Mo.Localization.Abstractions;");
+        lResource.AppendLine("using Senlinz.Localization.Abstractions;");
         lResource.AppendLine($"namespace {assemblyName}");
         lResource.AppendLine("{");
         lResource.AppendLine("    /// <summary>");

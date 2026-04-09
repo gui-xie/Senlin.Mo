@@ -1,6 +1,6 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
-using Senlin.Mo.Localization.Abstractions;
+using Senlinz.Localization.Abstractions;
 
 namespace Senlin.Mo.Test;
 

@@ -1,4 +1,4 @@
-# Senlin.Mo
+﻿# Senlin.Mo
 *Read this in other languages: [English](README.md), [中文](README.zh.md).*
 
 ## Introduction
@@ -13,5 +13,5 @@ Currently still in development.
 
 Currently only includes the following features:
 
-* [Senlin.Mo.Localization](https://github.com/gui-xie/Senlin.Mo/blob/master/src/Senlin.Mo.Localization/README.md)
-   : Support multi-language using JSON
+* [Senlinz.Localization](https://github.com/gui-xie/Senlin.Mo/blob/master/src/Senlin.Mo.Localization/README.md)
+    : Support multi-language using JSON

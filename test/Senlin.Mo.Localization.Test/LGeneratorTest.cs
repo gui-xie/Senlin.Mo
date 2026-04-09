@@ -1,8 +1,8 @@
-using Microsoft.CodeAnalysis;
+﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using Senlin.Mo.Localization.Abstractions;
+using Senlinz.Localization.Abstractions;
 
-namespace Senlin.Mo.Localization.Test;
+namespace Senlinz.Localization.Test;
 
 public class LGeneratorTest
 {
@@ -14,7 +14,7 @@ public class LGeneratorTest
             "{\"name\":\"Name\",\"ageIs\":\"Age is {age}\", \"ageIsEscape\":\"Age is {$age}\"}"
         );
         const string srcText = @"
-using Senlin.Mo.Localization.Abstractions;
+using Senlinz.Localization.Abstractions;
 namespace ProjectA {
     [LString]
     public enum Grade
